@@ -8,10 +8,10 @@ UI Labs can be used to view and test the stories.
 
 ## Credits
 
-[@Roblox](https://github.com/Roblox/) - Foundation
-[@Roblox](https://github.com/Roblox/) - [Dash](https://github.com/Roblox/dash/)
-[@Roblox](https://github.com/Roblox/) - BuilderIcons
-[@Roblox](https://github.com/Roblox/) - FoundationImages
-[@Roblox](https://github.com/Roblox/) - FoundationCloudAssets
-[@Roblox](https://github.com/Roblox/) - RbxDesignFoundations
-[@Elttob](https://github.com/dphfox/) - [Fusion](https://github.com/dphfox/Fusion)
+* [@Roblox](https://github.com/Roblox/) - Foundation
+* [@Roblox](https://github.com/Roblox/) - [Dash](https://github.com/Roblox/dash/)
+* [@Roblox](https://github.com/Roblox/) - BuilderIcons
+* [@Roblox](https://github.com/Roblox/) - FoundationImages
+* [@Roblox](https://github.com/Roblox/) - FoundationCloudAssets
+* [@Roblox](https://github.com/Roblox/) - RbxDesignFoundations
+* [@Elttob](https://github.com/dphfox/) - [Fusion](https://github.com/dphfox/Fusion)
