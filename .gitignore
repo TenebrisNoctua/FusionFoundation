@@ -1,0 +1,9 @@
+# Project build file
+/*.rbxm
+/*.rbxmx
+
+# VS Code files
+.vscode/*
+
+# LLS file
+sourcemap.json
