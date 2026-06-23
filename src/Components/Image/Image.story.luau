@@ -26,7 +26,7 @@ type ThumbnailSize = ThumbnailSize.ThumbnailSize
 local AssetKeys = Dash.keys(Assets)
 
 local function AssetStory(scope, layoutOrder)
-	local theme = themeProvider(scope)
+	local theme = themeProvider()
 	return View {
 		scope = scope,
 		AutomaticSize = Enum.AutomaticSize.XY,
@@ -93,7 +93,7 @@ end
 
 local function StoryGuiState(scope, layoutOrder)
 	local guiState = scope:Value(ControlState.Initialize)
-	local theme = themeProvider(scope)
+	local theme = themeProvider()
 	
 	local function onStateChanged(new: ControlState)
 		guiState:set(new)
@@ -128,7 +128,7 @@ local function StoryGuiState(scope, layoutOrder)
 end
 
 local function ImageSliceWithChildren(scope, layoutOrder)
-	local theme = themeProvider(scope)
+	local theme = themeProvider()
 	return Image {
 		scope = scope,
 		AutomaticSize = Enum.AutomaticSize.XY,
@@ -215,6 +215,8 @@ return {
 	story = function(props)
 		local scope = props.scope
 		local cloudAsset = props.controls.cloudAsset
+		local _, cleanup = themeProvider()
+		table.insert(scope, cleanup)
 		
 		return View {
 			scope = scope,

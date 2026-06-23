@@ -14,7 +14,7 @@ local ControlState = require(Foundation.Enums.ControlState)
 
 local function StoryScrolling(props)
 	local scope = props.scope
-	local theme = themeProvider(scope)
+	local theme = themeProvider()
 	
 	return View {
 		scope = scope,
@@ -115,6 +115,9 @@ return {
 		local scope = props.scope
 		local scrollBarVisibility = props.controls.scrollBarVisibility
 		local selectable = props.controls.selectable
+		
+		local _, cleanup = themeProvider()
+		table.insert(scope, cleanup)
 		
 		return StoryScrolling {
 			scope = scope,

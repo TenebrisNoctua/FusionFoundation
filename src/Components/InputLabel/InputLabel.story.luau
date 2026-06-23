@@ -15,7 +15,7 @@ type InputLabelSize = InputLabelSize.InputLabelSize
 
 local function Story(props)
 	local Scope = props.scope
-	local Theme = themeProvider(Scope)
+	local Theme = themeProvider()
 	local sizes: { InputLabelSize } = { InputLabelSize.Large, InputLabelSize.Medium, InputLabelSize.Small }
 	
 	return View {
@@ -74,6 +74,9 @@ return {
 		local Text = props.controls.Text
 		local isRequired = props.controls.isRequired
 		local RichText = props.controls.RichText
+		
+		local _, cleanup = themeProvider()
+		table.insert(scope, cleanup)
 
 		return Story {
 			scope = scope,

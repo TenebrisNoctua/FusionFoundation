@@ -16,7 +16,7 @@ type ControlState = ControlState.ControlState
 
 local function Story(props)
 	local Scope = props.scope
-	local Theme = themeProvider(Scope)
+	local Theme = themeProvider()
 	
 	return Text {
 		scope = Scope,
@@ -35,7 +35,7 @@ end
 
 local function StoryGuiState(props)
 	local Scope = props.scope
-	local Theme = themeProvider(Scope)
+	local Theme = themeProvider()
 
 	local guiState = Scope:Value(ControlState.Initialize)
 	local function onStateChanged(new: ControlState)
@@ -68,6 +68,9 @@ return {
 		local scope = props.scope
 		local text = props.controls.text
 		local textSize = props.controls.textSize
+		
+		local _, cleanup = themeProvider()
+		table.insert(scope, cleanup)
 
 		return View {
 			scope = scope,

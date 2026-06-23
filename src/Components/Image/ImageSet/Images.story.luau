@@ -4,7 +4,6 @@ local Foundation = script.Parent.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
-local Dash = PackageManager.getPackage("Dash")
 local FoundationImages = PackageManager.getPackage("FoundationImages")
 
 local Image = require(Foundation.Components.Image)
@@ -13,7 +12,6 @@ local Text = require(Foundation.Components.Text)
 
 local themeProvider = require(Foundation.Utility.themeProvider)
 
-local Children = Fusion.Children
 local Images = FoundationImages.Images
 
 local function ImageGridItem(props: {imageName: string, isVisible: boolean, scope: any})
@@ -103,10 +101,6 @@ local function ImageGridItem(props: {imageName: string, isVisible: boolean, scop
 	}
 end
 
-local function capitalizeFirstLetter(str)
-	return str:gsub("^%l", string.upper)
-end
-
 local function getImagesBySection()
 	-- Group images by their top-level directory/section
 	local sections = {}
@@ -173,7 +167,10 @@ return {
 	story = function(props)
 		local scope = props.scope
 		local keyword = props.controls.keyword
-		
+
+		local _, cleanup = themeProvider()
+		table.insert(scope, cleanup)
+
 		local sections = getImagesBySection()
 		local storyViews = {
 			scope:New "UIListLayout" {
