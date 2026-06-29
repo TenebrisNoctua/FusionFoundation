@@ -14,7 +14,9 @@ local View = require(Foundation.Components.View)
 local Text = require(Foundation.Components.Text)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+
 local getRbxThumb = require(Foundation.Utility.getRbxThumb)
+local unwrap = require(Foundation.Utility.unwrap)
 
 local ControlState = require(Foundation.Enums.ControlState)
 local ThumbnailType = require(Foundation.Enums.ThumbnailType)
@@ -74,7 +76,7 @@ local function StoryGuiState(scope, layoutOrder)
 	return Image {
 		scope = scope,
 		Image = scope:Computed(function(use) 
-			local state = use(guiState)
+			local state = unwrap(guiState, use)
 			if state == ControlState.Default then
 				return getRbxThumb(ThumbnailType.Asset, 23155839, ThumbnailSize.Large)
 			elseif state == ControlState.Hover then
@@ -126,7 +128,7 @@ local function ImageSliceWithChildren(scope, layoutOrder)
 								scope = scope,
 								Image = "component_assets/circle_36",
 								Size = UDim2.fromOffset(60, 60),
-								imageStyle = theme:GetTokenData("Color", "None"),
+								imageStyle = unwrap(theme.Tokens).Color.None,
 								ZIndex = 0,
 								tag = "position-center-center anchor-center-center"
 							},
@@ -135,7 +137,7 @@ local function ImageSliceWithChildren(scope, layoutOrder)
 								scope = scope,
 								Image = "component_assets/circle_36",
 								Size = UDim2.fromOffset(60, 60),
-								imageStyle = theme:GetTokenData("Color", "None"),
+								imageStyle = unwrap(theme.Tokens).Color.None,
 								scale = 1,
 								ZIndex = 1,
 								tag = "position-center-center anchor-center-center"
@@ -188,9 +190,7 @@ return {
 					LayoutOrder = 5
 				},
 				
-				scope:New "StyleLink" {
-					StyleSheet = theme.RegistryStyleSheet
-				}
+				theme.StyleLink
 			}
 		}
 	end,

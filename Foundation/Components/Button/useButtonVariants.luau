@@ -15,7 +15,7 @@ local composeStyleVariant = require(Utility.composeStyleVariant)
 local useVariants = require(Utility.useVariants)
 local unwrap = require(Utility.unwrap)
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)()
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 local getSharedVariants = require(script.Parent.getSharedVariants)
 
 local Types = require(TypesSource.Types)
@@ -57,6 +57,7 @@ type ButtonVariantProps = {
 
 local function variantsMap(use: Use)
 	local sharedVariants = getSharedVariants(use)
+	local themeProvider = ThemeProvider()
 
 	local common = {
 		container = {
@@ -67,11 +68,10 @@ local function variantsMap(use: Use)
 		},
 	}
 
-	-- Fetching token data reactively
-	local size300 = unwrap(ThemeProvider:GetTokenData("Size", "Size_300"), use)
-	local size400 = unwrap(ThemeProvider:GetTokenData("Size", "Size_400"), use)
-	local size500 = unwrap(ThemeProvider:GetTokenData("Size", "Size_500"), use)
-	local size600 = unwrap(ThemeProvider:GetTokenData("Size", "Size_600"), use)
+	local size300 = unwrap(themeProvider.Tokens, use).Size.Size_300
+	local size400 = unwrap(themeProvider.Tokens, use).Size.Size_400
+	local size500 = unwrap(themeProvider.Tokens, use).Size.Size_500
+	local size600 = unwrap(themeProvider.Tokens, use).Size.Size_600
 
 	local sizes: { [InputSize]: VariantProps } = {
 		[InputSize.XSmall] = {
@@ -137,7 +137,7 @@ local function useButtonVariants(scope: Scope, size: InputSize, variant: ButtonV
 		return composeStyleVariant(
 			variants.common,
 			variants.sizes[size],
-			variants.types[variant][unwrap(colorMode) or ColorMode.Color]
+			variants.types[variant][unwrap(colorMode, use) or ColorMode.Color]
 		)
 	end)
 end

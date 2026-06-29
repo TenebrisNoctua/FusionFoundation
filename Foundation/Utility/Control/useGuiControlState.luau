@@ -20,14 +20,14 @@ local guiStateMapper: { [Enum.GuiState]: ControlState } = {
 
 local OnEvent = Fusion.OnEvent
 
-type Value<T> = Types.Value<T>
+type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
 
 type ControlState = ControlState.ControlState
 type ControlStateEvent = ControlStateEvent.ControlStateEvent
 type StateChangedCallback = Types.StateChangedCallback
 
-local function useGuiControlState(scope: Scope, guiObjectRef: Value<GuiObject?>, onStateChanged: StateChangedCallback)
+local function useGuiControlState(scope: Scope, guiObjectRef: UsedAs<GuiObject?>, onStateChanged: StateChangedCallback)
 	local isSelected = scope:Value(false)
 	local currentControlState = scope:Value(ControlState.Initialize)
 	local connections: { RBXScriptConnection } = {}
@@ -71,7 +71,7 @@ local function useGuiControlState(scope: Scope, guiObjectRef: Value<GuiObject?>,
 			connections,
 			instance.SelectionGained:Connect(function()
 				isSelected.current = true
-				onControlStateChanged(currentControlState.current :: ControlState)
+				onControlStateChanged(unwrap(currentControlState))
 			end)
 		)
 		
@@ -79,7 +79,7 @@ local function useGuiControlState(scope: Scope, guiObjectRef: Value<GuiObject?>,
 			connections,
 			instance.SelectionLost:Connect(function()
 				isSelected.current = false
-				onControlStateChanged(currentControlState.current :: ControlState)
+				onControlStateChanged(unwrap(currentControlState))
 			end)
 		) 	
 	end
@@ -89,7 +89,6 @@ local function useGuiControlState(scope: Scope, guiObjectRef: Value<GuiObject?>,
 			connection:Disconnect()
 		end
 		table.clear(connections)
-		
 		return onRefChange(unwrap(guiObjectRef))	
 	end)
 end

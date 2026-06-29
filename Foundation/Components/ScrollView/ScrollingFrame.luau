@@ -85,7 +85,7 @@ return function(scrollingFrameProps: ScrollingFrameProps)
 		if scrollBarVisibility == Visibility.None then
 			return 0
 		else
-			return unwrap(Theme:GetTokenData("Size", "Size_150"), use)
+			return unwrap(Theme.Tokens, use).Size.Size_150
 		end
 	end)
 	

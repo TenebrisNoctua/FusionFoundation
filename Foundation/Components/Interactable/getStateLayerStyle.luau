@@ -4,7 +4,9 @@ local PackageManager = require(Foundation.PackageManager)
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
+local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types.Types)
+
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 local ColorMode = require(Foundation.Enums.ColorMode)
@@ -43,15 +45,13 @@ function stateLayerModeToTokenNamespace(mode: StateLayerMode?)
 end
 
 local function getStateLayerStyle(
-	stateLayer: StateLayer?,
+	mode: StateLayerMode?,
 	guiState: ControlState
 ): { Color3: Color3, Transparency: number }
 	local theme = ThemeProvider()
-	
-	local colorNamespace = stateLayerModeToTokenNamespace(stateLayer and stateLayer.mode)
+	local colorNamespace = stateLayerModeToTokenNamespace(mode)
 	local stateLayerState = guiStateToStateLayer(guiState)
-	local stateLayerStyle = theme:GetTokenData(colorNamespace, "State", stateLayerState)
-
+	local stateLayerStyle = unwrap(theme.Tokens)[colorNamespace].State[stateLayerState]
 	return stateLayerStyle
 end
 

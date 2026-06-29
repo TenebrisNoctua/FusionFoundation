@@ -40,7 +40,7 @@ local function setProperty_unsafe(
 		(instance :: any)[property] = value
 	end)
 	if not s or e or value == nil then
-		warn(instance, property, value)
+		--warn(instance, property, value)
 	end
 end
 

@@ -1,25 +1,43 @@
-local Foundation = script.Parent.Parent.Parent
+local Foundation = script:FindFirstAncestor("Foundation")
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
 
-local Utility = Foundation.Utility
-local TypesSource = Utility.Types
-
 local Image = require(Foundation.Components.Image)
 local View = require(Foundation.Components.View)
 
-local withDefaults = require(Utility.withDefaults)
-local stripProps = require(Utility.stripProps)
-local unwrap = require(Utility.unwrap)
-local useRotation = require(Utility.useRotation)
-local Types = require(TypesSource.Types)
+local isPluginSecurity = require(Foundation.Utility.isPluginSecurity)
+local useRotation = require(Foundation.Utility.useRotation)
+local withDefaults = require(Foundation.Utility.withDefaults)
+local unwrap = require(Foundation.Utility.unwrap)
+local Types = require(Foundation.Utility.Types.Types)
 
-local defaultProps = {
-	style = {}
+type UsedAs<T> = Types.UsedAs<T>
+type Scope = Types.Scope
+type Use = Types.Use
+
+type InternalSpinnerProps = {
+	scope: Scope,
+	style: UsedAs<{ Color3: Color3, Transparency: number }>,
+	scale: UsedAs<number>,
+	Thickness: number,
+	testId: string?,
 }
 
--- Right, Top, Left, Bottom
+type SpinnerProps = {
+	scope: Scope,
+	style: UsedAs<any>?,
+	Size: UsedAs<UDim2>,
+	testId: string?,
+}
+
+local FoundationUsePath2DSpinner = false
+
+local defaultProps = {
+	style = {},
+}
+
+-- Right, Top, Left, Bottom Static Bezier Points
 local SPINNER_CONTROL_POINTS = {
 	Path2DControlPoint.new(UDim2.fromScale(1, 0.5), UDim2.fromScale(0, 0.25), UDim2.fromScale(0, -0.25)),
 	Path2DControlPoint.new(UDim2.fromScale(0.5, 0), UDim2.fromScale(0.25, 0), UDim2.fromScale(-0.25, 0)),
@@ -30,109 +48,109 @@ local SPINNER_CONTROL_POINTS = {
 local function IconSpinner(props: InternalSpinnerProps)
 	local scope = props.scope
 	local rotation = useRotation(2, scope)
-	local scale = props.scale
-	
+
 	return Image {
 		scope = scope,
 		Image = "icons/status/loading_large",
-		Size = UDim2.fromScale(1, 1),
-		Position = UDim2.fromScale(0.5, 0.5),
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		imageStyle = props.style,
 		Rotation = rotation,
+		tag = "position-center-center anchor-center-center size-full-full",
+		testId = props.testId,
+		imageStyle = props.style,
 		children = {
 			scope:New "UIScale" {
-				--Scale = scale
+				Scale = props.scale
 			}
 		}
 	}
 end
 
-local function Path2DSpinner(props: InternalSpinnerProps, scope: Scope)
-	local pathRef = scope:Value(nil :: Path2D?)
+local function Path2DSpinner(props: InternalSpinnerProps)
+	local scope = props.scope
 	local rotation = useRotation(2, scope)
-	
-	scope:Observer(pathRef):onChange(function() 
-		local path = unwrap(pathRef)
-		if path ~= nil then
-			path:SetControlPoints(SPINNER_CONTROL_POINTS)
-		end	
-	end)
-	
+
+	local circlePath = scope:New "Path2D" {
+		Closed = false,
+		Color3 = scope:Computed(function(use: Use)
+			local styleValues = unwrap(props.style, use)
+			return styleValues and styleValues.Color3
+		end),
+		Transparency = if isPluginSecurity()
+			then scope:Computed(function(use: Use)
+				local styleValues = unwrap(props.style, use)
+				return styleValues and styleValues.Transparency
+			end)
+			else nil,
+		Thickness = props.Thickness,
+	}
+
+	circlePath:SetControlPoints(SPINNER_CONTROL_POINTS)
+
 	return View {
 		scope = scope,
-		Size = UDim2.fromScale(1, 1),
-		Position = UDim2.fromScale(0.5, 0.5),
-		AnchorPoint = Vector2.new(0.5, 0.5),
+		tag = "position-center-center anchor-center-center size-full",
 		Rotation = rotation,
 		children = {
-			pathRef:set(scope:New "Path2D" {
-				Closed = false,
-				Color3 = scope:Tween(scope:Computed(function(use) 
-					local styleValues = unwrap(props.style, use)
-					return styleValues.Color3
-				end), TweenInfo.new(0.2, Enum.EasingStyle.Linear)),
-				Transparency = scope:Tween(scope:Computed(function(use) 
-					local styleValues = unwrap(props.style, use)
-					return styleValues.Transparency
-				end), TweenInfo.new(0.2, Enum.EasingStyle.Linear)),
-				Thickness = props.thickness
-			}),
-			
-			scope:New "UIScale" {
-				Scale = props.Scale
+			Circle = circlePath,
+			UIScale = scope:New "UIScale" {
+				Scale = props.scale
 			}
 		}
 	}
 end
 
-type UsedAs<T> = Types.UsedAs<T>
-type Scope = Types.Scope
-type Use = Types.Use
-type Child = Types.Child
+local function Spinner(spinnerProps: SpinnerProps)
+	local scope = spinnerProps.scope
+	assert(scope, "A scope must be provided to the Spinner component.")
 
-type InternalSpinnerProps = {
-	scope: Scope,
-	style: UsedAs<Types.ColorStyleValue>,
-	scale: UsedAs<number>,
-	thickness: number,
-}
-
-type SpinnerProps = {
-	scope: Scope,
-	scale: UsedAs<number>,
-	style: UsedAs<Types.ColorStyle>,
-	size: UsedAs<UDim2>,
-	usePath2DSpinner: boolean?
-}
-
-return function(spinnerProps: SpinnerProps)
-	local Scope = spinnerProps.scope
-	assert(Scope, "A scope has not been provided for the Spinner component.")
-	
 	local props = withDefaults(spinnerProps, defaultProps)
-	local scaleTween = Scope:Tween(props.scale, TweenInfo.new(0.2, Enum.EasingStyle.Quad))
-	
-	return View {
-		scope = Scope,
-		Size = props.Size,
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.5),
+
+	local animScale = scope:Value(0)
+	local animTransparency = scope:Value(1)
+
+	local scaleTween = scope:Tween(animScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad))
+	local transparencyTween = scope:Tween(animTransparency, TweenInfo.new(0.2, Enum.EasingStyle.Quad))
+
+	local currentSize = unwrap(props.Size)
+	local calculatedThickness = math.max(math.floor(currentSize.X.Offset / 8), 1)
+
+	local mixedStyle = scope:Computed(function(use: Use)
+		local baseStyle = unwrap(props.style, use) or {}
+		local currentAnimTransparency = unwrap(transparencyTween, use)
+
+		local baseColor = baseStyle.Color3 or Color3.new(1, 1, 1)
+		local baseTransparency = baseStyle.Transparency or 0
 		
+		return {
+			Color3 = baseColor,
+			Transparency = unwrap(baseTransparency) + (currentAnimTransparency / 2),
+		}
+	end)
+
+	animScale:set(1)
+	animTransparency:set(0)
+
+	return View {
+		scope = scope,
+		tag = "position-center-center anchor-center-center",
+		Size = props.Size,
 		children = {
-			if props.usePath2DSpinner then
-				Path2DSpinner {
-					scope = Scope,
+			Spinner = if FoundationUsePath2DSpinner
+				then Path2DSpinner {
+					scope = scope,
 					scale = scaleTween,
-					style = props.style,
-					thickness = math.max(math.floor(props.Size.X.Offset / 8), 1)
+					style = mixedStyle,
+					Thickness = calculatedThickness,
+					testId = props.testId,
 				}
-			else
-				IconSpinner {
-					scope = Scope,
+				else IconSpinner {
+					scope = scope,
 					scale = scaleTween,
-					style = props.style
+					style = mixedStyle,
+					Thickness = calculatedThickness,
+					testId = props.testId,
 				}
 		}
 	}
 end
+
+return Spinner

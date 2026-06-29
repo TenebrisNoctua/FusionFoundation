@@ -63,7 +63,10 @@ return {
 		local scope = props.scope
 		local controls = props.controls
 
-		local theme, cleanup = ThemeProvider()
+		local theme, cleanup = ThemeProvider({
+			theme = props.controls.theme
+		})
+		
 		table.insert(scope, cleanup)
 
 		return View {
@@ -83,7 +86,7 @@ return {
 					}
 				}
 
-				local extendedColors = unwrap(theme:GetTokenData("Color", "Extended"), use)
+				local extendedColors = unwrap(theme.Tokens, use).Color.Extended
 				local colorMode = unwrap(controls.colorMode, use)
 
 				-- Loop through every ButtonVariant to create a multi-story layout dynamically
@@ -130,7 +133,7 @@ return {
 						tag = "row gap-medium align-y-center padding-medium radius-medium",
 						backgroundStyle = if variant == ButtonVariant.OverMedia
 							then theme:GetStyle("Extended", "White", "White_100")
-							elseif colorMode then theme:GetTokenData(colorMode, "Surface", "Surface_100")
+							elseif colorMode then unwrap(theme.Tokens)[colorMode].Surface.Surface_100
 							else nil,
 						children = {
 							-- Apply an decorative background gradient strictly for OverMedia presentation rows
@@ -160,6 +163,13 @@ return {
 			Type = "Choose",
 			ControlValue = Icons[1],
 			List = Icons,
+			DefIndex = 1
+		},
+		theme = {
+			EntryType = "Control",
+			Type = "Choose",
+			ControlValue = "Dark",
+			List = {"Dark", "Light"},
 			DefIndex = 1
 		},
 		text = "Lorem ipsum",

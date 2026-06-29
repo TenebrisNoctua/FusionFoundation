@@ -122,7 +122,7 @@ end
 --// Main Functions
 
 function themeProvider.GetColor(self: themeProvider, token: string, category: string, subcategory: string?): UsedAs<Color3>
-	local theme: Theme = unwrap(themeProvider.Theme)
+	local theme: Theme = unwrap(self.Theme)
 	local cachedResult = getFromCache(self, theme, token, category, subcategory, "Color3")
 	if cachedResult then return cachedResult end
 	
@@ -141,7 +141,7 @@ function themeProvider.GetColor(self: themeProvider, token: string, category: st
 end
 
 function themeProvider.GetTransparency(self: themeProvider, token: string, category: string, subcategory: string?): UsedAs<number>
-	local theme = unwrap(themeProvider.Theme)
+	local theme = unwrap(self.Theme)
 	local cachedResult = getFromCache(self, theme, token, category, subcategory, "Transparency")
 	if cachedResult then return cachedResult end
 	
@@ -160,7 +160,7 @@ function themeProvider.GetTransparency(self: themeProvider, token: string, categ
 end
 
 function themeProvider.GetStyle(self: themeProvider, token: string, category: string, subcategory: string?): UsedAs<{Color3: Color3, Transparency: number}>
-	local theme = unwrap(themeProvider.Theme)
+	local theme = unwrap(self.Theme)
 	local cachedResult = getFromCache(self, theme, token, category, subcategory, "Style")
 	if cachedResult then return cachedResult end
 	
@@ -178,32 +178,9 @@ function themeProvider.GetStyle(self: themeProvider, token: string, category: st
 	return computed
 end
 
-function themeProvider.GetFontData(self: themeProvider, name: string): UsedAs<{Font: Enum.Font, FontSize: number, LetterSpacing: number, LineHeight: number}>
-	local function evaluate(use: Use): {Font: Enum.Font, FontSize: number, LetterSpacing: number, LineHeight: number}
-		local typography = unwrap(self.Tokens, use).Typography
-		return typography[name]
-	end
-	
-	return self.Scope:Computed(function(use: Use, innerScope: Scope) 
-		return unwrap(evaluate(use))
-	end)
-end
-
-function themeProvider.GetTokenData(self: themeProvider, token: string, category: string, subcategory: string?): UsedAs<{[string]: any}>
-	local function evaluate(use: Use): Color3
-		local Token = unwrap(self.Tokens, use)[token]
-		local FoundData = if not subcategory then Token[category] else Token[category][subcategory]
-		return FoundData
-	end
-
-	return self.Scope:Computed(function(use: Use, innerScope: Scope) 
-		return unwrap(evaluate(use))
-	end)
-end
-
 return function(themeProviderProps: ThemeProviderProps?): (themeProvider, () -> ()?)
 	if themeProvider.Scope then return themeProvider end
-	local ThemeScope = Fusion:scoped()
+	local themeScope = Fusion:scoped()
 	local themeProviderProps = themeProviderProps or {}
 	
 	local props = withDefaults({
@@ -212,17 +189,17 @@ return function(themeProviderProps: ThemeProviderProps?): (themeProvider, () -> 
 		scale = themeProviderProps.scale,
 	}, defaultStyle)
 	
-	local tokens = ThemeScope:Computed(function(use: Use) 
+	local tokens = themeScope:Computed(function(use: Use) 
 		return getTokens(unwrap(props.theme, use), unwrap(props.device, use), unwrap(props.scale, use))
 	end)
 	
 	if not FoundationUseStyleSheetRegistry then
-		local tags, addTags = useTagsState(ThemeScope)
+		local tags, addTags = useTagsState(themeScope)
 		themeProvider.Tags = tags
 		themeProvider.AddTags = addTags
 		
 		local styleSheetInstances = StyleSheet {
-			scope = ThemeScope,
+			scope = themeScope,
 			theme = props.theme,
 			device = props.device,
 			scale = props.scale,
@@ -240,23 +217,23 @@ return function(themeProviderProps: ThemeProviderProps?): (themeProvider, () -> 
 	end
 	
 	if FoundationUseStyleSheetRegistry then
-		local registryStyleSheet, addStyleTags = useRegistryStyleSheet(ThemeScope, props.theme, props.device, props.scale)
+		local registryStyleSheet, addStyleTags = useRegistryStyleSheet(themeScope, props.theme, props.device, props.scale)
 		themeProvider.RegistryStyleSheet = registryStyleSheet
 		themeProvider.AddTags = addStyleTags
 		
-		local styleLinkNode = ThemeScope:New "StyleLink" {
+		local styleLinkNode = themeScope:New "StyleLink" {
 			StyleSheet = registryStyleSheet
 		}
 		
 		themeProvider.StyleLink = styleLinkNode
 	end
 	
-	themeProvider.Theme = ThemeScope:Value(props.theme)
-	themeProvider.Scope = ThemeScope
+	themeProvider.Theme = props.theme
+	themeProvider.Scope = themeScope
 	themeProvider.Tokens = tokens
 
 	return themeProvider, function()
-		Fusion.doCleanup(ThemeScope)
+		Fusion.doCleanup(themeScope)
 		table.clear(themeProvider.Cache)
 		
 		local RegistryStyleSheet = unwrap(themeProvider.RegistryStyleSheet)

@@ -17,7 +17,7 @@ local InputSize = require(Enums.InputSize)
 local composeStyleVariant = require(Utility.composeStyleVariant)
 local unwrap = require(Utility.unwrap)
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)()
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 type ColorStyleValue = Types.ColorStyleValue
 type StateLayer = Types.StateLayer
@@ -54,13 +54,14 @@ local function createButtonVariantStyles(
 	actionName: string | { string },
 	isInverse: boolean?
 ): { [ColorMode]: VariantProps }
+	local themeProvider = ThemeProvider()
 	local buttonStyle: ButtonStyle = {}
 	if type(actionName) == "table" then
-		buttonStyle.Foreground = unwrap(ThemeProvider:GetStyle(actionName[1], actionName[2]), use)
+		buttonStyle.Foreground = unwrap(themeProvider:GetStyle(actionName[1], actionName[2]), use)
 	else
-		buttonStyle.Background = unwrap(ThemeProvider:GetStyle(actionName, "Background"), use)
-		buttonStyle.Border = unwrap(ThemeProvider:GetStyle(actionName, "Border", use))
-		buttonStyle.Foreground = unwrap(ThemeProvider:GetStyle(actionName, "Foreground"), use)
+		buttonStyle.Background = unwrap(themeProvider:GetStyle(actionName, "Background"), use)
+		buttonStyle.Border = unwrap(themeProvider:GetStyle(actionName, "Border", use))
+		buttonStyle.Foreground = unwrap(themeProvider:GetStyle(actionName, "Foreground"), use)
 	end
 
 	local styles: { [ColorMode]: any } = {}
@@ -96,7 +97,6 @@ type SharedButtonVariantProps = {
 	},
 }
 
--- Returns all button variant types - indexed by variant then by ColorMode
 local function getButtonTypes(use: Use): { [ButtonVariant]: { [ColorMode]: VariantProps } }
 	return {
 		[ButtonVariant.Utility] = createButtonVariantStyles(use, "ActionUtility"),
@@ -115,13 +115,14 @@ local function getButtonTypes(use: Use): { [ButtonVariant]: { [ColorMode]: Varia
 end
 
 local function getSizes(use: Use): { [InputSize]: VariantProps }
-	local radiusSmall = unwrap(ThemeProvider:GetTokenData("Radius", "Small"))
-	local radiusMedium = unwrap(ThemeProvider:GetTokenData("Radius", "Medium"))
+	local themeProvider = ThemeProvider()
+	local radiusSmall = unwrap(themeProvider.Tokens).Radius.Small
+	local radiusMedium = unwrap(themeProvider.Tokens).Radius.Medium
 
-	local size600 = unwrap(ThemeProvider:GetTokenData("Size", "Size_600"))
-	local size800 = unwrap(ThemeProvider:GetTokenData("Size", "Size_800"))
-	local size1000 = unwrap(ThemeProvider:GetTokenData("Size", "Size_1000"))
-	local size1200 = unwrap(ThemeProvider:GetTokenData("Size", "Size_1200"))
+	local size600 = unwrap(themeProvider.Tokens).Size.Size_600
+	local size800 = unwrap(themeProvider.Tokens).Size.Size_800
+	local size1000 = unwrap(themeProvider.Tokens).Size.Size_1000
+	local size1200 = unwrap(themeProvider.Tokens).Size.Size_1200
 
 	return {
 		[InputSize.XSmall] = {

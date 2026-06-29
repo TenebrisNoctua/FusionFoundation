@@ -98,7 +98,7 @@ export type ImageRect = {
 export type ImageProps = {
 	slice: Slice?,
 	imageRect: ImageRect?,
-	imageStyle: ColorStyle?,
+	imageStyle: UsedAs<ColorStyle>?,
 
 	Image: UsedAs<string>?,
 	ResampleMode: UsedAs<Enum.ResamplerMode>?,

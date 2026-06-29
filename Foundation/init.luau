@@ -1,3 +1,6 @@
+-- Written by @TenebrisNoctua
+-- The entry point of the Fusion Foundation library.
+
 local strict = require(script.Utility.strict)
 
 local Tokens = require(script.Providers.ThemeProvider.Tokens)
