@@ -81,9 +81,7 @@ return {
 						SortOrder = Enum.SortOrder.LayoutOrder,
 						Padding = UDim.new(0, 16),
 					},
-					innerScope:New "StyleLink" {
-						StyleSheet = theme.RegistryStyleSheet
-					}
+					theme.StyleLink
 				}
 
 				local extendedColors = unwrap(theme.Tokens, use).Color.Extended

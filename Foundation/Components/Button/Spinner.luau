@@ -1,4 +1,4 @@
-local Foundation = script:FindFirstAncestor("Foundation")
+local Foundation = script.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
@@ -6,11 +6,13 @@ local Fusion = PackageManager.getPackage("Fusion")
 local Image = require(Foundation.Components.Image)
 local View = require(Foundation.Components.View)
 
-local isPluginSecurity = require(Foundation.Utility.isPluginSecurity)
-local useRotation = require(Foundation.Utility.useRotation)
-local withDefaults = require(Foundation.Utility.withDefaults)
-local unwrap = require(Foundation.Utility.unwrap)
-local Types = require(Foundation.Utility.Types.Types)
+local Utility = Foundation.Utility
+
+local isPluginSecurity = require(Utility.isPluginSecurity)
+local useRotation = require(Utility.useRotation)
+local withDefaults = require(Utility.withDefaults)
+local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types.Types)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
@@ -37,7 +39,7 @@ local defaultProps = {
 	style = {},
 }
 
--- Right, Top, Left, Bottom Static Bezier Points
+-- Right, Top, Left, Bottom
 local SPINNER_CONTROL_POINTS = {
 	Path2DControlPoint.new(UDim2.fromScale(1, 0.5), UDim2.fromScale(0, 0.25), UDim2.fromScale(0, -0.25)),
 	Path2DControlPoint.new(UDim2.fromScale(0.5, 0), UDim2.fromScale(0.25, 0), UDim2.fromScale(-0.25, 0)),
@@ -54,7 +56,6 @@ local function IconSpinner(props: InternalSpinnerProps)
 		Image = "icons/status/loading_large",
 		Rotation = rotation,
 		tag = "position-center-center anchor-center-center size-full-full",
-		testId = props.testId,
 		imageStyle = props.style,
 		children = {
 			scope:New "UIScale" {
@@ -139,15 +140,13 @@ local function Spinner(spinnerProps: SpinnerProps)
 					scope = scope,
 					scale = scaleTween,
 					style = mixedStyle,
-					Thickness = calculatedThickness,
-					testId = props.testId,
+					Thickness = calculatedThickness
 				}
 				else IconSpinner {
 					scope = scope,
 					scale = scaleTween,
 					style = mixedStyle,
-					Thickness = calculatedThickness,
-					testId = props.testId,
+					Thickness = calculatedThickness
 				}
 		}
 	}

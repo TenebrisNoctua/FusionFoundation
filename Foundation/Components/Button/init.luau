@@ -56,7 +56,7 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"inputDelay",
 	"textSizeOffset",
 	"isIconSize",
-	"colorMode",
+	"colorMode"
 }
 
 local defaultProps = {
@@ -105,6 +105,8 @@ export type ButtonProps = {
 	-- The delay in seconds before the button is enabled.
 	-- This will only visually show on buttons whose variants use a filled background.
 	inputDelay: UsedAs<number>?,
+	
+	-- These properties are converted from contexts.
 	textSizeOffset: UsedAs<number>?,
 	isIconSize: UsedAs<boolean>?,
 	colorMode: UsedAs<ColorMode>?,

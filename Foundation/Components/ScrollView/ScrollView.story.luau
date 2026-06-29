@@ -168,9 +168,7 @@ return {
 					selectable = selectable
 				},
 				
-				scope:New "StyleLink" {
-					StyleSheet = theme.RegistryStyleSheet
-				}
+				theme.StyleLink
 			}
 		}
 	end,

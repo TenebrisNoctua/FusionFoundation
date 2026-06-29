@@ -65,9 +65,7 @@ return {
 					isRequired = isRequired,
 					RichText = RichText
 				},
-				scope:New "StyleLink" {
-					StyleSheet = theme.RegistryStyleSheet
-				}
+				theme.StyleLink
 			}
 		}
 	end,

@@ -112,9 +112,7 @@ return {
 
 		local sections = getImagesBySection()
 		local storyViews = {
-			scope:New "StyleLink" {
-				StyleSheet = theme.RegistryStyleSheet
-			}
+			theme.StyleLink
 		}
 
 		for sectionName, imageList in sections do

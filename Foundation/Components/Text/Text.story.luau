@@ -93,9 +93,7 @@ return {
 					layoutOrder = 2
 				},
 				
-				scope:New "StyleLink" {
-					StyleSheet = theme.RegistryStyleSheet
-				}
+				theme.StyleLink
 			}
 		}
 	end,

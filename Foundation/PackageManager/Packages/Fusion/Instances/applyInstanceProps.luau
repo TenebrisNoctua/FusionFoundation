@@ -36,12 +36,15 @@ local function setProperty_unsafe(
 	property: string,
 	value: unknown
 )
+	(instance :: any)[property] = value
+	--[[ DEBUG:
 	local s, e = pcall(function(...) 
 		(instance :: any)[property] = value
 	end)
 	if not s or e or value == nil then
 		--warn(instance, property, value)
 	end
+	]]
 end
 
 local function testPropertyAssignable(
@@ -60,7 +63,6 @@ local function setProperty(
 	
 	if not success then
 		if not pcall(testPropertyAssignable, instance, property) then
-			warn(debug.traceback())
 			External.logErrorNonFatal("cannotAssignProperty", nil, instance.ClassName, property)
 		else
 			-- property is assignable, but this specific assignment failed
