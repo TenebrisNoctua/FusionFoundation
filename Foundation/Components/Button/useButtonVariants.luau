@@ -131,7 +131,7 @@ local function variantsMap(use: Use)
 	return { common = common, sizes = sizes, types = sharedVariants.types }
 end
 
-local function useButtonVariants(scope: Scope, size: InputSize, variant: ButtonVariant, colorMode: ColorMode?): UsedAs<ButtonVariantProps>
+local function useButtonVariants(scope: Scope, size: InputSize, variant: ButtonVariant, colorMode: UsedAs<ColorMode>?): UsedAs<ButtonVariantProps>
 	return scope:Computed(function(use: Use)
 		local variants = useVariants(use, "Button", variantsMap)
 		return composeStyleVariant(
