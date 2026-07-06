@@ -5,12 +5,14 @@ local StyleRule = require(StyleSheetRoot.StyleRule)
 local RuleTypes = require(StyleSheetRoot.Rules.Types)
 
 local Utility = Foundation.Utility
+local Enums = Foundation.Enums
+
 local unwrap = require(Utility.unwrap)
 local scaleValue = require(Utility.scaleValue)
-local Types = require(Utility.Types.Types)
+local Types = require(Utility.Types)
 
-local Device = require(Foundation.Enums.Device)
-local Theme = require(Foundation.Enums.Theme)
+local Device = require(Enums.Device)
+local Theme = require(Enums.Theme)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope

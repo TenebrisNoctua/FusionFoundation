@@ -5,7 +5,8 @@ local Fusion = PackageManager.getPackage("Fusion")
 
 local Enums = Foundation.Enums
 local Utility = Foundation.Utility
-local TypesSource = Utility.Types
+
+local getSharedVariants = require(script.Parent.getSharedVariants)
 
 local InputSize = require(Enums.InputSize)
 local ButtonVariant = require(Enums.ButtonVariant)
@@ -14,11 +15,9 @@ local ColorMode = require(Enums.ColorMode)
 local composeStyleVariant = require(Utility.composeStyleVariant)
 local useVariants = require(Utility.useVariants)
 local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-local getSharedVariants = require(script.Parent.getSharedVariants)
-
-local Types = require(TypesSource.Types)
 
 type Scope = Types.Scope
 type UsedAs<T> = Types.UsedAs<T>

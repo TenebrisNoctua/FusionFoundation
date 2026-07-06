@@ -1,9 +1,12 @@
 local Foundation = script.Parent
+local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
-local Types = require(Foundation.Utility.Types.Types)
-local ColorMode = require(Foundation.Enums.ColorMode)
-local StateLayerMode = require(Foundation.Enums.StateLayerMode)
-local InputPlacement = require(Foundation.Enums.InputPlacement)
+local Types = require(Utility.Types)
+
+local ColorMode = require(Enums.ColorMode)
+local StateLayerMode = require(Enums.StateLayerMode)
+local InputPlacement = require(Enums.InputPlacement)
 
 type ColorMode = ColorMode.ColorMode
 type StateLayerMode = StateLayerMode.StateLayerMode

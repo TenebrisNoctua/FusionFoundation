@@ -4,7 +4,8 @@ local Foundation = script.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Dash = PackageManager.getPackage("Dash")
-local Types = require(Foundation.Utility.Types.Types)
+
+local Types = require(Foundation.Utility.Types)
 
 export type VariantProps = { [string]: { [string]: any } }
 

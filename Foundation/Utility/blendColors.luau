@@ -1,6 +1,6 @@
 local Foundation = script.Parent.Parent
+local Types = require(Foundation.Utility.Types)
 
-local Types = require(Foundation.Utility.Types.Types)
 type ColorStyleValue = Types.ColorStyleValue
 
 --[[

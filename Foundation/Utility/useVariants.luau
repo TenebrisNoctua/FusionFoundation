@@ -1,11 +1,12 @@
 local Foundation = script.Parent.Parent
-local Utility = Foundation.Utility
-
 local PackageManager = require(Foundation.PackageManager)
+
 local Fusion = PackageManager.getPackage("Fusion")
 
+local Utility = Foundation.Utility
+
 local unwrap = require(Utility.unwrap)
-local Types = require(Utility.Types.Types)
+local Types = require(Utility.Types)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 

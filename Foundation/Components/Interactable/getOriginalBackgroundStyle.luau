@@ -4,7 +4,7 @@ local PackageManager = require(Foundation.PackageManager)
 local Fusion = PackageManager.getPackage("Fusion")
 
 local Utility = Foundation.Utility
-local Types = require(Utility.Types.Types)
+local Types = require(Utility.Types)
 local unwrap = require(Utility.unwrap)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)

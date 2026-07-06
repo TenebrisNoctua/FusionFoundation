@@ -1,25 +1,23 @@
 local Foundation = script:FindFirstAncestor("Foundation")
 local PackageManager = require(Foundation.PackageManager)
 
-local Fusion = PackageManager.getPackage("Fusion")
 local BuilderIcons = PackageManager.getPackage("BuilderIcons")
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
-local TypesSource = Utility.Types
+
+local useButtonVariants = require(script.Parent.useButtonVariants)
 
 local Image = require(Foundation.Components.Image)
 local Text = require(Foundation.Components.Text)
 
 local getIconScale = require(Utility.getIconScale)
 local iconMigrationUtils = require(Utility.iconMigrationUtils)
-local useButtonVariants = require(script.Parent.useButtonVariants)
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types)
 
 local InputSize = require(Enums.InputSize)
 local ButtonVariant = require(Enums.ButtonVariant)
-local Types = require(TypesSource.Types)
 
 local migrationLookup = BuilderIcons.Migration["uiblox"]
 local isMigrated = iconMigrationUtils.isMigrated
@@ -45,7 +43,6 @@ export type ButtonIconProps = {
 
 return function(props: ButtonIconProps)
 	local scope = props.scope
-	local Theme = ThemeProvider()
 
 	local currentIcon = unwrap(props.icon)
 	if not currentIcon or currentIcon == "" then

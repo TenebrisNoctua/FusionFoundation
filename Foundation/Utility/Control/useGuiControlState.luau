@@ -6,16 +6,17 @@ local Fusion = PackageManager.getPackage("Fusion")
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
+local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types)
+
 local ControlState = require(Enums.ControlState)
 local ControlStateEvent = require(Enums.ControlStateEvent)
-local Types = require(Utility.Types.Types)
-local unwrap = require(Utility.unwrap)
 
 local guiStateMapper: { [Enum.GuiState]: ControlState } = {
 	[Enum.GuiState.Idle] = ControlState.Default,
 	[Enum.GuiState.Hover] = ControlState.Hover,
 	[Enum.GuiState.Press] = ControlState.Pressed,
-	[Enum.GuiState.NonInteractable] = ControlState.Disabled,
+	[Enum.GuiState.NonInteractable] = ControlState.Disabled
 }
 
 local OnEvent = Fusion.OnEvent

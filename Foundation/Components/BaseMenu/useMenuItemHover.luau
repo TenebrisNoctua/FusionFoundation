@@ -4,11 +4,9 @@ local PackageManager = require(Foundation.PackageManager)
 local Fusion = PackageManager.getPackage("Fusion")
 
 local Utility = Foundation.Utility
-local TypesSource = Utility.Types
 
 local unwrap = require(Utility.unwrap)
-
-local Types = require(TypesSource.Types)
+local Types = require(Utility.Types)
 
 type Scope = Types.Scope
 type UsedAs<T> = Types.UsedAs<T>

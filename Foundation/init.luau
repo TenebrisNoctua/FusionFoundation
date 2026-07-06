@@ -4,7 +4,7 @@
 local strict = require(script.Utility.strict)
 
 local Tokens = require(script.Providers.ThemeProvider.Tokens)
-local Types = require(script.Utility.Types.Types)
+local Types = require(script.Utility.Types)
 
 local FoundationUseStyleSheetRegistry = true
 

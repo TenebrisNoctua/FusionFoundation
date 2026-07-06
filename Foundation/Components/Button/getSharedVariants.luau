@@ -1,23 +1,20 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
-local Fusion = PackageManager.getPackage("Fusion")
-
-local Constants = require(Foundation.Constants)
-local Types = require(Utility.Types.Types)
+local composeStyleVariant = require(Utility.composeStyleVariant)
+local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types)
 
 local ButtonVariant = require(Enums.ButtonVariant)
 local ColorMode = require(Enums.ColorMode)
 local StateLayerMode = require(Enums.StateLayerMode)
 local InputSize = require(Enums.InputSize)
 
-local composeStyleVariant = require(Utility.composeStyleVariant)
-local unwrap = require(Utility.unwrap)
-
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+
+local Constants = require(Foundation.Constants)
 
 type ColorStyleValue = Types.ColorStyleValue
 type StateLayer = Types.StateLayer

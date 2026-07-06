@@ -12,7 +12,7 @@ local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
 local unwrap = require(Utility.unwrap)
-local Types = require(Utility.Types.Types)
+local Types = require(Utility.Types)
 
 local InputSize = require(Enums.InputSize)
 

@@ -1,11 +1,12 @@
 local Foundation = script.Parent.Parent
-local Utility = Foundation.Utility
-
 local PackageManager = require(Foundation.PackageManager)
-local Types = require(Utility.Types.Types)
-local unwrap = require(Utility.unwrap)
 
 local Fusion = PackageManager.getPackage("Fusion")
+
+local Utility = Foundation.Utility
+
+local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope

@@ -1,16 +1,20 @@
 local Foundation = script.Parent
 local PackageManager = require(Foundation.PackageManager)
+
 local Fusion = PackageManager.getPackage("Fusion")
+
+local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
 local RuleTypes = require(script.Rules.Types)
 local createStyleSheetRules = require(script.createStyleSheetRules)
 
-local useGeneratedRules = require(Foundation.Utility.useGeneratedRules)
-local unwrap = require(Foundation.Utility.unwrap)
-local Types = require(Foundation.Utility.Types.Types)
+local useGeneratedRules = require(Utility.useGeneratedRules)
+local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types)
 
-local Device = require(Foundation.Enums.Device)
-local Theme = require(Foundation.Enums.Theme)
+local Device = require(Enums.Device)
+local Theme = require(Enums.Theme)
 
 local Children = Fusion.Children
 

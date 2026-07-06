@@ -2,7 +2,8 @@ local Foundation = script.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
-local Types = require(Foundation.Utility.Types.Types)
+
+local Types = require(Foundation.Utility.Types)
 
 type UsedAs<T> = Types.UsedAs<T>
 type AspectRatio = Types.AspectRatio

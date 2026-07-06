@@ -12,7 +12,7 @@ local isPluginSecurity = require(Utility.isPluginSecurity)
 local useRotation = require(Utility.useRotation)
 local withDefaults = require(Utility.withDefaults)
 local unwrap = require(Utility.unwrap)
-local Types = require(Utility.Types.Types)
+local Types = require(Utility.Types)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
@@ -22,15 +22,13 @@ type InternalSpinnerProps = {
 	scope: Scope,
 	style: UsedAs<{ Color3: Color3, Transparency: number }>,
 	scale: UsedAs<number>,
-	Thickness: number,
-	testId: string?,
+	Thickness: number
 }
 
 type SpinnerProps = {
 	scope: Scope,
 	style: UsedAs<any>?,
-	Size: UsedAs<UDim2>,
-	testId: string?,
+	Size: UsedAs<UDim2>
 }
 
 local FoundationUsePath2DSpinner = false

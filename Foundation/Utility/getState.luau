@@ -1,8 +1,6 @@
 -- Allows you to create a state out of a certain given object, with the ability to force the output to be of a certain kind.
 
-local TypesSource = script.Parent.Types
-
-local Types = require(TypesSource.Types)
+local Types = require(script.Parent.Types)
 local unwrap = require(script.Parent.unwrap)
 
 type StateOrAny = Types.State<any> | any

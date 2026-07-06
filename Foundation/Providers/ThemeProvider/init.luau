@@ -1,8 +1,6 @@
 -- Written by @TenebrisNoctua
 -- Handles the theme that will be applied to the components.
 
-local Studio = settings().Studio
-
 local Foundation = script.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 local StyleSheet = require(Foundation.StyleSheet)
@@ -10,15 +8,17 @@ local StyleSheet = require(Foundation.StyleSheet)
 local Fusion = PackageManager.getPackage("Fusion")
 
 local Utility = Foundation.Utility
-local unwrap = require(Utility.unwrap)
-local withDefaults = require(Foundation.Utility.withDefaults)
-local Types = require(Utility.Types.Types)
+local Enums = Foundation.Enums
 
 local Tokens = require(script.Tokens)
 local useTagsState = require(script.useTagsState)
 
-local Theme = require(Foundation.Enums.Theme)
-local Device = require(Foundation.Enums.Device)
+local unwrap = require(Utility.unwrap)
+local withDefaults = require(Utility.withDefaults)
+local Types = require(Utility.Types)
+
+local Theme = require(Enums.Theme)
+local Device = require(Enums.Device)
 
 local getTokens = Tokens.getTokens
 

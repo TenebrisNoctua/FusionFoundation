@@ -5,7 +5,6 @@ local Fusion = PackageManager.getPackage("Fusion")
 
 local Enums = Foundation.Enums
 local Utility = Foundation.Utility
-local TypesSource = Utility.Types
 
 local InputSize = require(Enums.InputSize)
 local IconSize = require(Enums.IconSize)
@@ -13,10 +12,9 @@ local IconSize = require(Enums.IconSize)
 local composeStyleVariant = require(Utility.composeStyleVariant)
 local useVariants = require(Utility.useVariants)
 local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
-local Types = require(TypesSource.Types)
 
 type Scope = Types.Scope
 type UsedAs<T> = Types.UsedAs<T>

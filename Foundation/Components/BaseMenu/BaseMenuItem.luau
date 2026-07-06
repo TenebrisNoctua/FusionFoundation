@@ -2,12 +2,13 @@ local Foundation = script.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
-local Dash = PackageManager.getPackage("Dash")
 local BuilderIcons = PackageManager.getPackage("BuilderIcons")
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
-local TypesSource = Utility.Types
+
+local useBaseMenuItemVariants = require(script.Parent.useBaseMenuItemVariants)
+local useMenuItemHover = require(script.Parent.useMenuItemHover)
 
 local Icon = require(Foundation.Components.Icon)
 local Image = require(Foundation.Components.Image)
@@ -15,14 +16,12 @@ local Popover = require(Foundation.Components.Popover)
 local Text = require(Foundation.Components.Text)
 local View = require(Foundation.Components.View)
 
-local useBaseMenuItemVariants = require(script.Parent.useBaseMenuItemVariants)
-local useMenuItemHover = require(script.Parent.useMenuItemHover)
-
 local iconMigrationUtils = require(Utility.iconMigrationUtils)
 local withCommonProps = require(Utility.withCommonProps)
 local withDefaults = require(Utility.withDefaults)
 local unwrap = require(Utility.unwrap)
 local stripProps = require(Utility.stripProps)
+local Types = require(Utility.Types)
 
 local InputSize = require(Enums.InputSize)
 local PopoverAlign = require(Enums.PopoverAlign)
@@ -32,7 +31,8 @@ local Radius = require(Enums.Radius)
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 local Constants = require(Foundation.Constants)
-local Types = require(TypesSource.Types)
+
+--// Component Related Variables
 
 local Children = Fusion.Children
 local isBuilderIconOrMigrated = iconMigrationUtils.isBuilderOrMigratedIcon
@@ -50,7 +50,6 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"text",
 	"onActivated",
 	"size",
-	"children",
 	"hasLeading",
 	"depth",
 	"hoverOpenPath",
@@ -86,6 +85,8 @@ end
 
 local InputSinkAll = getInputSinkAll()
 
+--// Type Definitions
+
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
 type Use = Types.Use
@@ -120,15 +121,17 @@ export type BaseMenuItemProps = {
 	children: { Child }?,
 } & BaseMenuContextProps & Types.SelectionProps & Types.CommonProps
 
+--// Component Implementation
+
 return function(menuItemProps: BaseMenuItemProps)
-	local Scope = menuItemProps.scope
+	local scope = menuItemProps.scope
 	local Theme = ThemeProvider()
-	assert(Scope, "A scope has not been provided for the BaseMenuItem component.")
+	assert(scope, "A scope has not been provided for the BaseMenuItem component.")
 
 	local props = withDefaults(menuItemProps, defaultProps)
-	local itemRef = Scope:Value(nil)
+	local itemRef = scope:Value(nil :: GuiObject?)
 
-	local submenuHasLeading = Scope:Value(false)
+	local submenuHasLeading = scope:Value(false)
 	local function setSubmenuHasLeading()
 		submenuHasLeading:set(true)
 	end
@@ -137,7 +140,7 @@ return function(menuItemProps: BaseMenuItemProps)
 		props.setHasLeading()
 	end
 
-	return Scope:Computed(function(use: Use, innerScope: Scope)
+	return scope:Computed(function(use: Use, innerScope: Scope)
 		local tokens = unwrap(Theme.Tokens, use)
 		local currentId = unwrap(props.id, use)
 		local currentSize = unwrap(props.size, use)
@@ -211,8 +214,10 @@ return function(menuItemProps: BaseMenuItemProps)
 			if currentIcon and isBuilderIconOrMigrated(currentIcon) then
 				viewChildren.IconWrapper = View {
 					scope = innerScope,
-					LayoutOrder = 1,
-					tag = `align-x-center align-y-center {currentVariantProps.icon.tag}`,
+					props = {
+						LayoutOrder = 1,
+						tag = `align-x-center align-y-center {currentVariantProps.icon.tag}`,
+					},
 					children = {
 						Icon = Icon {
 							scope = innerScope,
@@ -225,8 +230,8 @@ return function(menuItemProps: BaseMenuItemProps)
 			else
 				viewChildren.Image = Image {
 					scope = innerScope,
-					LayoutOrder = 1,
 					Image = currentIcon,
+					LayoutOrder = 1,
 					tag = currentVariantProps.icon.tag,
 				}
 			end
@@ -234,44 +239,48 @@ return function(menuItemProps: BaseMenuItemProps)
 
 		viewChildren.Text = Text {
 			scope = innerScope,
-			LayoutOrder = 2,
 			Text = currentText,
+			LayoutOrder = 2,
 			tag = currentVariantProps.text.tag,
 		}
 
 		if isSubmenu then
 			viewChildren.Chevron = Icon {
 				scope = innerScope,
-				LayoutOrder = 3,
 				name = BuilderIcons.Icon.ChevronSmallRight,
+				LayoutOrder = 3,
 				style = currentVariantProps.check.style,
-				size = currentVariantProps.chevron.size,
-				testId = `{props.testId}--chevron`,
+				size = currentVariantProps.chevron.size
 			}
 		elseif isChecked then
 			viewChildren.Check = Icon {
 				scope = innerScope,
-				LayoutOrder = 3,
 				name = BuilderIcons.Icon.Check,
+				LayoutOrder = 3,
 				style = currentVariantProps.check.style,
-				size = currentVariantProps.check.size,
-				testId = `{props.testId}--checkmark`,
+				size = currentVariantProps.check.size
 			}
 		end
 
 		local itemElementProps = withCommonProps(props, {
-			scope = innerScope,
 			GroupTransparency = if isDisabled then Constants.DISABLED_TRANSPARENCY else nil,
 			isDisabled = isDisabled,
 			onActivated = onActivated,
 			selection = { Selectable = not isDisabled },
 			cursor = cursor,
 			tag = currentVariantProps.container.tag,
-			ref = itemRef,
-			children = viewChildren,
 		})
 
-		local itemElement = View(itemElementProps)
+		local itemElement = View {
+			scope = innerScope,
+			props = itemElementProps,
+			children = viewChildren,
+		}
+
+		-- Defers capturing of the constructed instance explicitly
+		task.defer(function()
+			itemRef:set(itemElement)
+		end)
 
 		if not isSubmenu then
 			return innerScope:Hydrate(itemElement)(stripProps(props, COMPONENT_ONLY_PROPERTIES))
@@ -304,11 +313,10 @@ return function(menuItemProps: BaseMenuItemProps)
 			Submenu = Popover.Root {
 				scope = innerScope,
 				isOpen = isOpen,
-				testId = `{props.testId}--submenu`,
 				children = {
 					Anchor = Popover.Anchor {
 						scope = innerScope,
-						anchorRef = itemRef,
+						anchorInstance = itemRef,
 					},
 					Content = Popover.Content {
 						scope = innerScope,
@@ -327,8 +335,10 @@ return function(menuItemProps: BaseMenuItemProps)
 						children = {
 							MenuContainer = View {
 								scope = innerScope,
-								tag = "col auto-xy stroke-standard stroke-default radius-medium",
-								InputSink = InputSinkAll,
+								props = {
+									tag = "col auto-xy stroke-standard stroke-default radius-medium",
+									InputSink = InputSinkAll,
+								},
 								children = wrappedChildren
 							}
 						}

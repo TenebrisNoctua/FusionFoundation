@@ -5,21 +5,20 @@ local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
-local TypesSource = Utility.Types
 
 local ScrollingFrame = require(script.ScrollingFrame)
 local View = require(script.Parent.View)
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
-
 local withDefaults = require(Utility.withDefaults)
 local useDefaultTags = require(Utility.useDefaultTags)
 local unwrap = require(Utility.unwrap)
-local Types = require(TypesSource.Types)
+local Types = require(Utility.Types)
 
 local Visibility = require(Foundation.Enums.Visibility)
 local ControlState = require(Foundation.Enums.ControlState)
+
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
 
 local Children = Fusion.Children
 local OnChange = Fusion.OnChange

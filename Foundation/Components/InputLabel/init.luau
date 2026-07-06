@@ -5,18 +5,21 @@ local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
 
+local Utility = Foundation.Utility
+local Enums = Foundation.Enums
+
 local Text = require(Foundation.Components.Text)
-local Translator = require(Foundation.Utility.Localization.Translator)
 
-local withCommonProps = require(Foundation.Utility.withCommonProps)
-local withDefaults = require(Foundation.Utility.withDefaults)
-local unwrap = require(Foundation.Utility.unwrap)
-local stripProps = require(Foundation.Utility.stripProps)
-local Types = require(Foundation.Utility.Types.Types)
+local withCommonProps = require(Utility.withCommonProps)
+local withDefaults = require(Utility.withDefaults)
+local unwrap = require(Utility.unwrap)
+local stripProps = require(Utility.stripProps)
+local Types = require(Utility.Types)
+local Translator = require(Utility.Localization.Translator)
 
-local StateLayerAffordance = require(Foundation.Enums.StateLayerAffordance)
-local ControlState = require(Foundation.Enums.ControlState)
-local InputLabelSize = require(Foundation.Enums.InputLabelSize)
+local StateLayerAffordance = require(Enums.StateLayerAffordance)
+local ControlState = require(Enums.ControlState)
+local InputLabelSize = require(Enums.InputLabelSize)
 
 local COMPONENT_ONLY_PROPERTIES = {
 	"stateLayer",

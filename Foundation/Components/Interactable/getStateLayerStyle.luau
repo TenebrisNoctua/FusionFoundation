@@ -5,13 +5,13 @@ local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
 local unwrap = require(Utility.unwrap)
-local Types = require(Utility.Types.Types)
-
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local Types = require(Utility.Types)
 
 local ColorMode = require(Foundation.Enums.ColorMode)
 local StateLayerMode = require(Foundation.Enums.StateLayerMode)
 local ControlState = require(Foundation.Enums.ControlState)
+
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 type StateLayer = Types.StateLayer
 type ColorMode = ColorMode.ColorMode

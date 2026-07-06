@@ -5,25 +5,23 @@ local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
-local TypesSource = Utility.Types
+
+local getOriginalBackgroundStyle = require(script.getOriginalBackgroundStyle)
+local getStateLayerStyle = require(script.getStateLayerStyle)
 
 local useGuiControlState = require(Utility.Control.useGuiControlState)
 local withDefaults = require(Utility.withDefaults)
 local blendColors = require(Utility.blendColors)
 local stripProps = require(Utility.stripProps)
 local unwrap = require(Utility.unwrap)
-local Types = require(TypesSource.Types)
-
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
-local getOriginalBackgroundStyle = require(script.getOriginalBackgroundStyle)
-local getStateLayerStyle = require(script.getStateLayerStyle)
+local Types = require(Utility.Types)
 
 local StateLayerAffordance = require(Foundation.Enums.StateLayerAffordance)
 local StateLayerMode = require(Foundation.Enums.StateLayerMode)
 local ControlState = require(Foundation.Enums.ControlState)
 
---selene: allow(roblox_internal_custom_color)
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+
 local DEFAULT_GRAY = Color3.fromRGB(163, 162, 165)
 
 local COMPONENT_ONLY_PROPERTIES = {

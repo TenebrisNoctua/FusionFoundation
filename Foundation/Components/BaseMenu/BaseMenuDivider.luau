@@ -5,7 +5,6 @@ local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
-local TypesSource = Utility.Types
 
 local View = require(Foundation.Components.View)
 
@@ -13,10 +12,9 @@ local withCommonProps = require(Utility.withCommonProps)
 local withDefaults = require(Utility.withDefaults)
 local unwrap = require(Utility.unwrap)
 local stripProps = require(Utility.stripProps)
+local Types = require(Utility.Types)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
-local Types = require(TypesSource.Types)
 
 local Children = Fusion.Children
 
@@ -52,7 +50,6 @@ return function(dividerProps: BaseMenuDividerProps)
 			LayoutOrder = currentLayoutOrder,
 			Size = UDim2.new(1, 0, 0, tokens.Stroke.Standard),
 			tag = "row flex-x-fill",
-			testId = "--foundation-menu-divider-item",
 			children = {
 				Line = View {
 					scope = innerScope,

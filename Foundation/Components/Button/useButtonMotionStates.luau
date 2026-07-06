@@ -4,7 +4,7 @@ local PackageManager = require(Foundation.PackageManager)
 local Fusion = PackageManager.getPackage("Fusion")
 
 local unwrap = require(Foundation.Utility.unwrap)
-local Types = require(Foundation.Utility.Types.Types)
+local Types = require(Foundation.Utility.Types)
 
 type Scope = Types.Scope
 type Use = Types.Use

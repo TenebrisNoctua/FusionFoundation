@@ -5,11 +5,8 @@ local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
-local TypesSource = Utility.Types
 
 local Interactable = require(Foundation.Components.Interactable)
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
 
 local stripProps = require(Utility.stripProps)
 local unwrap = require(Utility.unwrap)
@@ -17,9 +14,12 @@ local withDefaults = require(Utility.withDefaults)
 local withGuiObjectProps = require(Utility.withGuiObjectProps)
 local useDefaultTags = require(Utility.useDefaultTags)
 local GuiObjectChildren = require(Utility.GuiObjectChildren)
-local Types = require(TypesSource.Types)
+local Types = require(Utility.Types)
 
 local ControlState = require(Foundation.Enums.ControlState)
+
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
 
 local COMPONENT_ONLY_PROPERTIES = {
 	"GroupTransparency",
@@ -28,7 +28,6 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"onSecondaryActivated",
 	"onStateChanged",
 	"selection",
-	"testId",
 	"stateLayer",
 	"cursor",
 	"cornerRadius",

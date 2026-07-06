@@ -3,8 +3,8 @@
 	(Storybook story and web documentation browser)
 ]]
 
-local Foundation = script.Parent.Parent.Parent
-local Types = require(Foundation.Utility.Types.Types)
+local Foundation = script.Parent.Parent.Parent.Parent
+local Types = require(Foundation.Utility.Types)
 
 type ColorStyle = Types.ColorStyle
 

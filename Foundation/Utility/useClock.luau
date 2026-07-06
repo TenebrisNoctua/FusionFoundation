@@ -5,10 +5,12 @@ local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
 
-local TypesSource = Foundation.Utility.Types
-local Types = require(TypesSource.Types)
+local Types = require(Foundation.Utility.Types)
 
-return function(scope: Types.Scope): Types.Value<number>
+type UsedAs<T> = Types.UsedAs<T>
+type Scope = Types.Scope
+
+return function(scope: Scope): UsedAs<number>
 	local clockValue = scope:Value(0)
 
 	local thread = task.spawn(function()

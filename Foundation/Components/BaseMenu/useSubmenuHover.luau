@@ -16,9 +16,10 @@ local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-local Types = require(Foundation.Utility.Types.Types)
+local Types = require(Foundation.Utility.Types)
 local unwrap = require(Foundation.Utility.unwrap)
+
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope

@@ -2,7 +2,7 @@ local Foundation = script.Parent.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local FoundationImages = PackageManager.getPackage("FoundationImages")
-local Types = require(Foundation.Utility.Types.Types)
+local Types = require(Foundation.Utility.Types)
 
 type Slice = Types.Slice
 

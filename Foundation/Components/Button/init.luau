@@ -6,7 +6,6 @@ local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
-local TypesSource = Utility.Types
 
 local Spinner = require(script.Spinner)
 local ButtonIcon = require(script.ButtonIcon)
@@ -21,6 +20,7 @@ local withCommonProps = require(Utility.withCommonProps)
 local withDefaults = require(Utility.withDefaults)
 local unwrap = require(Utility.unwrap)
 local stripProps = require(Utility.stripProps)
+local Types = require(Utility.Types)
 
 local InputSize = require(Enums.InputSize)
 local ButtonVariant = require(Enums.ButtonVariant)
@@ -31,7 +31,6 @@ local ColorMode = require(Enums.ColorMode)
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 local Constants = require(Foundation.Constants)
-local Types = require(TypesSource.Types)
 
 local Children = Fusion.Children
 

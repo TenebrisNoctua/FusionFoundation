@@ -1,5 +1,6 @@
 local Foundation = script.Parent.Parent.Parent
-local Types = require(Foundation.Utility.Types.Types)
+
+local Types = require(Foundation.Utility.Types)
 local InputSize = require(Foundation.Enums.InputSize)
 
 type UsedAs<T> = Types.UsedAs<T>

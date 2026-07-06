@@ -3,7 +3,7 @@ local Utility = Foundation.Utility
 
 local getFormattedTags = require(Utility.getFormattedTags)
 local unwrap = require(Utility.unwrap)
-local Types = require(Utility.Types.Types)
+local Types = require(Utility.Types)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope

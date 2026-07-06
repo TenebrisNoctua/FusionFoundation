@@ -2,12 +2,14 @@ local Foundation = script.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
-local Tag = Fusion.Tag
 
 local Utility = Foundation.Utility
+
 local withCommonProps = require(Utility.withCommonProps)
 local unwrap = require(Utility.unwrap)
-local Types = require(Utility.Types.Types)
+local Types = require(Utility.Types)
+
+local Tag = Fusion.Tag
 
 type Value<T> = Types.Value<T>
 type CanBeValue<T> = (Value<T> | T)

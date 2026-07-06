@@ -2,7 +2,7 @@
 
 local Foundation = script.Parent.Parent
 
-local Types = require(Foundation.Utility.Types.Types)
+local Types = require(Foundation.Utility.Types)
 local unwrap = require(Foundation.Utility.unwrap)
 local stripProps = require(Foundation.Utility.stripProps)
 

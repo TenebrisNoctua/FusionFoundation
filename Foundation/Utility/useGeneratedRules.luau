@@ -1,11 +1,14 @@
 local Foundation = script.Parent.Parent
 
-local Device = require(Foundation.Enums.Device)
-local Theme = require(Foundation.Enums.Theme)
+local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
-local getGeneratedRules = require(Foundation.Utility.getGeneratedRules)
-local unwrap = require(Foundation.Utility.unwrap)
-local Types = require(Foundation.Utility.Types.Types)
+local getGeneratedRules = require(Utility.getGeneratedRules)
+local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types)
+
+local Device = require(Enums.Device)
+local Theme = require(Enums.Theme)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope

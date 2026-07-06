@@ -5,15 +5,17 @@
 
 --// Require the types
 
-local Foundation = script.Parent.Parent.Parent
+local Foundation = script.Parent.Parent
 local Enums = Foundation.Enums
 
-local FusionTypes = require(script.Parent.Fusion)
-local StateLayerAffordance = require(Foundation.Enums.StateLayerAffordance)
-local StateLayerMode = require(Foundation.Enums.StateLayerMode)
-local CursorType = require(Foundation.Enums.CursorType)
-local ControlState = require(Foundation.Enums.ControlState)
-local ButtonVariant = require(Foundation.Enums.ButtonVariant)
+local FusionTypes = require(script.Fusion)
+local SignalTypes = require(script.Signal)
+
+local StateLayerAffordance = require(Enums.StateLayerAffordance)
+local StateLayerMode = require(Enums.StateLayerMode)
+local CursorType = require(Enums.CursorType)
+local ControlState = require(Enums.ControlState)
+local ButtonVariant = require(Enums.ButtonVariant)
 
 --// General Use Types
 
@@ -40,6 +42,12 @@ export type Use = FusionTypes.Use
 export type Child = FusionTypes.Child
 
 export type Fusion = FusionTypes.Fusion
+
+--// Signal Types
+
+export type Signal<T> = SignalTypes.Signal<T>
+export type ReadableSignal<T> = SignalTypes.ReadableSignal<T>
+export type FireSignal<T> = SignalTypes.FireSignal<T>
 
 --// Util Types
 
@@ -100,9 +108,7 @@ export type NativeCallbackProps = {
 	onAbsolutePositionChanged: (instance: GuiObject) -> ()?,
 }
 
-export type CommonProps = {
-	testId: string?,
-} & NativeCallbackProps & NativeCommonProps
+export type CommonProps = NativeCallbackProps & NativeCommonProps
 
 export type FlexItem = {
 	FlexMode: UsedAs<Enum.UIFlexMode>?,

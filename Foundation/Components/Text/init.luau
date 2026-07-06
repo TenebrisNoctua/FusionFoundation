@@ -7,11 +7,9 @@ local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
-local TypesSource = Utility.Types
 
+local FontScales = require(script.FontScales)
 local Interactable = require(Foundation.Components.Interactable)
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
 
 local stripProps = require(Utility.stripProps)
 local unwrap = require(Utility.unwrap)
@@ -19,8 +17,10 @@ local withDefaults = require(Utility.withDefaults)
 local useDefaultTags = require(Utility.useDefaultTags)
 local withGuiObjectProps = require(Utility.withGuiObjectProps)
 local GuiObjectChildren = require(Utility.GuiObjectChildren)
-local Types = require(TypesSource.Types)
-local FontScales = require(script.FontScales)
+local Types = require(Utility.Types)
+
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
 
 local COMPONENT_ONLY_PROPERTIES = {
 	"textStyle",

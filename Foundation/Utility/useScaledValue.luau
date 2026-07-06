@@ -1,8 +1,10 @@
 local Foundation = script.Parent.Parent
+local Utility = Foundation.Utility
+
+local Types = require(Utility.Types)
+local unwrap = require(Utility.unwrap)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-local Types = require(Foundation.Utility.Types.Types)
-local unwrap = require(Foundation.Utility.unwrap)
 
 type Use = Types.Use
 

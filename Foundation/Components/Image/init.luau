@@ -7,7 +7,6 @@ local FoundationImages = PackageManager.getPackage("FoundationImages")
 local FoundationCloudAssets = PackageManager.getPackage("FoundationCloudAssets")
 
 local Utility = Foundation.Utility
-local TypesSource = Utility.Types
 
 local Assets = FoundationCloudAssets.Assets
 local Images = FoundationImages.Images
@@ -24,7 +23,7 @@ local useDefaultTags = require(Utility.useDefaultTags)
 local stripProps = require(Utility.stripProps)
 local unwrap = require(Utility.unwrap)
 local GuiObjectChildren = require(Utility.GuiObjectChildren)
-local Types = require(TypesSource.Types)
+local Types = require(Utility.Types)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)

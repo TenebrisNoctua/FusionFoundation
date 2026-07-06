@@ -1,7 +1,5 @@
 --!nonstrict
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
 local Foundation = script.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
@@ -13,15 +11,15 @@ local Children = Fusion.Children
 local Button = require(Foundation.Components.Button)
 local View = require(Foundation.Components.View)
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
 local unwrap = require(Foundation.Utility.unwrap)
-local Types = require(Foundation.Utility.Types.Types)
+local Types = require(Foundation.Utility.Types)
 
 local ColorMode = require(Foundation.Enums.ColorMode)
 local InputSize = require(Foundation.Enums.InputSize)
 local ButtonVariant = require(Foundation.Enums.ButtonVariant)
 local FillBehavior = require(Foundation.Enums.FillBehavior)
+
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 local ControlModes = Dash.values(ColorMode)
 local FillBehaviors = {

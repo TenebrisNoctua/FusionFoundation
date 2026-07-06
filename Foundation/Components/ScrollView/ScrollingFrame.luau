@@ -5,18 +5,17 @@ local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
-local TypesSource = Utility.Types
 
 local withDefaults = require(Utility.withDefaults)
 local withGuiObjectProps = require(Utility.withGuiObjectProps)
 local unwrap = require(Utility.unwrap)
-local Types = require(TypesSource.Types)
-
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
+local Types = require(Utility.Types)
 
 local Visibility = require(Foundation.Enums.Visibility)
 local ControlState = require(Foundation.Enums.ControlState)
+
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
 
 local Children = Fusion.Children
 local OnChange = Fusion.OnChange

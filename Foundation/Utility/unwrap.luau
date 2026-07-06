@@ -3,8 +3,7 @@ local Foundation = script.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 local Fusion = PackageManager.getPackage("Fusion")
 
-local TypesSource = Foundation.Utility.Types
-local Types = require(TypesSource.Types)
+local Types = require(Foundation.Utility.Types)
 
 type Use = Types.Use
 type Fusion = Types.Fusion

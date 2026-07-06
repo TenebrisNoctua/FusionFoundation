@@ -5,13 +5,15 @@
 
 --// Variables
 
-local Types = require(script.Parent.Utility.Types.Types)
-local RBXDesignFoundations = require(script.Packages.RbxDesignFoundations)
-local Dash = require(script.Packages.Dash)
-local Fusion = require(script.Packages.Fusion)
-local BuilderIcons = require(script.Packages.BuilderIcons)
-local FoundationCloudAssets = require(script.Packages.FoundationCloudAssets)
-local FoundationImages = require(script.Packages.FoundationImages)
+local PackagesSrc = script.Packages
+
+local RBXDesignFoundations = require(PackagesSrc.RbxDesignFoundations)
+local Dash = require(PackagesSrc.Dash)
+local Fusion = require(PackagesSrc.Fusion)
+local BuilderIcons = require(PackagesSrc.BuilderIcons)
+local FoundationCloudAssets = require(PackagesSrc.FoundationCloudAssets)
+local FoundationImages = require(PackagesSrc.FoundationImages)
+local Signal = require(PackagesSrc.Signal)
 
 local Packages = {
 	RBXDesignFoundations = RBXDesignFoundations,
@@ -20,6 +22,7 @@ local Packages = {
 	BuilderIcons = BuilderIcons,
 	FoundationImages = FoundationImages,
 	FoundationCloudAssets = FoundationCloudAssets,
+	Signal = Signal,
 } :: {
 	RBXDesignFoundations: typeof(RBXDesignFoundations),
 	Dash: typeof(Dash),
@@ -27,6 +30,7 @@ local Packages = {
 	BuilderIcons: typeof(BuilderIcons),
 	FoundationImages: typeof(FoundationImages),
 	FoundationCloudAssets: typeof(FoundationCloudAssets),
+	Signal: typeof(Signal),
 	[string]: any
 }
 
@@ -34,7 +38,7 @@ local ChangeablePackages = {"Fusion", "Dash"}
 
 --// Types
 
-type LibraryName = "Fusion" | "RBXDesignFoundations" | "Dash" | "BuilderIcons" | "FoundationImages" | "FoundationCloudAssets" | "Motion" | string
+type LibraryName = "Fusion" | "RBXDesignFoundations" | "Dash" | "BuilderIcons" | "FoundationImages" | "FoundationCloudAssets" | "Signal" | string
 
 --// Local Functions
 

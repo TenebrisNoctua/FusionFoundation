@@ -8,7 +8,7 @@ local BaseMenuGroup = require(script.Parent.BaseMenuGroup)
 local BaseMenuItem = require(script.Parent.BaseMenuItem)
 
 local Utility = Foundation.Utility
-local Types = require(Utility.Types.Types)
+local Types = require(Utility.Types)
 local unwrap = require(Utility.unwrap)
 
 local FoundationBaseMenuSubmenuSupport = true

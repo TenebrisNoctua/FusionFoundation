@@ -7,7 +7,6 @@ local Dash = PackageManager.getPackage("Dash")
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 local Components = Foundation.Components
-local TypesSource = Utility.Types
 
 local DeclarativeBaseMenuContent = require(script.Parent.DeclarativeBaseMenuContent)
 local useSubmenuHover = require(script.Parent.useSubmenuHover)
@@ -21,7 +20,7 @@ local unwrap = require(Utility.unwrap)
 local useScaledValue = require(Utility.useScaledValue)
 local withCommonProps = require(Utility.withCommonProps)
 local withDefaults = require(Utility.withDefaults)
-local Types = require(Utility.Types.Types)
+local Types = require(Utility.Types)
 
 local ControlState = require(Enums.ControlState)
 local Radius = require(Enums.Radius)
