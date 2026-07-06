@@ -9,6 +9,7 @@ UI Labs can be used to view and test the stories.
 ## Credits
 
 * [@Roblox](https://github.com/Roblox/) - Foundation
+* [@Roblox](https://github.com/Roblox/) - [Signal](https://github.com/Roblox/signal-lua)
 * [@Roblox](https://github.com/Roblox/) - [Dash](https://github.com/Roblox/dash/)
 * [@Roblox](https://github.com/Roblox/) - BuilderIcons
 * [@Roblox](https://github.com/Roblox/) - FoundationImages
