@@ -6,6 +6,8 @@ local task = nil -- Disable usage of Roblox's task scheduler
 --[[
 	Stores 'sensible default' properties to be applied to instances created by
 	the New function.
+	
+	Modified to remove some UI related default properties due to them overriding style tokens.
 ]]
 
 return {
@@ -26,71 +28,6 @@ return {
 
 		SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
 		PixelsPerStud = 50
-	},
-
-	Frame = {
-		BackgroundColor3 = Color3.new(1, 1, 1),
-		BorderColor3 = Color3.new(0, 0, 0),
-		BorderSizePixel = 0
-	},
-
-	ScrollingFrame = {
-		BackgroundColor3 = Color3.new(1, 1, 1),
-		BorderColor3 = Color3.new(0, 0, 0),
-		BorderSizePixel = 0,
-
-		ScrollBarImageColor3 = Color3.new(0, 0, 0)
-	},
-
-	TextLabel = {
-		BackgroundColor3 = Color3.new(1, 1, 1),
-		BorderColor3 = Color3.new(0, 0, 0),
-		BorderSizePixel = 0,
-
-		Font = Enum.Font.SourceSans,
-		Text = "",
-		TextColor3 = Color3.new(0, 0, 0),
-		TextSize = 14
-	},
-
-	TextButton = {
-		BackgroundColor3 = Color3.new(1, 1, 1),
-		BorderColor3 = Color3.new(0, 0, 0),
-		BorderSizePixel = 0,
-
-		AutoButtonColor = false,
-
-		Font = Enum.Font.SourceSans,
-		Text = "",
-		TextColor3 = Color3.new(0, 0, 0),
-		TextSize = 14
-	},
-
-	TextBox = {
-		BackgroundColor3 = Color3.new(1, 1, 1),
-		BorderColor3 = Color3.new(0, 0, 0),
-		BorderSizePixel = 0,
-
-		ClearTextOnFocus = false,
-
-		Font = Enum.Font.SourceSans,
-		Text = "",
-		TextColor3 = Color3.new(0, 0, 0),
-		TextSize = 14
-	},
-
-	ImageLabel = {
-		BackgroundColor3 = Color3.new(1, 1, 1),
-		BorderColor3 = Color3.new(0, 0, 0),
-		BorderSizePixel = 0
-	},
-
-	ImageButton = {
-		BackgroundColor3 = Color3.new(1, 1, 1),
-		BorderColor3 = Color3.new(0, 0, 0),
-		BorderSizePixel = 0,
-
-		AutoButtonColor = false
 	},
 
 	ViewportFrame = {

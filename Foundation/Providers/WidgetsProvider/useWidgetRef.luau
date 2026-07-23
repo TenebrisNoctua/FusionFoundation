@@ -6,6 +6,7 @@ local Utility = Foundation.Utility
 
 local WidgetsProvider = require(script.Parent)
 
+local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 local StudioUri = require(Utility.Plugin.StudioUri)
@@ -18,21 +19,19 @@ type StudioUri = StudioUri.StudioUri
 
 return function(scope: Scope, uri: StudioUri, gui: UsedAs<GuiBase2d?>?): UsedAs<GuiBase2d?>
 	local gui = gui or scope:Value(nil :: GuiBase2d?)
-
 	local widgetsProvider = WidgetsProvider()
-	local uriString = StudioUri.toString(uri)
-
+	
 	local function handleInstanceChange()
 		local instance = unwrap(gui)
-		if instance and typeof(instance) == "Instance" and uri then
+		if typeof(instance) == "Instance" and uri then
 			widgetsProvider:register(uri, instance)
 		end
 	end
 
-	if unwrap(gui) ~= gui then
+	if isState(gui) then
 		scope:Observer(gui):onChange(function()
 			local instance = unwrap(gui)
-			if instance and typeof(instance) == "Instance" and uri then
+			if typeof(instance) == "Instance" and uri then
 				widgetsProvider:register(uri, instance)
 			end
 		end)

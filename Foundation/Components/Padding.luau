@@ -1,10 +1,7 @@
 local Foundation = script.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
-
 local Utility = Foundation.Utility
 
+local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 
@@ -25,7 +22,7 @@ local function getPadding(padding: Padding): {
 	PaddingLeft: UsedAs<UDim>?,
 	PaddingRight: UsedAs<UDim>?,
 }
-	if unwrap(padding) ~= padding then
+	if isState(padding) then
 		return {
 			PaddingTop = padding :: UsedAs<UDim>,
 			PaddingBottom = padding :: UsedAs<UDim>,

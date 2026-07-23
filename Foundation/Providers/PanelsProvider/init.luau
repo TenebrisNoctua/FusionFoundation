@@ -3,7 +3,6 @@
 
 local Foundation = script.Parent.Parent
 local Utility = Foundation.Utility
-local Enums = Foundation.Enums
 
 local PopoverManager = require(script.Managers.PopoverManager)
 local ProviderTypes = require(script.Types)
@@ -23,8 +22,7 @@ type PanelPosition = ProviderTypes.PanelPosition
 type StudioUri = StudioUri.StudioUri
 
 type PanelsProviderProps = {
-	uriScope: string?,
-	children: {Child}
+	uriScope: string?
 }
 
 type panelsProvider = typeof(panelsProvider)

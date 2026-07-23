@@ -6,6 +6,7 @@ local Utility = Foundation.Utility
 local positioning = require(script.Parent.Parent.positioning)
 
 local unwrap = require(Utility.unwrap)
+local isState = require(Utility.isState)
 local Types = require(Utility.Types)
 
 local PopoverSide = require(Enums.PopoverSide)
@@ -37,10 +38,10 @@ type AlignConfig = {
 
 return function(
 	scope: Scope,
-	sideConfig: SideConfig,
-	alignConfig: AlignConfig,
+	sideConfig: UsedAs<SideConfig>?,
+	alignConfig: UsedAs<AlignConfig>?,
 	contentState: UsedAs<GuiObject?>,
-	arrowSize: number?,
+	arrowSize: UsedAs<number>?,
 	panelState: UsedAs<PanelHandle?>?
 ): (UsedAs<UDim2>, UsedAs<UDim2>)
 	local popoverSize = scope:Value(UDim2.new())
@@ -51,29 +52,33 @@ return function(
 
 	local function recalculatePosition()
 		local content = unwrap(contentState)
-		if not content then
-			return
-		end
-
+		if not content then return end
+		
 		local contentAbsSize = content.AbsoluteSize
 
-		local side: PopoverSide = if type(sideConfig) == "table" then sideConfig.position else sideConfig
-		local sideOffset = if type(sideConfig) == "table" then sideConfig.offset else 0
+		local currentSideConfig = unwrap(sideConfig)
+		local currentAlignConfig = unwrap(alignConfig)
+		local currentArrowSize = unwrap(arrowSize)
+
+		local side: PopoverSide = if type(currentSideConfig) == "table" then currentSideConfig.position else currentSideConfig
+		local sideOffset = if type(currentSideConfig) == "table" then currentSideConfig.offset else 0
 		local alignOffset: number = 0
-		if type(alignConfig) == "table" then
-			alignOffset = alignConfig.offset
+		if type(currentAlignConfig) == "table" then
+			alignOffset = currentAlignConfig.offset
 		end
 
-		local arrowOffset = arrowSize or 0
+		local arrowOffset = currentArrowSize or 0
 
-		-- Though this calculation includes side, it doesn't care about switching sides, so we can reuse it
 		local popoverBounds =
 			positioning.calculatePopoverBounds(side, sideOffset, alignOffset, arrowOffset, contentAbsSize)
 		local widgetSize = popoverBounds + Vector2.new(SHADOW_SIZE * 2, SHADOW_SIZE * 2)
-
-		contentSize:set(UDim2.fromOffset(contentAbsSize.X, contentAbsSize.Y))
-		popoverSize:set(UDim2.fromOffset(widgetSize.X, widgetSize.Y))
-
+		
+		local newContentSize = UDim2.fromOffset(contentAbsSize.X, contentAbsSize.Y)
+		local newPopoverSize = UDim2.fromOffset(widgetSize.X, widgetSize.Y)
+		
+		contentSize:set(newContentSize)
+		popoverSize:set(newPopoverSize)
+		
 		-- Force update re-layout for quantum GUI to prevent jello effect
 		local _ = content.AbsolutePosition
 
@@ -89,6 +94,7 @@ return function(
 	end
 
 	local function connectSignals(content: GuiObject?)
+		recalculatePosition()
 		if currentConnection then
 			currentConnection:Disconnect()
 			currentConnection = nil
@@ -96,16 +102,28 @@ return function(
 		if content then
 			currentConnection = content:GetPropertyChangedSignal("AbsoluteSize"):Connect(recalculatePosition)
 		end
-		recalculatePosition()
 	end
 
-	if unwrap(contentState) ~= contentState then
+	if isState(contentState) then
 		scope:Observer(contentState):onChange(function()
 			connectSignals(unwrap(contentState))
 		end)
 	end
 
-	connectSignals(unwrap(contentState))
+	if isState(panelState) then
+		scope:Observer(panelState):onChange(recalculatePosition)
+	end
+
+	local configComputed = scope:Computed(function(use: Use)
+		unwrap(sideConfig, use)
+		unwrap(alignConfig, use)
+		unwrap(arrowSize, use)
+		return true
+	end)
+	
+	scope:Observer(configComputed):onChange(recalculatePosition)
+
+	connectSignals()
 	table.insert(scope, function()
 		if setSizeTask then
 			task.cancel(setSizeTask)

@@ -114,6 +114,7 @@ return function(viewProps: ViewProps): UsedAs<(Frame | CanvasGroup)>
 			}
 			
 			local combinedProps = Dash.union(engineComponentProps, viewComponentProps)
+			combinedProps.Name = props.Name
 			return Scope:Hydrate(Interactable(combinedProps))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 		else
 			return Scope:Hydrate(Scope:New(engineComponent)(Dash.join(engineComponentProps, {[Children] = GuiObjectChildren(props)})))(stripProps(props, COMPONENT_ONLY_PROPERTIES))

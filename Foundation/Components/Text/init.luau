@@ -11,6 +11,7 @@ local Utility = Foundation.Utility
 local FontScales = require(script.FontScales)
 local Interactable = require(Foundation.Components.Interactable)
 
+local isState = require(Utility.isState)
 local stripProps = require(Utility.stripProps)
 local unwrap = require(Utility.unwrap)
 local withDefaults = require(Utility.withDefaults)
@@ -92,7 +93,7 @@ return function(textProps: TextProps): UsedAs<TextLabel>
 	local fontFace = Scope:Computed(function(use: Use) 
 		local fontFaceProp = if props.fontStyle ~= nil then unwrap(props.fontStyle, use).Font else nil
 		
-		if typeof(fontFaceProp) == "table" and unwrap(fontFaceProp) == fontFaceProp then
+		if typeof(fontFaceProp) == "table" and not isState(fontFaceProp) then
 			local fontFaceTyped = fontFaceProp :: FontFaceTable -- We're sure because it's not a value
 			return Font.new(fontFaceTyped.Family, fontFaceTyped.Weight, fontFaceTyped.Style)
 		elseif typeof(fontFaceProp) == "EnumItem" then
@@ -117,7 +118,7 @@ return function(textProps: TextProps): UsedAs<TextLabel>
 
 		local fontFamily = nil
 
-		if unwrap(fontFace) ~= fontFace then
+		if isState(fontFace) then
 			local fontFaceState = fontFace :: UsedAs<Font>
 			fontFamily = unwrap(fontFaceState).Family
 		else

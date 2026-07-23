@@ -80,7 +80,6 @@ export type InteractableProps = {
 
 return function(interactableProps: InteractableProps)
 	local Scope = interactableProps.scope
-	local Theme = ThemeProvider()
 	assert(Scope, "A scope has not been provided for the Interactable component.")
 	
 	local props = withDefaults(interactableProps, defaultProps)

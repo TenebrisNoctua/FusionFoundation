@@ -2,6 +2,7 @@ local Foundation = script.Parent.Parent.Parent
 local Utility = Foundation.Utility
 
 local unwrap = require(Utility.unwrap)
+local isState = require(Utility.isState)
 local StudioUri = require(Utility.Plugin.StudioUri)
 local Types = require(Utility.Types)
 
@@ -15,8 +16,10 @@ type PanelHandle = ProviderTypes.PanelHandle
 type PanelPosition = ProviderTypes.PanelPosition
 
 export type UsePanelOptions = {
+	scope: Scope,
 	isOpen: UsedAs<boolean>,
 	anchorUri: UsedAs<StudioUri>,
+	anchorGui: UsedAs<GuiBase2d?>?,
 	onClose: () -> (),
 	position: UsedAs<PanelPosition>,
 	depth: UsedAs<number?>?,
@@ -30,7 +33,8 @@ export type UsePanelOptions = {
 	) -> (PanelHandle, () -> ()),
 }
 
-return function(scope: Scope, options: UsePanelOptions): UsedAs<PanelHandle?>
+return function(options: UsePanelOptions): UsedAs<PanelHandle?>
+	local scope = options.scope
 	local panelState = scope:Value(nil :: PanelHandle?)
 
 	local currentClosePanel: (() -> ())? = nil
@@ -107,8 +111,7 @@ return function(scope: Scope, options: UsePanelOptions): UsedAs<PanelHandle?>
 		end)
 	end
 
-	-- Only trigger registration workflows when the open state shifts
-	if unwrap(options.isOpen) ~= options.isOpen then
+	if isState(options.isOpen) then
 		scope:Observer(options.isOpen):onChange(handleRegistration)
 	end
 
@@ -116,6 +119,7 @@ return function(scope: Scope, options: UsePanelOptions): UsedAs<PanelHandle?>
 		return {
 			panel = unwrap(panelState, use),
 			anchorUri = unwrap(options.anchorUri, use),
+			anchorGui = if options.anchorGui then unwrap(options.anchorGui, use) else nil,
 			position = unwrap(options.position, use),
 		}
 	end)

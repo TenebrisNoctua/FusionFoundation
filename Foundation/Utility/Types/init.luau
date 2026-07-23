@@ -321,4 +321,9 @@ export type ViewProps = {
 	GroupTransparency: Value<number>?,
 } & GuiObjectProps & CommonProps
 
+export type OverlayConfig = {
+	DisplayOrder: number?,
+	gui: nil,
+}
+
 return nil

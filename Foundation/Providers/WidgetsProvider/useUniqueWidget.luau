@@ -6,10 +6,9 @@
 local Foundation = script.Parent.Parent.Parent
 local Utility = Foundation.Utility
 
-local WidgetsProvider = require(script.Parent.WidgetsProvider)
+local WidgetsProvider = require(script.Parent)
 local useWidgetRef = require(script.Parent.useWidgetRef)
 
-local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 local StudioUri = require(Utility.Plugin.StudioUri)
 

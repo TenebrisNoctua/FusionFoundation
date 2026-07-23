@@ -14,9 +14,12 @@ type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
 type Use = Types.Use
 
-return function(scope: Scope, guiObject: UsedAs<GuiObject?>): UsedAs<Vector2>
+return function(scope: Scope, guiObject: UsedAs<GuiObject?>): UsedAs<UsedAs<Vector2>>
 	return scope:Computed(function(use: Use, innerScope: Scope) 
-		local guiObject = unwrap(guiObject, use)
+		local guiObjectWrapped = unwrap(guiObject, use)
+		if not guiObjectWrapped then return end
+		
+		local guiObject = unwrap(guiObjectWrapped, use)
 		if not guiObject then return end
 		
 		local position = innerScope:Value(Vector2.zero)

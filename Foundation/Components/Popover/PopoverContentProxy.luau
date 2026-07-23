@@ -21,23 +21,23 @@ type PopoverContentProps = Content.PopoverContentProps
 return function(props: PopoverContentProps)
 	local scope = props.scope
 	assert(scope, "A scope has not been provided for the PopoverContentProxy component.")
-
-	if not FoundationPopoverPluginSupport then return end
+	
 	local pluginProvider = PluginProvider()
 	local plugin = pluginProvider.plugin
 	local isPluginElevated = pluginProvider:isPluginElevated()
 	
-	local isPluginSupported = if FoundationFixUserLevelPlugins 
-		then nil
-		else (function() 
+	local isPluginSupported = if FoundationFixUserLevelPlugins then nil
+		else (function()
 			if not plugin then return false end
+			
 			--[[
 				Our plugin path requires the Panels component to be available.
 				Currently, this is only available to internal plugins.
-			]]
+			--]]
 			local success, _ = pcall(function()
 				return plugin:GetPluginComponent("Panels")
 			end)
+
 			return success
 		end)()
 	
@@ -46,6 +46,6 @@ return function(props: PopoverContentProps)
 	elseif FoundationPopoverPluginSupport and isPluginSupported then
 		return ContentPlugin(props)
 	end
-
+	
 	return Content(props)
 end

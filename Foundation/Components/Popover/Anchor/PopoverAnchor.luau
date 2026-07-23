@@ -4,16 +4,9 @@ local Utility = Foundation.Utility
 local View = require(Foundation.Components.View)
 
 local withCommonProps = require(Utility.withCommonProps)
+local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
-
-local COMPONENT_ONLY_PROPERTIES = {
-	"anchor",
-	"setAnchor",
-	"isOpen",
-	"anchorInstance",
-	"gui"
-}
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
@@ -22,6 +15,7 @@ type Child = Types.Child
 
 export type PopoverAnchorProps = {
 	scope: Scope,
+	-- From PopoverContext:
 	anchor: UsedAs<Instance?>?,
 	setAnchor: ((instance: Instance?) -> ())?,
 	isOpen: UsedAs<boolean>?,
@@ -41,9 +35,7 @@ return function(props: PopoverAnchorProps)
 
 	local activeAnchor = scope:Computed(function(use: Use)
 		local externalAnchor = unwrap(props.anchorInstance, use)
-		if externalAnchor then
-			return unwrap(externalAnchor, use)
-		end
+		if externalAnchor then return externalAnchor end
 		return unwrap(viewInstance, use)
 	end)
 
@@ -57,12 +49,10 @@ return function(props: PopoverAnchorProps)
 	scope:Observer(activeAnchor):onChange(handleAnchorRegistration)
 	task.defer(handleAnchorRegistration)
 
-	if props.gui then
+	if isState(props.gui) then
 		scope:Observer(viewInstance):onChange(function()
 			local currentView = unwrap(viewInstance)
-			if typeof(props.gui) == "table" and (props.gui :: any).set then
-				(props.gui :: any):set(currentView)
-			end
+			props.gui:set(currentView)
 		end)
 	end
 
@@ -72,24 +62,17 @@ return function(props: PopoverAnchorProps)
 		end
 	end)
 
-	return scope:Computed(function(use: Use)
+	return scope:Computed(function(use: Use, innerScope: Scope)
+		viewInstance:set(nil)
 		local externalAnchor = unwrap(props.anchorInstance, use)
 		if externalAnchor then return end
 
 		local viewProps = withCommonProps(props, {
+			scope = scope,
 			tag = "auto-xy",
+			children = props.children
 		})
 
-		local instance = View {
-			scope = scope,
-			props = viewProps,
-			children = props.children,
-		}
-
-		task.defer(function()
-			viewInstance:set(instance)
-		end)
-
-		return instance
+		return viewInstance:set(unwrap(View(viewProps)))
 	end)
 end

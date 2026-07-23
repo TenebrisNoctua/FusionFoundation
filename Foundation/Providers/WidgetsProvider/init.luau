@@ -18,10 +18,6 @@ type StudioUri = StudioUri.StudioUri
 type WidgetsContext = Types.WidgetsContext
 type widgetsProvider = typeof(widgetsProvider)
 
-type WidgetsProviderProps = {
-	uriScope: string?,
-}
-
 --// Main Functions
 
 function widgetsProvider.register(self: widgetsProvider, uri: StudioUri, gui: GuiBase2d)
@@ -39,7 +35,7 @@ function widgetsProvider.nextId(self: widgetsProvider): string
 	return self.widgetManager:nextId()
 end
 
-return function(props: WidgetsProviderProps?): (widgetsProvider, () -> ()?)
+return function(): (widgetsProvider, () -> ()?)
 	if widgetsProvider.widgetManager then return widgetsProvider end
 
 	local pluginProvider = PluginProvider()

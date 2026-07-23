@@ -3,6 +3,7 @@ local PopoverAnchor = require(script.Anchor)
 local PopoverContent = require(script.Content)
 
 export type PopoverProps = Popover.PopoverProps
+export type PopoverContext = Popover.PopoverContext
 export type PopoverAnchorProps = PopoverAnchor.PopoverAnchorProps
 export type PopoverContentProps = PopoverContent.PopoverContentProps
 

@@ -24,24 +24,30 @@ type Radius = Radius.Radius
 return function(
 	scope: Scope,
 	contentSize: UsedAs<UDim2>,
-	sidePosition: PopoverSide,
-	radius: Radius,
-	alignValue: number,
-	arrowHeight: number,
-	anchor: GuiBase2d?
+	sidePosition: UsedAs<PopoverSide>,
+	radius: UsedAs<Radius>,
+	alignValue: UsedAs<number>,
+	arrowHeight: UsedAs<number>,
+	anchor: UsedAs<GuiBase2d?>
 ): UsedAs<UDim2>
 	local themeProvider = ThemeProvider()
 	return scope:Computed(function(use: Use)
 		local currentTokens = unwrap(themeProvider.Tokens, use)
 
+		local currentSide = unwrap(sidePosition, use)
+		local currentRadius = unwrap(radius, use)
+		local currentAlignValue = unwrap(alignValue, use)
+		local currentArrowHeight = unwrap(arrowHeight, use)
+		local currentAnchor = unwrap(anchor, use)
+
 		local baseRadiusInset = 0
-		if radius == Radius.XSmall then
+		if currentRadius == Radius.XSmall then
 			baseRadiusInset = currentTokens.Size.Size_50
-		elseif radius == Radius.Small then
+		elseif currentRadius == Radius.Small then
 			baseRadiusInset = currentTokens.Size.Size_100
-		elseif radius == Radius.Medium then
+		elseif currentRadius == Radius.Medium then
 			baseRadiusInset = currentTokens.Size.Size_200
-		elseif radius == Radius.Large then
+		elseif currentRadius == Radius.Large then
 			baseRadiusInset = currentTokens.Size.Size_300
 		end
 
@@ -50,24 +56,24 @@ return function(
 		local contentHeight = value.Y.Offset
 
 		local radiusInset = baseRadiusInset
-		if radius == Radius.Circle then
+		if currentRadius == Radius.Circle then
 			radiusInset = math.min(contentWidth, contentHeight) / 2
 		end
 
-		local cornerInset = radiusInset + arrowHeight
-		local isVertical = sidePosition == PopoverSide.Top or sidePosition == PopoverSide.Bottom
+		local cornerInset = radiusInset + currentArrowHeight
+		local isVertical = currentSide == PopoverSide.Top or currentSide == PopoverSide.Bottom
 
 		local contentCrossSize = if isVertical then contentWidth else contentHeight
 		local rawPosition: number
 
-		if anchor and typeof(anchor) == "Instance" then
-			local anchorSize = anchor.AbsoluteSize
+		if currentAnchor and typeof(currentAnchor) == "Instance" then
+			local anchorSize = currentAnchor.AbsoluteSize
 			local anchorCrossSize = if isVertical then anchorSize.X else anchorSize.Y
 
 			local anchorStartInContent: number
-			if alignValue == 0 then
+			if currentAlignValue == 0 then
 				anchorStartInContent = 0
-			elseif alignValue == 0.5 then
+			elseif currentAlignValue == 0.5 then
 				anchorStartInContent = (contentCrossSize - anchorCrossSize) / 2
 			else
 				anchorStartInContent = contentCrossSize - anchorCrossSize
@@ -80,13 +86,13 @@ return function(
 				rawPosition = (intersectionStart + intersectionEnd) / 2
 			else
 				if contentCrossSize < anchorStartInContent then
-					rawPosition = contentCrossSize - arrowHeight
+					rawPosition = contentCrossSize - currentArrowHeight
 				else
-					rawPosition = arrowHeight
+					rawPosition = currentArrowHeight
 				end
 			end
 		else
-			rawPosition = contentCrossSize * alignValue
+			rawPosition = contentCrossSize * currentAlignValue
 		end
 
 		local minPosition = cornerInset
@@ -100,11 +106,11 @@ return function(
 		if isVertical then
 			return UDim2.fromOffset(
 				SHADOW_SIZE + rawPosition,
-				SHADOW_SIZE + (if sidePosition == PopoverSide.Top then contentHeight else 0)
+				SHADOW_SIZE + (if currentSide == PopoverSide.Top then contentHeight else 0)
 			)
 		else
 			return UDim2.fromOffset(
-				SHADOW_SIZE + (if sidePosition == PopoverSide.Left then contentWidth else 0),
+				SHADOW_SIZE + (if currentSide == PopoverSide.Left then contentWidth else 0),
 				SHADOW_SIZE + rawPosition
 			)
 		end

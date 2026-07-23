@@ -1,24 +1,22 @@
 local Foundation = script.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
-local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
 local Padding = require(Foundation.Components.Padding)
 local AspectRatio = require(Foundation.Components.AspectRatio)
 
+local isState = require(script.Parent.isState)
 local unwrap = require(script.Parent.unwrap)
-local Types = require(script.Parent.Types.Types)
-
-local Children = Fusion.Children
+local Types = require(script.Parent.Types)
 
 type GuiObjectProps = Types.GuiObjectProps
 type CommonProps = Types.CommonProps
 
 local function GuiObjectChildren(props: GuiObjectProps & CommonProps): {Instance}
 	local Scope = props.scope
-	return if unwrap(props.children) ~= props.children then props.children else Dash.join({
-		if props.aspectRatio ~= nil then 
+	return if isState(props.children) then props.children else Dash.join({
+		if props.aspectRatio ~= nil then
 			AspectRatio { 
 				value = props.aspectRatio, 
 				scope = Scope 

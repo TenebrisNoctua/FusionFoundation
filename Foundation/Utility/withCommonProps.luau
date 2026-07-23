@@ -1,4 +1,4 @@
-local Types = require(script.Parent.Types.Types)
+local Types = require(script.Parent.Types)
 
 type CommonProps = Types.CommonProps
 

@@ -17,6 +17,7 @@ local getScaledSlice = require(script.ImageSet.getScaledSlice)
 local isFoundationImage = require(script.ImageSet.isFoundationImage)
 local isCloudAsset = require(script.CloudAsset.isCloudAsset)
 
+local isState = require(Utility.isState)
 local withDefaults = require(Utility.withDefaults)
 local withGuiObjectProps = require(Utility.withGuiObjectProps)
 local useDefaultTags = require(Utility.useDefaultTags)
@@ -29,8 +30,6 @@ local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
 
 local Children = Fusion.Children
-local OnChange = Fusion.OnChange
-local Tag = Fusion.Tag
 
 local COMPONENT_ONLY_PROPERTIES = {
 	"slice",
@@ -149,7 +148,7 @@ return function(imageProps: ImageProps): UsedAs<ImageButton | ImageLabel>
 	
 	setImageData()
 	
-	if unwrap(props.Image) ~= props.Image then
+	if isState(props.Image) then
 		Scope:Observer(props.Image):onChange(setImageData)
 	end
 	

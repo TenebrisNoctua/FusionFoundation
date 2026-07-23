@@ -238,12 +238,11 @@ export type OptionSelectorGroupProps = OptionSelectorGroup.OptionSelectorGroupPr
 export type OptionSelectorGroupItemProps = OptionSelectorGroup.OptionSelectorGroupItemProps
 ]]
 
---[[
 local Popover = require(script.Components.Popover)
 export type PopoverProps = Popover.PopoverProps
+export type PopoverContext = Popover.PopoverContext
 export type PopoverAnchorProps = Popover.PopoverAnchorProps
 export type PopoverContentProps = Popover.PopoverContentProps
-]]
 
 --local Progress = require(script.Components.Progress)
 --export type ProgressProps = Progress.ProgressProps
@@ -344,7 +343,7 @@ local Foundation = strict({
 	--NumberInput = NumberInput,
 	--OptionSelectorGroup = OptionSelectorGroup,
 	--Pill = Chip,
-	--Popover = Popover,
+	Popover = Popover,
 	--Progress = Progress,
 	--RadioGroup = RadioGroup,
 	--SearchInput = SearchInput,
@@ -367,6 +366,12 @@ local Foundation = strict({
 
 	-- Providers
 	ThemeProvider = require(script.Providers.ThemeProvider),
+	ElevationProvider = require(script.Providers.ElevationProvider),
+	OverlayProvider = require(script.Providers.OverlayProvider),
+	PanelsProvider = require(script.Providers.PanelsProvider),
+	PluginProvider = require(script.Providers.PluginProvider),
+	WidgetsProvider = require(script.Providers.WidgetsProvider),
+	FoundationProvider = require(script.Providers.FoundationProvider),
 
 	-- Hooks
 	Hooks = {
@@ -379,14 +384,12 @@ local Foundation = strict({
 		--useDialogNavigation = require(script.Components.Dialog.useDialogNavigation),
 		--useSheetNavigation = require(script.Components.Sheet.useSheetNavigation),
 		--useIconSize = require(script.Utility.useIconSize),
-		--useMeasurableRef = require(script.Components.Popover.useMeasurableRef),
-		--useOverlay = require(script.Providers.Overlay.useOverlay),
-		--usePointerPosition = require(script.Utility.usePointerPosition),
+		useMeasurableRef = require(script.Components.Popover.useMeasurableRef),
+		usePointerPosition = require(script.Utility.usePointerPosition),
 		--usePreferences = require(script.Providers.Preferences.usePreferences),
 		--usePulseBinding = require(script.Utility.usePulseBinding),
 		useRotation = require(script.Utility.useRotation),
-		--useScaledValue = require(script.Utility.useScaledValue),
-		--useStyleSheet = require(script.Providers.Style.StyleSheetContext).useStyleSheet,
+		useScaledValue = require(script.Utility.useScaledValue),
 		useStyleTags = require(script.Providers.ThemeProvider.useStyleTags),
 		--useTextSizeOffset = require(script.Providers.Style.useTextSizeOffset),
 		--withCursor = require(script.Providers.Cursor.withCursor),

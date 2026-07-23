@@ -21,7 +21,6 @@ local Constants = require(Foundation.Constants)
 local FoundationOverlayKeyboardAwareness = true
 local FoundationOverlayKeyboardAwarenessHardened = true
 local FoundationOverlayDisplayOrder = true
-local FoundationUseMainGuiUtility = true
 
 local FoundationOverlayDisplayOrderDefault = Constants.MAX_LAYOUT_ORDER - 1
 
@@ -33,10 +32,10 @@ local overlayProvider = {
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
 
-type OverlayProviderProps = {
+export type OverlayProviderProps = {
 	scope: Scope,
-	gui: UsedAs<GuiBase2d?>,
-	DisplayOrder: UsedAs<number?>
+	gui: UsedAs<GuiBase2d>? | any,
+	DisplayOrder: UsedAs<number>?
 }
 
 type overlayProvider = typeof(overlayProvider)
@@ -59,8 +58,10 @@ local defaultDisplayOrder = if FoundationOverlayDisplayOrder
 	then FoundationOverlayDisplayOrderDefault
 	else Constants.MAX_LAYOUT_ORDER - 1
 
-return function(props: OverlayProviderProps?): overlayProvider
+return function(props: OverlayProviderProps?): (overlayProvider, () -> ()?)
 	if overlayProvider.instance then return overlayProvider end
+	assert(props.scope, "OverlayProvider has not been provided a scope!")
+	assert(props.gui, "OverlayProvider has not been provided a GuiObject!")
 
 	local scope: Scope = props and props.scope
 	local theme = ThemeProvider()
@@ -98,11 +99,13 @@ return function(props: OverlayProviderProps?): overlayProvider
 		StyleSheet = theme.RegistryStyleSheet,
 		Parent = screenGui
 	}
+	
+	local cleanup: () -> ()
 
 	if FoundationOverlayKeyboardAwareness and scope then
 		local screen = if FoundationOverlayKeyboardAwarenessHardened then screenGui else safeAreaFrame
 		local safeAreaSize = useKeyboardAwareSize(scope, screen)
-		scope:Observer(safeAreaSize):onChange(function()
+		cleanup = scope:Observer(safeAreaSize):onChange(function()
 			safeAreaFrame.Size = unwrap(safeAreaSize)
 		end)
 	end
@@ -110,5 +113,14 @@ return function(props: OverlayProviderProps?): overlayProvider
 	overlayProvider.screen = screenGui
 	overlayProvider.instance = safeAreaFrame
 
-	return overlayProvider
+	return overlayProvider, function() 
+		screenGui:Destroy()
+		safeAreaFrame:Destroy()
+		foundationStyleLink:Destroy()
+		
+		overlayProvider.screen = nil
+		overlayProvider.instance = nil
+		
+		if cleanup then pcall(cleanup) end
+	end
 end

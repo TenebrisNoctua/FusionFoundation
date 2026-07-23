@@ -62,7 +62,7 @@ type Theme = Theme.Theme
 type Device = Device.Device
 type Tokens = Tokens.Tokens
 
-type ThemeProviderProps = {
+export type ThemeProviderProps = {
 	scope: Scope,
 	theme: UsedAs<Theme>,
 	device: UsedAs<Device>,

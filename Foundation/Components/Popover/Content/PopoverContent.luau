@@ -1,7 +1,4 @@
 local Foundation = script.Parent.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
@@ -14,7 +11,7 @@ local useFloating = require(script.Parent.Parent.useFloating)
 local isPointInGuiObjectBounds = require(Utility.isPointInGuiObjectBounds)
 local usePointerPosition = require(Utility.usePointerPosition)
 local withDefaults = require(Utility.withDefaults)
-local withCommonProps = require(Utility.withCommonProps)
+local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 
@@ -71,6 +68,8 @@ type AlignConfig = useFloating.AlignConfig
 export type PopoverContentProps = {
 	-- The scope the component will be created in.
 	scope: Scope,
+	-- The scope the children will be created in.
+	childrenScope: Scope,
 	-- The side the popover should be anchored to.
 	side: UsedAs<SideConfig>?,
 	-- The alignment of the popover relative to the anchor.
@@ -103,7 +102,7 @@ return function(contentProps: PopoverContentProps)
 	local contentInstance = scope:Value(nil :: GuiObject?)
 	local backdropInstance = scope:Value(nil :: GuiObject?)
 
-	local pointerPosition = usePointerPosition(scope, backdropInstance)
+	local pointerComputed = usePointerPosition(scope, backdropInstance)
 
 	local elevation = useElevation(scope, ElevationLayer.Popover, { stackAboveOwner = true })
 
@@ -121,24 +120,96 @@ return function(contentProps: PopoverContentProps)
 		
 		return if unwrap(hasArrowActive, use) then arrowHeight else 0
 	end)
-
+	
 	local position, isVisible, contentSize, arrowPosition, screenSize, anchorPoint = useFloating(
 		scope,
 		props.isOpen,
 		props.anchor,
 		contentInstance,
-		overlay,
+		overlay.instance,
 		props.side,
 		props.align,
 		activeArrowHeight
 	)
+	
+	local backgroundStyleComputed = scope:Computed(function(use: Use)
+		local tokens = unwrap(theme.Tokens, use)
+		return unwrap(props.backgroundStyle, use) or tokens.Color.Surface.Surface_100
+	end)
 
-	if props.gui then
+	local tagComputed = scope:Computed(function(use: Use)
+		local currentRadius = unwrap(props.radius, use)
+		return `auto-xy {radiusToTag[currentRadius]}`
+	end)
+
+	local finalParent = if overlay and overlay.instance then overlay.instance else nil
+	local contentParentValue = scope:Value(nil)
+
+	local contentView = View {
+		Name = "ContentView",
+		scope = scope,
+		AnchorPoint = anchorPoint,
+		Position = scope:Computed(function(use: Use)
+			local pos = unwrap(position, use)
+			return UDim2.fromOffset(pos.X, pos.Y)
+		end),
+		Visible = isVisible,
+		Parent = contentParentValue,
+		selection = props.selection,
+		SelectionGroup = scope:Computed(function(use: Use)
+			local sg = unwrap(props.selectionGroup, use)
+			if sg == nil then return nil end
+			if type(sg) == "boolean" then return sg end
+			return true
+		end),
+		SelectionBehaviorUp = scope:Computed(function(use: Use)
+			local sg = unwrap(props.selectionGroup, use)
+			if sg == nil or type(sg) == "boolean" then return nil end
+			return unwrap(sg.SelectionBehaviorUp, use)
+		end),
+		SelectionBehaviorDown = scope:Computed(function(use: Use)
+			local sg = unwrap(props.selectionGroup, use)
+			if sg == nil or type(sg) == "boolean" then return nil end
+			return unwrap(sg.SelectionBehaviorDown, use)
+		end),
+		SelectionBehaviorLeft = scope:Computed(function(use: Use)
+			local sg = unwrap(props.selectionGroup, use)
+			if sg == nil or type(sg) == "boolean" then return nil end
+			return unwrap(sg.SelectionBehaviorLeft, use)
+		end),
+		SelectionBehaviorRight = scope:Computed(function(use: Use)
+			local sg = unwrap(props.selectionGroup, use)
+			if sg == nil or type(sg) == "boolean" then return nil end
+			return unwrap(sg.SelectionBehaviorRight, use)
+		end),
+		sizeConstraint = {
+			MaxSize = screenSize,
+		},
+		stateLayer = {
+			affordance = StateLayerAffordance.None,
+		},
+		ZIndex = scope:Computed(function(use) 
+			local elevationProps = use(elevation)
+			return elevationProps.zIndex
+		end),
+		onActivated = if props.onPressedOutside then function() end else nil,
+		backgroundStyle = backgroundStyleComputed,
+		tag = tagComputed,
+		children = props.children
+	}
+
+	contentInstance:set(unwrap(contentView))
+
+	if isState(props.gui) then
 		scope:Observer(contentInstance):onChange(function()
 			local currentView = unwrap(contentInstance)
-			if typeof(props.gui) == "table" and (props.gui :: any).set then
-				(props.gui :: any):set(currentView)
-			end
+			props.gui:set(currentView)
+		end)
+	end
+
+	if finalParent then
+		task.defer(function()
+			contentParentValue:set(finalParent)
 		end)
 	end
 
@@ -147,16 +218,10 @@ return function(contentProps: PopoverContentProps)
 		if not shouldRenderPopover then return end
 		
 		local tokens = unwrap(theme.Tokens, use)
-		
 		local arrowSide = tokens.Size.Size_200
-		local arrowWidth = arrowSide * math.sqrt(2)
-		local arrowHeight = arrowWidth / 2
 
 		local currentAnchor = unwrap(props.anchor, use)
-		local currentRadius = unwrap(props.radius, use)
-		local currentVisible = unwrap(isVisible, use)
-
-		local backgroundStyle = unwrap(props.backgroundStyle, use) or tokens.Color.Surface.Surface_100
+		local bgStyle = unwrap(backgroundStyleComputed, use)
 
 		local shadowSizeMap = innerScope:Computed(function(use: Use)
 			local size = unwrap(contentSize, use)
@@ -173,56 +238,56 @@ return function(contentProps: PopoverContentProps)
 				pos.Y + SHADOW_SIZE / 2 * yShift + SHADOW_VERTICAL_OFFSET
 			)
 		end)
-
-		local containerProps = withCommonProps(props, {
-			Parent = overlay,
-			ZIndex = elevation.zIndex,
-			tag = "size-full",
-			Visible = currentVisible
-		})
-
-		return View {
-			scope = innerScope,
-			props = containerProps,
-			children = {
-				Backdrop = if props.onPressedOutside and unwrap(props.isOpen, use)
-					then View {
+		
+		local parentValue = innerScope:Value(nil)
+		local content = if shouldRenderPopover then
+			View {
+				Name = "Content",
+				scope = innerScope,
+				ZIndex = elevation.zIndex,
+				tag = "size-full",
+				Visible = isVisible,
+				Parent = parentValue,
+				children = {
+					Backdrop = if props.onPressedOutside and unwrap(props.isOpen, use) then 
+					backdropInstance:set(View {
+						Name = "Backdrop",
 						scope = innerScope,
-						props = {
-							ZIndex = 1,
-							stateLayer = { affordance = StateLayerAffordance.None },
-							Size = UDim2.fromScale(2, 2),
-							tag = "position-center-center anchor-center-center",
-							onStateChanged = function(newState: ControlState)
-								if newState ~= ControlState.Pressed then return end
-								if currentAnchor and typeof(currentAnchor) == "Instance" then
-									local pointerPos = unwrap(pointerPosition)
-									if isPointInGuiObjectBounds(currentAnchor, pointerPos) then return end
-									if currentAnchor.GuiState ~= Enum.GuiState.Idle then return end
-								end
-								props.onPressedOutside()
+						ZIndex = 1,
+						stateLayer = { affordance = StateLayerAffordance.None },
+						Size = UDim2.fromScale(2, 2),
+						tag = "position-center-center anchor-center-center",
+						onStateChanged = function(newState: ControlState)
+							if newState ~= ControlState.Pressed then return end
+							if currentAnchor and typeof(currentAnchor) == "Instance" then
+								local pointerPosition = unwrap(pointerComputed)
+								local pointerPos = unwrap(pointerPosition)
+								if isPointInGuiObjectBounds(currentAnchor, pointerPos) then return end
+								if currentAnchor.GuiState ~= Enum.GuiState.Idle then return end
 							end
-						}
-					}
+							props.onPressedOutside()
+						end
+					})
 					else nil,
-
-				Shadow = Image {
-					scope = innerScope,
-					AnchorPoint = anchorPoint,
-					Image = SHADOW_IMAGE,
-					Size = shadowSizeMap,
-					Position = shadowPositionMap,
-					ZIndex = 2,
-					slice = {
-						center = Rect.new(SHADOW_SIZE, SHADOW_SIZE, SHADOW_SIZE + 1, SHADOW_SIZE + 1),
-					},
-					imageStyle = tokens.Color.Extended.Black.Black_20
-				},
-
-				Arrow = if unwrap(hasArrowActive, use)
-					then View {
+					
+					Shadow = Image {
+						Name = "Shadow",
 						scope = innerScope,
-						props = {
+						AnchorPoint = anchorPoint,
+						Image = SHADOW_IMAGE,
+						Size = shadowSizeMap,
+						Position = shadowPositionMap,
+						ZIndex = 2,
+						slice = {
+							center = Rect.new(SHADOW_SIZE, SHADOW_SIZE, SHADOW_SIZE + 1, SHADOW_SIZE + 1),
+						},
+						imageStyle = tokens.Color.Extended.Black.Black_20
+					},
+					
+					Arrow = if unwrap(hasArrowActive, use) then 
+						View {
+							Name = "Arrow",
+							scope = innerScope,
 							Size = UDim2.fromOffset(arrowSide, arrowSide),
 							Position = innerScope:Computed(function(use: Use)
 								local arrowPos = unwrap(arrowPosition, use)
@@ -230,36 +295,20 @@ return function(contentProps: PopoverContentProps)
 							end),
 							Rotation = 45,
 							ZIndex = 3,
-							backgroundStyle = backgroundStyle,
+							backgroundStyle = bgStyle,
 							tag = "anchor-center-center"
 						}
-					}
 					else nil,
-
-				Content = View {
-					scope = innerScope,
-					props = {
-						AnchorPoint = anchorPoint,
-						Position = innerScope:Computed(function(use: Use)
-							local pos = unwrap(position, use)
-							return UDim2.fromOffset(pos.X, pos.Y)
-						end),
-						selection = props.selection,
-						selectionGroup = props.selectionGroup,
-						sizeConstraint = {
-							MaxSize = screenSize,
-						},
-						stateLayer = {
-							affordance = StateLayerAffordance.None,
-						},
-						ZIndex = 4,
-						onActivated = if props.onPressedOutside then function() end else nil,
-						backgroundStyle = backgroundStyle,
-						tag = `auto-xy {radiusToTag[currentRadius]}`
-					},
-					children = props.children
 				}
 			}
-		}
+			else nil
+		
+		if finalParent then
+			task.defer(function()
+				parentValue:set(finalParent)	
+			end)
+		end
+		
+		return content	
 	end)
 end

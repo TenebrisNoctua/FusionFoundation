@@ -5,6 +5,7 @@ local Signal = PackageManager.getPackage("Signal")
 
 local Utility = Foundation.Utility
 
+local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 
@@ -25,17 +26,14 @@ type BaseMeasurableObjectImpl = {
 	GetPropertyChangedSignal: (self: BaseMeasurableObject, propertyName: string) -> Signal<unknown>,
 }
 
-type BaseMeasurableObject = typeof(setmetatable(
-	{} :: {
-		_signals: {
-			AbsolutePosition: SignalWrapper<Vector2>,
-			AbsoluteSize: SignalWrapper<Vector2>,
-		},
-		AbsolutePosition: Vector2,
-		AbsoluteSize: Vector2,
+type BaseMeasurableObject = setmetatable<{
+	_signals: {
+		AbsolutePosition: SignalWrapper<Vector2>,
+		AbsoluteSize: SignalWrapper<Vector2>
 	},
-	{} :: BaseMeasurableObjectImpl
-	))
+	AbsolutePosition: Vector2,
+	AbsoluteSize: Vector2
+}, BaseMeasurableObjectImpl>
 
 local function createSignal<T>(): SignalWrapper<T>
 	local signal, fire = Signal.createSignal()
@@ -109,11 +107,11 @@ return function(scope: Scope, position: UsedAs<Vector2>, size: UsedAs<Vector2?>)
 		instance:SetSize(unwrap(size) or Vector2.one)
 	end
 
-	if unwrap(position) ~= position then
+	if isState(position) then
 		scope:Observer(position):onChange(syncPosition)
 	end
 
-	if unwrap(size) ~= size then
+	if isState(size) then
 		scope:Observer(size):onChange(syncSize)
 	end
 

@@ -3,6 +3,7 @@ local Utility = Foundation.Utility
 
 local positioning = require(script.Parent.positioning)
 
+local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 
@@ -46,7 +47,7 @@ local function connectSignals(
 	local function setup()
 		cleanup()
 		local instance = unwrap(instanceState)
-		if typeof(instance) == "Instance" then
+		if typeof(instance) == "Instance" or (typeof(instance) == "table" and instance.GetPropertyChangedSignal ~= nil) then
 			for _, signalName in ipairs(signalNames) do
 				local signal = instance:GetPropertyChangedSignal(signalName)
 				table.insert(connections, signal:Connect(callback))
@@ -54,7 +55,7 @@ local function connectSignals(
 		end
 	end
 
-	if unwrap(instanceState) ~= instanceState then
+	if isState(instanceState) then
 		scope:Observer(instanceState):onChange(setup)
 	end
 
@@ -99,7 +100,7 @@ local function useFloating(
 		local internalContentSize = currentContent.AbsoluteSize
 		local internalScreenSize = currentOverlay.AbsoluteSize
 		local screenPosition = currentOverlay.AbsolutePosition
-
+		
 		local anchorRect = Rect.new(anchorPosition, anchorPosition + anchorSize)
 		local screenRect = Rect.new(screenPosition, screenPosition + internalScreenSize)
 
@@ -156,6 +157,9 @@ local function useFloating(
 	local configDependencies = scope:Computed(function(use: Use)
 		return {
 			isOpen = unwrap(isOpen, use),
+			anchor = unwrap(anchor, use),
+			content = unwrap(content, use),
+			overlay = unwrap(overlay, use),
 			sideConfig = unwrap(sideConfig, use),
 			alignConfig = unwrap(alignConfig, use),
 			arrowSize = unwrap(arrowSize, use),
