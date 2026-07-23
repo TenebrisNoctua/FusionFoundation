@@ -1,4 +1,4 @@
-local Foundation = script.Parent.Parent.Parent.Parent
+local Foundation = script.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
@@ -7,12 +7,12 @@ local Providers = Foundation.Providers
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
-local PopoverArrow = require(script.Parent.Parent.PopoverArrow)
-local PopoverContent = require(script.Parent.Parent.Content)
-local PopoverShadow = require(script.Parent.Parent.PopoverShadow)
-local getPanelPosition = require(script.Parent.getPanelPosition)
-local useArrowPosition = require(script.Parent.useArrowPosition)
-local usePanelSizing = require(script.Parent.usePanelSizing)
+local PopoverArrow = require(script.Parent.PopoverArrow)
+local PopoverContent = require(script.Parent.Content)
+local PopoverShadow = require(script.Parent.PopoverShadow)
+local getPanelPosition = require(script.getPanelPosition)
+local useArrowPosition = require(script.useArrowPosition)
+local usePanelSizing = require(script.usePanelSizing)
 
 local View = require(Foundation.Components.View)
 

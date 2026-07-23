@@ -1,5 +1,4 @@
 local Foundation = script.Parent.Parent.Parent
-
 local Utility = Foundation.Utility
 
 local Content = require(script.Parent.Content)
