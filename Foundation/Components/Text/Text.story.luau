@@ -4,11 +4,16 @@ local Foundation = script.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
-local Children = Fusion.Children
 
-local View = require(Foundation.Components.View)
-local Text = require(Foundation.Components.Text)
-local ControlState = require(Foundation.Enums.ControlState)
+local Components = Foundation.Components
+local Utility = Foundation.Utility
+local Enums = Foundation.Enums
+
+local View = require(Components.View)
+local Text = require(Components.Text)
+
+local StorySection = require(Utility.Stories.StorySection)
+local ControlState = require(Enums.ControlState)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
@@ -16,7 +21,6 @@ type ControlState = ControlState.ControlState
 
 local function Story(props)
 	local Scope = props.scope
-	local Theme = ThemeProvider()
 	
 	return Text {
 		scope = Scope,
@@ -72,29 +76,41 @@ return {
 			backgroundStyle = {
 				Transparency = 1
 			},
-
 			children = {
 				scope:New "UIListLayout" {
 					Padding = UDim.new(0, 16),
 					SortOrder = Enum.SortOrder.LayoutOrder
 				},
-
-				Story {
+				
+				StorySection {
 					scope = scope,
-					text = text,
-					textSize = textSize,
-					layoutOrder = 1
+					title = "Basic Text",
+					children = {
+						Story {
+							scope = scope,
+							text = text,
+							textSize = textSize,
+							layoutOrder = 2
+						}
+					}
 				},
 				
-				StoryGuiState {
+				StorySection {
 					scope = scope,
-					text = text,
-					textSize = textSize,
-					layoutOrder = 2
+					title = "GUI State Use",
+					layoutOrder = 2,
+					children = {
+						StoryGuiState {
+							scope = scope,
+							text = text,
+							textSize = textSize,
+							layoutOrder = 2
+						}
+					}
 				},
 				
 				theme.StyleLink
 			}
 		}
-	end,
+	end
 }

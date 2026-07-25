@@ -131,11 +131,6 @@ return function(menuItemProps: BaseMenuItemProps)
 	local props = withDefaults(menuItemProps, defaultProps)
 	local itemRef = scope:Value(nil :: GuiObject?)
 
-	local submenuHasLeading = scope:Value(false)
-	local function setSubmenuHasLeading()
-		submenuHasLeading:set(true)
-	end
-
 	if props.icon and props.setHasLeading then
 		props.setHasLeading()
 	end
@@ -151,12 +146,12 @@ return function(menuItemProps: BaseMenuItemProps)
 		local isChecked = unwrap(props.isChecked, use)
 		local hasLeading = unwrap(props.hasLeading, use)
 
-		local isSubmenu = FOUNDATION_BASE_MENU_SUBMENU_SUPPORT and props.children ~= nil
+		local isSubmenu = FOUNDATION_BASE_MENU_SUBMENU_SUPPORT and unwrap(props.children, use) ~= nil
 		local hoverPath = unwrap(props.hoverOpenPath, use) or {}
 		local isOpen = isSubmenu and hoverPath[currentDepth] == currentId
 
 		local variantProps = useBaseMenuItemVariants(innerScope, tokens, currentSize, if isSubmenu then false else isChecked)
-
+		
 		if FOUNDATION_BASE_MENU_SUBMENU_SUPPORT then
 			useMenuItemHover(innerScope, {
 				itemRef = itemRef,
@@ -182,7 +177,7 @@ return function(menuItemProps: BaseMenuItemProps)
 
 				local callback = props.onActivated or props.onActivatedContext
 				if not callback then
-					warn("Menu should have either onActivated on itself or on all of its children") -- This can be converted back to Logger Utility if Lumberyak is added as a package.
+					warn("[FusionFoundation]: Menu should have either onActivated on itself or on all of its children") -- This can be converted back to Logger Utility if Lumberyak is added as a package.
 				else
 					callback(currentId)
 				end
@@ -209,17 +204,15 @@ return function(menuItemProps: BaseMenuItemProps)
 		local currentVariantProps = unwrap(variantProps, use)
 
 		local viewChildren = {}
-
+		
 		if currentIcon or hasLeading then
 			if currentIcon and isBuilderIconOrMigrated(currentIcon) then
 				viewChildren.IconWrapper = View {
 					scope = innerScope,
-					props = {
-						LayoutOrder = 1,
-						tag = `align-x-center align-y-center {currentVariantProps.icon.tag}`,
-					},
+					LayoutOrder = 1,
+					tag = `align-x-center align-y-center {currentVariantProps.icon.tag}`,
 					children = {
-						Icon = Icon {
+						Icon {
 							scope = innerScope,
 							name = if migratedIcon then migratedIcon.name else currentIcon,
 							style = currentVariantProps.icon.style,
@@ -261,26 +254,20 @@ return function(menuItemProps: BaseMenuItemProps)
 				size = currentVariantProps.check.size
 			}
 		end
-
-		local itemElementProps = withCommonProps(props, {
+		
+		local viewProps = withCommonProps(props, {
+			scope = innerScope,
 			GroupTransparency = if isDisabled then Constants.DISABLED_TRANSPARENCY else nil,
 			isDisabled = isDisabled,
 			onActivated = onActivated,
 			selection = { Selectable = not isDisabled },
 			cursor = cursor,
 			tag = currentVariantProps.container.tag,
+			children = viewChildren
 		})
-
-		local itemElement = View {
-			scope = innerScope,
-			props = itemElementProps,
-			children = viewChildren,
-		}
-
-		-- Defers capturing of the constructed instance explicitly
-		task.defer(function()
-			itemRef:set(itemElement)
-		end)
+		
+		local itemElement = unwrap(View(viewProps))
+		itemRef:set(itemElement)
 
 		if not isSubmenu then
 			return innerScope:Hydrate(itemElement)(stripProps(props, COMPONENT_ONLY_PROPERTIES))
@@ -288,25 +275,8 @@ return function(menuItemProps: BaseMenuItemProps)
 
 		local strokeThickness = tokens.Stroke.Standard
 		local groupPadding = currentVariantProps.groupPadding.size
-
-		local wrappedChildren = {}
-		if props.children then
-			for key, child in pairs(props.children) do
-				if type(child) == "table" and child.props then
-					child.props.onActivatedContext = props.onActivatedContext
-					child.props.onNestedLeafActivated = props.onNestedLeafActivated
-					child.props.size = currentSize
-					child.props.hasLeading = submenuHasLeading
-					child.props.setHasLeading = setSubmenuHasLeading
-					child.props.hoverOpenPath = props.hoverOpenPath
-					child.props.hoverOpenAtDepth = props.hoverOpenAtDepth
-					child.props.hoverCloseAtDepth = props.hoverCloseAtDepth
-					child.props.hoverReset = props.hoverReset
-					child.props.depth = currentDepth + 1
-				end
-				wrappedChildren[key] = child
-			end
-		end
+		
+		local wrappedChildren = unwrap(props.children, use)
 
 		local fragmentChildren = {
 			Item = innerScope:Hydrate(itemElement)(stripProps(props, COMPONENT_ONLY_PROPERTIES)),
@@ -335,10 +305,8 @@ return function(menuItemProps: BaseMenuItemProps)
 						children = {
 							MenuContainer = View {
 								scope = innerScope,
-								props = {
-									tag = "col auto-xy stroke-standard stroke-default radius-medium",
-									InputSink = InputSinkAll,
-								},
+								tag = "col auto-xy stroke-standard stroke-default radius-medium",
+								InputSink = InputSinkAll,
 								children = wrappedChildren
 							}
 						}

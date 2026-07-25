@@ -37,7 +37,7 @@ local function setProperty_unsafe(
 	value: unknown
 )
 	(instance :: any)[property] = value
-	--[[ DEBUG:
+	--[[
 	local s, e = pcall(function(...) 
 		(instance :: any)[property] = value
 	end)
@@ -64,6 +64,7 @@ local function setProperty(
 	if not success then
 		if not pcall(testPropertyAssignable, instance, property) then
 			External.logErrorNonFatal("cannotAssignProperty", nil, instance.ClassName, property)
+			-- warn(debug.traceback())
 		else
 			-- property is assignable, but this specific assignment failed
 			-- this typically implies the wrong type was received

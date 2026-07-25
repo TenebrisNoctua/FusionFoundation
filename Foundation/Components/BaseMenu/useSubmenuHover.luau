@@ -12,9 +12,6 @@
 ]]
 
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Types = require(Foundation.Utility.Types)
 local unwrap = require(Foundation.Utility.unwrap)
@@ -120,7 +117,6 @@ local function useSubmenuHover(scope: Scope): SubmenuHoverState
 		openPath:set({})
 	end
 
-	-- Clean up scheduling threads safely when the component's scope decomposes
 	table.insert(scope, function()
 		cancelTimers()
 	end)

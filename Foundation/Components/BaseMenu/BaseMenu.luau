@@ -1,8 +1,4 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
-local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
@@ -11,7 +7,6 @@ local Components = Foundation.Components
 local DeclarativeBaseMenuContent = require(script.Parent.DeclarativeBaseMenuContent)
 local useSubmenuHover = require(script.Parent.useSubmenuHover)
 local computeAutomaticSize = require(script.Parent.computeAutomaticSize)
-local BaseMenuContext = require(script.Parent.BaseMenuContext)
 
 local ScrollView = require(Components.ScrollView)
 local View = require(Components.View)
@@ -25,19 +20,6 @@ local Types = require(Utility.Types)
 local ControlState = require(Enums.ControlState)
 local Radius = require(Enums.Radius)
 local InputSize = require(Enums.InputSize)
-
-local COMPONENT_ONLY_PROPERTIES = {
-	"size",
-	"width",
-	"scale",
-	"isDisabled",
-	"isLoading",
-	"onActivated",
-	"fillBehavior",
-	"inputDelay",
-	"isIconSize",
-	"colorMode",
-}
 
 local defaultProps = {
 	size = InputSize.Medium,
@@ -83,7 +65,7 @@ export type BaseMenuProps<Item = BaseMenuItem> = {
 	-- List of items to display in the menu
 	items: BaseMenuItems<Item>?,
 	-- Size of the menu and its items
-	size: InputSize?,
+	size: UsedAs<InputSize>?,
 	-- Width of the component. If not specified, the menu is sized based on the content.
 	width: UsedAs<UDim?>,
 	onActivated: OnItemActivated?,
@@ -104,7 +86,7 @@ local function BaseMenu(baseMenuProps: BaseMenuProps)
 	assert(scope, "A scope has not been provided for the BaseMenu component.")
 
 	local isVisible = scope:Value(false)
-	task.delay(0, function()
+	task.defer(function()
 		isVisible:set(true)
 	end)
 
@@ -120,8 +102,8 @@ local function BaseMenu(baseMenuProps: BaseMenuProps)
 		hasLeading:set(true)
 	end
 
-	local function onContentAbsoluteSizeChanged(frame: GuiObject)
-		canvasSize:set(UDim2.fromOffset(frame.AbsoluteSize.X, frame.AbsoluteSize.Y))
+	local function onContentAbsoluteSizeChanged(newSize: Vector2)
+		canvasSize:set(UDim2.fromOffset(newSize.X, newSize.Y))
 	end
 
 	return scope:Computed(function(use: Use, innerScope: Scope)
@@ -149,32 +131,21 @@ local function BaseMenu(baseMenuProps: BaseMenuProps)
 				DeclarativeBaseMenuContent {
 					scope = innerScope,
 					items = props.items,
+					onActivatedContext = props.onActivated,
+					onNestedLeafActivated = props.onNestedLeafActivated,
+					size = props.size,
+					hasLeading = hasLeading,
+					setHasLeading = setHasLeading,
+					hoverOpenPath = submenuHover.openPath,
+					hoverOpenAtDepth = submenuHover.openAtDepth,
+					hoverCloseAtDepth = submenuHover.closeAtDepth,
+					hoverReset = submenuHover.reset,
+					depth = 1,
 				},
 			}
 		end
-
+		
 		local radiusTag = if props.radius ~= nil then radiusToTag[props.radius] or "" else ""
-
-		local contextValue = {
-			onActivated = props.onActivated,
-			onNestedLeafActivated = props.onNestedLeafActivated,
-			size = props.size,
-			hasLeading = hasLeading,
-			setHasLeading = setHasLeading,
-			hoverOpenPath = submenuHover.openPath,
-			hoverOpenAtDepth = submenuHover.openAtDepth,
-			hoverCloseAtDepth = submenuHover.closeAtDepth,
-			hoverReset = submenuHover.reset,
-			depth = 1,
-		}
-
-		local wrappedChildren = {
-			BaseMenuContext {
-				scope = innerScope,
-				value = contextValue,
-				children = menuChildren,
-			},
-		}
 
 		if currentMaxHeight then
 			local automaticSize = computeAutomaticSize({
@@ -202,8 +173,10 @@ local function BaseMenu(baseMenuProps: BaseMenuProps)
 					View {
 						scope = innerScope,
 						tag = "col size-full",
+						Size = UDim2.fromScale(1, 0),
+						AutomaticSize = if autoSizeValue then Enum.AutomaticSize.XY else Enum.AutomaticSize.Y,
 						onAbsoluteSizeChanged = onContentAbsoluteSizeChanged,
-						children = wrappedChildren,
+						children = menuChildren,
 					}
 				},
 			}))
@@ -214,7 +187,7 @@ local function BaseMenu(baseMenuProps: BaseMenuProps)
 				AutomaticSize = if autoSizeValue then Enum.AutomaticSize.XY else Enum.AutomaticSize.Y,
 				Size = if autoSizeValue then nil else UDim2.new(currentWidth, UDim.new()),
 				sizeConstraint = sizeConstraint,
-				children = wrappedChildren,
+				children = menuChildren,
 			}))
 		end
 	end)

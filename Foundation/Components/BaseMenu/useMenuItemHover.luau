@@ -1,10 +1,8 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Utility = Foundation.Utility
 
+local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 
@@ -54,7 +52,7 @@ return function(scope: Scope, options: UseMenuItemHoverOptions)
 		end)
 	end
 
-	if unwrap(options.itemRef) ~= options.itemRef then
+	if isState(options.itemRef) then
 		scope:Observer(options.itemRef):onChange(setupListener)
 	end
 

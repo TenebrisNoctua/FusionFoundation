@@ -1,16 +1,18 @@
---!nonstrict
-
 local Foundation = script.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
 
-local Text = require(Foundation.Components.Text)
-local View = require(Foundation.Components.View)
-local ScrollView = require(Foundation.Components.ScrollView)
+local Components = Foundation.Components
+local Utility = Foundation.Utility
+
+local Text = require(Components.Text)
+local View = require(Components.View)
+local ScrollView = require(Components.ScrollView)
+
+local StorySection = require(Utility.Stories.StorySection)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-local ControlState = require(Foundation.Enums.ControlState)
 
 local function StoryScrolling(props)
 	local scope = props.scope
@@ -19,6 +21,7 @@ local function StoryScrolling(props)
 	return View {
 		scope = scope,
 		tag = "row gap-large auto-xy",
+		LayoutOrder = props.layoutOrder,
 		children = {
 			ScrollView {
 				scope = scope,
@@ -102,6 +105,7 @@ local function StoryScrollViewWithTags(props)
 	return View {
 		scope = scope,
 		tag = "col gap-large size-full-0 auto-y",
+		LayoutOrder = props.layoutOrder,
 		children = {
 			ScrollView = ScrollView {
 				scope = scope,
@@ -154,22 +158,42 @@ return {
 		
 		return View {
 			scope = scope,
-			tag = "column gap-large auto-xy",
+			tag = "auto-xy",
 			children = {
-				StoryScrolling {
-					scope = scope,
-					scrollBarVisibility = scrollBarVisibility,
-					selectable = selectable,
+				scope:New "UIListLayout" {
+					Padding = UDim.new(0, 16),
+					SortOrder = Enum.SortOrder.LayoutOrder,
 				},
 				
-				StoryScrollViewWithTags {
+				StorySection {
 					scope = scope,
-					scrollBarVisibility = scrollBarVisibility,
-					selectable = selectable
+					title = "Horizontal and Vertical scrolling",
+					children = {
+						StoryScrolling {
+							scope = scope,
+							scrollBarVisibility = scrollBarVisibility,
+							selectable = selectable,
+							layoutOrder = 2
+						}
+					}
+				},
+				
+				StorySection {
+					scope = scope,
+					title = "ScrollView with tags",
+					layoutOrder = 2,
+					children = {
+						StoryScrollViewWithTags {
+							scope = scope,
+							scrollBarVisibility = scrollBarVisibility,
+							selectable = selectable,
+							layoutOrder = 2
+						}
+					}
 				},
 				
 				theme.StyleLink
 			}
 		}
-	end,
+	end
 }

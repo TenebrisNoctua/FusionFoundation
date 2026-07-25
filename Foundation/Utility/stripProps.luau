@@ -1,4 +1,4 @@
-local defaultKeys = {"backgroundStyle", "tag", "children", "padding", "stroke", "scope", "layout", "sizeConstraint"}
+local defaultKeys = {"backgroundStyle", "tag", "children", "padding", "stroke", "scope", "layout", "sizeConstraint", "onAbsolutePositionChanged", "onAbsoluteSizeChanged"}
 
 -- Strips the given properties in the <code>exclude</code> table from the <code>props</code> table.
 return function(props: {[any]: any}, exclude: {any}, doNotRemoveDefaults: boolean?)

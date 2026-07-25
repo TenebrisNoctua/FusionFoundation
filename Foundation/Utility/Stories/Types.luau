@@ -9,6 +9,9 @@ local StoryTypes = {}
 
 --local PreferencesProvider = require(Foundation.Providers.Preferences.PreferencesProvider)
 
+type Scope = Types.Scope
+type Child = Types.Child
+
 type Theme = Theme.Theme
 type Device = Device.Device
 --type Preferences = PreferencesProvider.PreferencesProps
@@ -33,7 +36,7 @@ export type FlipbookStoryProps = {
 
 export type UILabsStoryProps = {
 	plugin: Plugin?,
-	scope: Types.Scope,
+	scope: Scope,
 	controls: { 
 		theme: Theme?,
 		device: Device?,
@@ -42,6 +45,14 @@ export type UILabsStoryProps = {
 }
 
 export type StoryProps = FlipbookStoryProps | DeveloperStorybookStoryProps
+
+export type StorySectionProps = {
+	scope: Scope,
+	title: string,
+	description: string?,
+	layoutOrder: number?,
+	children: Child
+}
 
 --[[ 
 	These functions are related to the two internal plugins that are used to display component stories: Flipbook and Developer Storybook.

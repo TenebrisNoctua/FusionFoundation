@@ -1,15 +1,17 @@
 local Foundation = script.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
-local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
 local BaseMenuGroup = require(script.Parent.BaseMenuGroup)
 local BaseMenuItem = require(script.Parent.BaseMenuItem)
 
 local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 local Types = require(Utility.Types)
 local unwrap = require(Utility.unwrap)
+
+local InputSize = require(Enums.InputSize)
 
 local FoundationBaseMenuSubmenuSupport = true
 
@@ -18,6 +20,7 @@ type OnItemActivated = Types.OnItemActivated
 type Scope = Types.Scope
 type Use = Types.Use
 type UsedAs<T> = Types.UsedAs<T>
+type InputSize = InputSize.InputSize
 
 export type BaseMenuItemGroup<Item> = {
 	title: string?,
@@ -40,6 +43,16 @@ export type BaseMenuItems<Item = BaseMenuItem> = { Item } | { BaseMenuItemGroup<
 type DeclarativeBaseMenuContentProps<Item = BaseMenuItem> = {
 	scope: Scope,
 	items: UsedAs<BaseMenuItems<Item>>,
+	onActivatedContext: OnItemActivated?,
+	onNestedLeafActivated: (() -> ())?,
+	size: UsedAs<InputSize>?,
+	hasLeading: UsedAs<boolean>?,
+	setHasLeading: (() -> ())?,
+	hoverOpenPath: UsedAs<{ ItemId }>?,
+	hoverOpenAtDepth: ((depth: number, id: ItemId, immediate: boolean?) -> ())?,
+	hoverCloseAtDepth: ((depth: number) -> ())?,
+	hoverReset: (() -> ())?,
+	depth: number?,
 }
 
 local function DeclarativeBaseMenuContent(props: DeclarativeBaseMenuContentProps)
@@ -48,9 +61,7 @@ local function DeclarativeBaseMenuContent(props: DeclarativeBaseMenuContentProps
 
 	return scope:Computed(function(use: Use, innerScope: Scope)
 		local currentItems = unwrap(props.items, use)
-		if not currentItems then
-			return nil
-		end
+		if not currentItems then return end
 
 		-- Distinguish between flat items and grouped items:
 		-- BaseMenuItemGroup has `items` but no `id`; BaseMenuItem has `id`
@@ -70,6 +81,11 @@ local function DeclarativeBaseMenuContent(props: DeclarativeBaseMenuContentProps
 				LayoutOrder = groupIndex,
 				title = group.title,
 				children = Dash.map(group.items, function(item, index)
+					local submenuHasLeading = innerScope:Value(false)
+					local function setSubmenuHasLeading()
+						submenuHasLeading:set(true)
+					end
+
 					return BaseMenuItem {
 						scope = innerScope,
 						LayoutOrder = index,
@@ -79,11 +95,31 @@ local function DeclarativeBaseMenuContent(props: DeclarativeBaseMenuContentProps
 						text = item.text,
 						onActivated = item.onActivated,
 						id = item.id,
+						onActivatedContext = props.onActivatedContext,
+						onNestedLeafActivated = props.onNestedLeafActivated,
+						size = props.size,
+						hasLeading = props.hasLeading,
+						setHasLeading = props.setHasLeading,
+						hoverOpenPath = props.hoverOpenPath,
+						hoverOpenAtDepth = props.hoverOpenAtDepth,
+						hoverCloseAtDepth = props.hoverCloseAtDepth,
+						hoverReset = props.hoverReset,
+						depth = props.depth or 1,
 						children = if FoundationBaseMenuSubmenuSupport and item.items
-							then 
+							then
 							{DeclarativeBaseMenuContent {
 								scope = innerScope,
 								items = item.items,
+								onActivatedContext = props.onActivatedContext,
+								onNestedLeafActivated = props.onNestedLeafActivated,
+								size = props.size,
+								hasLeading = submenuHasLeading,
+								setHasLeading = setSubmenuHasLeading,
+								hoverOpenPath = props.hoverOpenPath,
+								hoverOpenAtDepth = props.hoverOpenAtDepth,
+								hoverCloseAtDepth = props.hoverCloseAtDepth,
+								hoverReset = props.hoverReset,
+								depth = (props.depth or 1) + 1,
 							}}
 							else nil,
 					}

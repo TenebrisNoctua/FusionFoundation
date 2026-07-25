@@ -140,7 +140,7 @@ return function(imageProps: ImageProps): UsedAs<ImageButton | ImageLabel>
 				end
 			end
 		else
-			image:set(imageData)
+			image:set(imageData or "")
 			imageRectOffset:set(imageRectOffsetData)
 			imageRectSize:set(imageRectSizeData)
 		end

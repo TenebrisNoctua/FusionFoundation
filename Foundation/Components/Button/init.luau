@@ -2,7 +2,6 @@ local Foundation = script.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
-local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
@@ -16,7 +15,6 @@ local endAlignedIcons = require(script.endAlignedIcons)
 local useButtonVariants = require(script.useButtonVariants)
 local useButtonMotionStates = require(script.useButtonMotionStates)
 
-local withCommonProps = require(Utility.withCommonProps)
 local withDefaults = require(Utility.withDefaults)
 local unwrap = require(Utility.unwrap)
 local stripProps = require(Utility.stripProps)
@@ -125,14 +123,6 @@ return function(buttonProps: ButtonProps)
 		else return "Default" end
 	end)
 
-	local variantProps = useButtonVariants(Scope, props.size, props.variant, props.colorMode)
-
-	local defaultTransparency = Scope:Computed(function(use: Use)
-		return unwrap(variantProps, use).content.style.Transparency or 0
-	end)
-
-	local motion = useButtonMotionStates(Scope, buttonState, defaultTransparency, Constants.DISABLED_TRANSPARENCY)
-
 	local function setControlState(newState: ControlState)
 		if newState == ControlState.Disabled then return end
 		controlState:set(newState)
@@ -142,14 +132,23 @@ return function(buttonProps: ButtonProps)
 		local inputDelay = unwrap(props.inputDelay, use)
 		local isDelaying = innerScope:Value(inputDelay > 0)
 		local progressGoal = innerScope:Value(0)
-		local progressTween = innerScope:Tween(progressGoal, TweenInfo.new(unwrap(props.inputDelay, use) or 0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out))
-
+		local progressTween = innerScope:Tween(progressGoal, TweenInfo.new(inputDelay or 0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out))
+		
+		local buttonSize = unwrap(props.size, use)
+		local buttonVariant = unwrap(props.variant, use)
+		local buttonColor = unwrap(props.colorMode, use)
+		
+		local variantProps = useButtonVariants(innerScope, buttonSize, buttonVariant, buttonColor)
+		local currentVariantProps = unwrap(variantProps, use)
+		local defaultTransparency = currentVariantProps.content.style.Transparency or 0
+		
+		local motion = useButtonMotionStates(innerScope, buttonState, defaultTransparency, Constants.DISABLED_TRANSPARENCY)
+		
 		if inputDelay > 0 then
 			isDelaying:set(true)
 			progressGoal:set(1)
 		end
 
-		local currentVariantProps = unwrap(variantProps, use)
 		local isIcon = unwrap(props.icon, use)
 		local isEndAligned = isIcon and endAlignedIcons[isIcon]
 		local hasText = unwrap(props.text, use) and unwrap(props.text, use) ~= ""
@@ -162,8 +161,7 @@ return function(buttonProps: ButtonProps)
 		local function formatText(use: Use)
 			local currentText = unwrap(props.text, use)
 			local state = unwrap(controlState, use)
-			local variant = unwrap(props.variant, use)
-			local richTextFormat = BUTTON_VARIANT_TO_RICH_TEXT_FORMAT[variant]
+			local richTextFormat = BUTTON_VARIANT_TO_RICH_TEXT_FORMAT[buttonVariant]
 
 			if hasText and richTextFormat and table.find(richTextFormat.controlState, state) then
 				return richTextFormat.format:format(currentText)
@@ -200,8 +198,8 @@ return function(buttonProps: ButtonProps)
 						scope = innerScope,
 						icon = props.icon,
 						isLoading = props.isLoading,
-						variant = props.variant,
-						size = props.size,
+						variant = buttonVariant,
+						size = buttonSize,
 						disabledTransparencyBinding = motion.transparency,
 						textTransparencyBinding = motion.textTransparency,
 						textSizeOffset = props.textSizeOffset,
@@ -214,7 +212,7 @@ return function(buttonProps: ButtonProps)
 			buttonChildren.Text = Text {
 				scope = innerScope,
 				Text = innerScope:Computed(formatText),
-				RichText = if BUTTON_VARIANT_TO_RICH_TEXT_FORMAT[use(props.variant)] ~= nil then true else false,
+				RichText = if BUTTON_VARIANT_TO_RICH_TEXT_FORMAT[buttonVariant] ~= nil then true else false,
 				tag = currentVariantProps.text.tag,
 				textStyle = innerScope:Computed(function(use: Use)
 					local disabledTransp = unwrap(motion.transparency, use)
@@ -241,6 +239,7 @@ return function(buttonProps: ButtonProps)
 		local viewProps = {
 			scope = innerScope,
 			AutomaticSize = if currentWidth.Scale == 0 then Enum.AutomaticSize.X else nil,
+			LayoutOrder = props.LayoutOrder,
 			cornerRadius = UDim.new(0, currentVariantProps.container.radius),
 
 			backgroundStyle = if currentVariantProps.container.style
@@ -305,7 +304,7 @@ return function(buttonProps: ButtonProps)
 			tag = currentVariantProps.container.tag,
 			children = buttonChildren
 		}
-
-		return innerScope:Hydrate(View(viewProps))(Dash.join(withCommonProps(props, {}), stripProps(props, COMPONENT_ONLY_PROPERTIES)))
+		
+		return innerScope:Hydrate(View(viewProps))(props, stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

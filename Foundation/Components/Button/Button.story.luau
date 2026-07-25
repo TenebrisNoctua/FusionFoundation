@@ -13,6 +13,7 @@ local View = require(Foundation.Components.View)
 
 local unwrap = require(Foundation.Utility.unwrap)
 local Types = require(Foundation.Utility.Types)
+local StorySection = require(Foundation.Utility.Stories.StorySection)
 
 local ColorMode = require(Foundation.Enums.ColorMode)
 local InputSize = require(Foundation.Enums.InputSize)
@@ -72,7 +73,6 @@ return {
 			AutomaticSize = Enum.AutomaticSize.XY,
 			tag = "padding-medium radius-medium back-clear",
 			children = scope:Computed(function(use: Use, innerScope: Scope)
-				-- Establish a vertical layout to cleanly separate each variant row
 				local renderedStories = {
 					innerScope:New "UIListLayout" {
 						FillDirection = Enum.FillDirection.Vertical,
@@ -85,7 +85,6 @@ return {
 				local extendedColors = unwrap(theme.Tokens, use).Color.Extended
 				local colorMode = unwrap(controls.colorMode, use)
 
-				-- Loop through every ButtonVariant to create a multi-story layout dynamically
 				for _, variant in ButtonVariant do
 					local buttonsForSizes = {
 						innerScope:New "UIListLayout" {
@@ -96,13 +95,12 @@ return {
 						}
 					}
 
-					-- Map all sizing combinations for the current variant row
 					local sizes = { InputSize.Large, InputSize.Medium, InputSize.Small, InputSize.XSmall }
 					for _, size in sizes do
 						table.insert(buttonsForSizes, Button {
 							scope = innerScope,
-							icon = innerScope:Computed(function(innerUse)
-								local iconVal = innerUse(controls.icon)
+							icon = innerScope:Computed(function(use)
+								local iconVal = unwrap(controls.icon, use)
 								return if iconVal == "" then nil else iconVal
 							end),
 							text = controls.text,
@@ -110,8 +108,8 @@ return {
 							isLoading = controls.isLoading,
 							isDisabled = controls.isDisabled,
 							size = size,
-							fillBehavior = innerScope:Computed(function(innerUse)
-								local fill = innerUse(controls.fillBehavior)
+							fillBehavior = innerScope:Computed(function(use)
+								local fill = unwrap(controls.fillBehavior, use)
 								return if fill == "None" then nil else fill
 							end),
 							inputDelay = controls.inputDelay,
@@ -122,17 +120,16 @@ return {
 						})
 					end
 
-					-- Construct the container row for this specific variant configuration
 					local variantRow = View {
 						scope = innerScope,
 						AutomaticSize = Enum.AutomaticSize.XY,
+						LayoutOrder = 2,
 						tag = "row gap-medium align-y-center padding-medium radius-medium",
 						backgroundStyle = if variant == ButtonVariant.OverMedia
 							then theme:GetStyle("Extended", "White", "White_100")
 							elseif colorMode then unwrap(theme.Tokens)[colorMode].Surface.Surface_100
 							else nil,
 						children = {
-							-- Apply an decorative background gradient strictly for OverMedia presentation rows
 							Gradient = if variant == ButtonVariant.OverMedia
 								then innerScope:New "UIGradient" {
 									Color = ColorSequence.new({
@@ -145,8 +142,14 @@ return {
 							[Children] = buttonsForSizes
 						}
 					}
+					
+					local variantStory = StorySection {
+						scope = innerScope,
+						title = variant,
+						children = {variantRow}
+					}
 
-					table.insert(renderedStories, variantRow)
+					table.insert(renderedStories, variantStory)
 				end
 
 				return renderedStories

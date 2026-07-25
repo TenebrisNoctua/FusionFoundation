@@ -21,7 +21,9 @@ local Text = require(Components.Text)
 
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
+
 local StoryMiddleware = require(Utility.Stories.StoryMiddleware)
+local StorySection = require(Utility.Stories.StorySection)
 
 local InputSize = require(Enums.InputSize)
 local PopoverAlign = require(Enums.PopoverAlign)
@@ -563,46 +565,72 @@ return {
 					Padding = UDim.new(0, 16),
 					SortOrder = Enum.SortOrder.LayoutOrder,
 				},
+				
+				StorySection {
+					scope = scope,
+					title = "Anchor Reference",
+					children = {
+						StoryAnchorRef {
+							scope = scope,
+							controls = controls,
+							layoutOrder = 2
+						}
+					}
+				},
+				
+				StorySection {
+					scope = scope,
+					title = "Basic",
+					layoutOrder = 2,
+					children = {
+						StoryBasic {
+							scope = scope,
+							theme = theme,
+							controls = controls,
+							layoutOrder = 2
+						}
+					}
+				},
+				
+				StorySection {
+					scope = scope,
+					title = "Click Outside",
+					layoutOrder = 3,
+					children = {
+						StoryClickOutside {
+							scope = scope,
+							controls = controls,
+							layoutOrder = 2
+						}
+					}
+				},
+				
+				StorySection {
+					scope = scope,
+					title = "MousePositionTooltip",
+					layoutOrder = 4,
+					children = {
+						StoryMousePositionTooltip {
+							scope = scope,
+							controls = controls,
+							layoutOrder = 2
+						}
+					}
+				},
 
-				StoryBasic {
+				StorySection {
 					scope = scope,
-					theme = theme,
-					controls = controls,
-					layoutOrder = 1
-				},
-				
-				StoryClickOutside {
-					scope = scope,
-					controls = controls,
-					layoutOrder = 2
-				},
-				
-				StoryAnchorRef {
-					scope = scope,
-					controls = controls,
-					layoutOrder = 3
-				},
-				
-				--[[
-				StoryKeyboardAware {
-					scope = scope,
-					controls = controls,
-					layoutOrder = 4
-				},
-				--]]
-
-				StoryMousePositionTooltip {
-					scope = scope,
-					controls = controls,
-					layoutOrder = 5
-				},
-				
-				StoryContextMenu {
-					scope = scope,
-					controls = controls,
-					layoutOrder = 6
-				},
+					title = "Context menu",
+					layoutOrder = 5,
+					children = {
+						StoryContextMenu {
+							scope = scope,
+							controls = controls,
+							layoutOrder = 2
+						}
+					}
+				}
 			}
 		}
-	end),
+	end)
 }

@@ -1,7 +1,4 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local BaseMenuDivider = require(script.Parent.BaseMenuDivider)
 local BaseMenuTitleItem = require(script.Parent.BaseMenuTitleItem)
@@ -41,7 +38,7 @@ local function BaseMenuGroup(props: BaseMenuGroupProps)
 	local scope = props.scope
 	assert(scope, "A scope has not been provided for the BaseMenuGroup component.")
 
-	return scope:Computed(function(use: Use, innerScope: Scope)
+	return scope:Computed(function(use: Use, innerScope: Scope) 
 		local groupIndex = unwrap(props.LayoutOrder, use) or 1
 		local currentSize = unwrap(props.size, use) or InputSize.Medium
 		local currentTitle = unwrap(props.title, use)
@@ -61,7 +58,7 @@ local function BaseMenuGroup(props: BaseMenuGroupProps)
 			LayoutOrder = groupIndex * 2,
 			tag = `col gap-xxsmall size-full-0 auto-y {paddingTag}`,
 			children = {
-				Title = if currentTitle and currentTitle ~= ""
+				Title = if currentTitle
 					then BaseMenuTitleItem {
 						scope = innerScope,
 						text = currentTitle,

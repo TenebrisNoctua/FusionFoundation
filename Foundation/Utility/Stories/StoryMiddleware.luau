@@ -3,14 +3,14 @@ local Foundation = script.Parent.Parent.Parent
 local View = require(Foundation.Components.View)
 
 local Types = require(Foundation.Utility.Types)
-local MiddlewareTypes = require(Foundation.Utility.Stories.Types)
+local StoryTypes = require(Foundation.Utility.Stories.Types)
 
 local FoundationProvider = require(Foundation.Providers.FoundationProvider)
 
 local FoundationPopoverPluginSupport = true
 
 type Scope = Types.Scope
-export type UILabsStoryProps = MiddlewareTypes.UILabsStoryProps
+export type UILabsStoryProps = StoryTypes.UILabsStoryProps
 
 --[[
 	StoryMiddleware wraps a UILabs story function to provide Foundation context.

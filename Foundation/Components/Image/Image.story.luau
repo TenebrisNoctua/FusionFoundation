@@ -7,20 +7,23 @@ local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 local Assets = PackageManager.getPackage("FoundationCloudAssets").Assets
 
-local Children = Fusion.Children
+local Components = Foundation.Components
+local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
-local Image = require(Foundation.Components.Image)
-local View = require(Foundation.Components.View)
-local Text = require(Foundation.Components.Text)
+local Image = require(Components.Image)
+local View = require(Components.View)
+local Text = require(Components.Text)
+
+local getRbxThumb = require(Utility.getRbxThumb)
+local unwrap = require(Utility.unwrap)
+local StorySection = require(Utility.Stories.StorySection)
+
+local ControlState = require(Enums.ControlState)
+local ThumbnailType = require(Enums.ThumbnailType)
+local ThumbnailSize = require(Enums.ThumbnailSize)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
-local getRbxThumb = require(Foundation.Utility.getRbxThumb)
-local unwrap = require(Foundation.Utility.unwrap)
-
-local ControlState = require(Foundation.Enums.ControlState)
-local ThumbnailType = require(Foundation.Enums.ThumbnailType)
-local ThumbnailSize = require(Foundation.Enums.ThumbnailSize)
 
 type ControlState = ControlState.ControlState
 type ThumbnailSize = ThumbnailSize.ThumbnailSize
@@ -169,25 +172,66 @@ return {
 		
 		return View {
 			scope = scope,
-			tag = "auto-xy column gap-xlarge",
+			tag = "auto-xy",
 			children = {
-				Image {
-					scope = scope,
-					Image = "icons/graphic/success_xlarge",
-					tag = "size-2800",
-					LayoutOrder = 1
+				scope:New "UIListLayout" {
+					Padding = UDim.new(0, 16),
+					SortOrder = Enum.SortOrder.LayoutOrder
 				},
 				
-				AssetStory(scope, 2),
-				StoryGuiState(scope, 3),
-				ImageSliceWithChildren(scope, 4),
-				
-				Image {
+				StorySection {
 					scope = scope,
-					Image = props.controls.cloudAsset,
-					Size = UDim2.fromOffset(300, 300),
-					tag = "content-emphasis",
-					LayoutOrder = 5
+					title = "Basic Image",
+					children = {
+						Image {
+							scope = scope,
+							Image = "icons/graphic/success_xlarge",
+							tag = "size-2800",
+							LayoutOrder = 2
+						}
+					}
+				},
+				
+				StorySection {
+					scope = scope,
+					title = "Basic Asset Use",
+					layoutOrder = 2,
+					children = {
+						AssetStory(scope, 2)
+					}
+				},
+				
+				StorySection {
+					scope = scope,
+					title = "GUI State Use",
+					layoutOrder = 3,
+					children = {
+						StoryGuiState(scope, 2)
+					}
+				},
+				
+				StorySection {
+					scope = scope,
+					title = "Custom 9-slice Image",
+					layoutOrder = 4,
+					children = {
+						ImageSliceWithChildren(scope, 2)
+					}
+				},
+				
+				StorySection {
+					scope = scope,
+					title = "Cloud Asset",
+					layoutOrder = 5,
+					children = {
+						Image {
+							scope = scope,
+							Image = props.controls.cloudAsset,
+							Size = UDim2.fromOffset(300, 300),
+							tag = "content-emphasis",
+							LayoutOrder = 2
+						}
+					}
 				},
 				
 				theme.StyleLink

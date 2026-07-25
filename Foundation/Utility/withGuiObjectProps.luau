@@ -9,6 +9,7 @@ local withCommonProps = require(Utility.withCommonProps)
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 
+local OnChange = Fusion.OnChange
 local Tag = Fusion.Tag
 
 type Value<T> = Types.Value<T>
@@ -118,6 +119,13 @@ local function withGuiObjectProps<T>(props: GuiObjectProps & CommonProps, basePr
 	end
 	
 	local fullProps = withCommonProps(props, baseProps) :: any -- Required since constrained generics are not yet supported
+	
+	-- Replace incompatible Common Props
+	fullProps[OnChange "AbsoluteSize"] = fullProps.onAbsoluteSizeChanged
+	fullProps.onAbsoluteSizeChanged = nil
+	fullProps[OnChange "AbsolutePosition"] = fullProps.onAbsolutePositionChanged
+	fullProps.onAbsolutePositionChanged = nil
+	
 	return fullProps :: T & AppliedGuiObjectProps
 end
 
