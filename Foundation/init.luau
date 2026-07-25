@@ -136,13 +136,14 @@ export type AvatarGroupProps = AvatarGroup.AvatarGroupProps
 
 local Badge = require(script.Components.Badge)
 export type BadgeProps = Badge.BadgeProps
+]]
 
 local BaseMenu = require(script.Components.BaseMenu)
 export type BaseMenuProps<Item = BaseMenuItem> = BaseMenu.BaseMenuProps<Item>
 export type BaseMenuItem = BaseMenu.BaseMenuItem
 export type BaseMenuItems<Item = BaseMenuItem> = BaseMenu.BaseMenuItems<Item>
 export type BaseMenuItemGroup<Item = BaseMenuItem> = BaseMenu.BaseMenuItemGroup<Item>
-]]
+
 local Button = require(script.Components.Button)
 export type ButtonProps = Button.ButtonProps
 
@@ -194,8 +195,8 @@ export type GridDebugProps = Grid.GridDebugProps
 --local FeedbackAlert = require(script.Components.FeedbackAlert)
 --export type FeedbackAlertProps = FeedbackAlert.FeedbackAlertProps
 
---local Icon = require(script.Components.Icon)
---export type IconProps = Icon.IconProps
+local Icon = require(script.Components.Icon)
+export type IconProps = Icon.IconProps
 
 --local IconButton = require(script.Components.IconButton)
 --export type IconButtonProps = IconButton.IconButtonProps
@@ -331,7 +332,7 @@ local Foundation = strict({
 	--Grid = Grid,
 	--Empty = Empty,
 	--FeedbackAlert = FeedbackAlert,
-	--Icon = Icon,
+	Icon = Icon,
 	--IconButton = IconButton,
 	Image = Image,
 	InputLabel = InputLabel,
@@ -383,7 +384,7 @@ local Foundation = strict({
 		useDefaultTags = require(script.Utility.useDefaultTags),
 		--useDialogNavigation = require(script.Components.Dialog.useDialogNavigation),
 		--useSheetNavigation = require(script.Components.Sheet.useSheetNavigation),
-		--useIconSize = require(script.Utility.useIconSize),
+		useIconSize = require(script.Utility.useIconSize),
 		useMeasurableRef = require(script.Components.Popover.useMeasurableRef),
 		usePointerPosition = require(script.Utility.usePointerPosition),
 		--usePreferences = require(script.Providers.Preferences.usePreferences),
