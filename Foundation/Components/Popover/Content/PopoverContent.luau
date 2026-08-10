@@ -47,8 +47,6 @@ local SHADOW_IMAGE = Constants.SHADOW_IMAGE
 local SHADOW_SIZE = Constants.SHADOW_SIZE
 local SHADOW_VERTICAL_OFFSET = 2
 
-local FoundationPopoverConditionalRender = true
-
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
 type Use = Types.Use
@@ -115,7 +113,6 @@ return function(contentProps: PopoverContentProps)
 		local arrowSide = tokens.Size.Size_200
 		local arrowWidth = arrowSide * math.sqrt(2)
 		local arrowHeight = arrowWidth / 2
-		
 		return if unwrap(hasArrowActive, use) then arrowHeight else 0
 	end)
 	
@@ -205,14 +202,8 @@ return function(contentProps: PopoverContentProps)
 		end)
 	end
 
-	if finalParent then
-		task.defer(function()
-			contentParentValue:set(finalParent)
-		end)
-	end
-
 	return scope:Computed(function(use: Use, innerScope: Scope)
-		local shouldRenderPopover = if FoundationPopoverConditionalRender then unwrap(props.isOpen, use) else true
+		local shouldRenderPopover = unwrap(props.isOpen, use)
 		if not shouldRenderPopover then return end
 		
 		local tokens = unwrap(theme.Tokens, use)
@@ -304,6 +295,7 @@ return function(contentProps: PopoverContentProps)
 		if finalParent then
 			task.defer(function()
 				parentValue:set(finalParent)	
+				contentParentValue:set(finalParent)
 			end)
 		end
 		

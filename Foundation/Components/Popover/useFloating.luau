@@ -48,7 +48,7 @@ local function connectSignals(
 		cleanup()
 		local instance = unwrap(instanceState)
 		if not instance then return end
-		if typeof(instance) ~= "Instance" or type(instance.GetPropertyChangedSignal) ~= "function" then return end  
+		if type(instance.GetPropertyChangedSignal) ~= "function" then return end
 		for _, signalName in ipairs(signalNames) do
 			local signal = instance:GetPropertyChangedSignal(signalName)
 			table.insert(connections, signal:Connect(callback))

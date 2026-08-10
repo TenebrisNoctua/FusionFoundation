@@ -30,7 +30,9 @@ return {
 	story = function(props)
 		local scope = props.scope
 		local theme, cleanup = ThemeProvider(scope)
-		table.insert(scope, cleanup)		
+		table.insert(scope, cleanup)
+		
+		local tokens = unwrap(theme.Tokens)
 
 		local url = scope:Computed(function(use) 
 			return getRbxThumb(unwrap(props.controls.type, use), unwrap(props.controls.id, use), unwrap(props.controls.size, use))
@@ -74,7 +76,7 @@ return {
 					Text = url,
 					AutomaticSize = Enum.AutomaticSize.XY,
 					LayoutOrder = 2,
-					textStyle = theme:GetStyle("Content", "Default"), 
+					textStyle = tokens.Color.Content.Default, 
 					backgroundStyle = {
 						Transparency = 1	
 					},

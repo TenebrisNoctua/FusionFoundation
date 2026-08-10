@@ -12,6 +12,7 @@ local Enums = Foundation.Enums
 local View = require(Components.View)
 local Text = require(Components.Text)
 
+local unwrap = require(Utility.unwrap)
 local StorySection = require(Utility.Stories.StorySection)
 local ControlState = require(Enums.ControlState)
 
@@ -36,6 +37,7 @@ end
 local function StoryGuiState(props)
 	local Scope = props.scope
 	local Theme = ThemeProvider()
+	local tokens = unwrap(Theme.Tokens)
 
 	local guiState = Scope:Value(ControlState.Initialize)
 	local function onStateChanged(new: ControlState)
@@ -51,7 +53,7 @@ local function StoryGuiState(props)
 		fontStyle = {
 			FontSize = 20,
 		},
-		backgroundStyle = Theme:GetStyle("Extended", "Purple", "Purple_500"),
+		backgroundStyle = tokens.Color.Extended.Purple.Purple_500,
 		onStateChanged = onStateChanged,
 		LayoutOrder = props.layoutOrder
 	}

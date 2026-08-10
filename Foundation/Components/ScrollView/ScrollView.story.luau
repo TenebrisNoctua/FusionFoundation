@@ -10,6 +10,7 @@ local Text = require(Components.Text)
 local View = require(Components.View)
 local ScrollView = require(Components.ScrollView)
 
+local unwrap = require(Utility.unwrap)
 local StorySection = require(Utility.Stories.StorySection)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
@@ -17,6 +18,8 @@ local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 local function StoryScrolling(props)
 	local scope = props.scope
 	local theme = ThemeProvider()
+	
+	local tokens = unwrap(theme.Tokens)
 	
 	return View {
 		scope = scope,
@@ -43,13 +46,13 @@ local function StoryScrolling(props)
 					View {
 						scope = scope,
 						Size = UDim2.fromOffset(120, 75),
-						backgroundStyle = theme:GetStyle("Extended", "Turquoise", "Turquoise_500")
+						backgroundStyle = tokens.Color.Extended.Turquoise.Turquoise_500
 					},
 					
 					View {
 						scope = scope,
 						Size = UDim2.fromOffset(120, 75),
-						backgroundStyle = theme:GetStyle("Extended", "Magenta", "Magenta_500")
+						backgroundStyle = tokens.Color.Extended.Magenta.Magenta_500
 					}
 				}
 			},
@@ -74,13 +77,13 @@ local function StoryScrolling(props)
 					View {
 						scope = scope,
 						Size = UDim2.fromOffset(120, 75),
-						backgroundStyle = theme:GetStyle("Extended", "Turquoise", "Turquoise_500")
+						backgroundStyle = tokens.Color.Extended.Turquoise.Turquoise_500
 					},
 
 					View {
 						scope = scope,
 						Size = UDim2.fromOffset(120, 75),
-						backgroundStyle = theme:GetStyle("Extended", "Magenta", "Magenta_500")
+						backgroundStyle = tokens.Color.Extended.Magenta.Magenta_500
 					}
 				}
 			},

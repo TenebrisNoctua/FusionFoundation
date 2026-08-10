@@ -33,6 +33,10 @@ export type PopoverAnchorProps = {
 return function(props: PopoverAnchorProps)
 	local scope = props.scope
 	assert(scope, "A scope has not been provided for the PopoverAnchor component.")
+	
+	local anchorIsState = isState(props.anchor)
+	local anchorUriIsState = isState(props.anchorUri)
+	local guiIsState = isState(props.gui)
 
 	local viewInstance = scope:Value(nil :: Instance?)
 
@@ -47,18 +51,18 @@ return function(props: PopoverAnchorProps)
 	local function handleAnchorRegistration()
 		local externalAnchor = unwrap(props.anchorInstance)
 		if StudioUri.isStudioUri(externalAnchor) then
-			if isState(props.anchorUri) then
+			if anchorUriIsState then
 				props.anchorUri:set(externalAnchor)
 			end
-			if isState(props.anchor) then
+			if anchorIsState then
 				props.anchor:set(nil)
 			end
 		else
 			local anchor = unwrap(activeAnchor)
-			if isState(props.anchor) then
+			if anchorIsState then
 				props.anchor:set(anchor)
 			end
-			if isState(props.anchorUri) then
+			if anchorUriIsState then
 				props.anchorUri:set(nil)
 			end
 		end
@@ -67,7 +71,7 @@ return function(props: PopoverAnchorProps)
 	scope:Observer(activeAnchor):onChange(handleAnchorRegistration)
 	task.defer(handleAnchorRegistration)
 
-	if isState(props.gui) then
+	if guiIsState then
 		scope:Observer(viewInstance):onChange(function()
 			local currentView = unwrap(viewInstance)
 			props.gui:set(currentView)
@@ -75,16 +79,15 @@ return function(props: PopoverAnchorProps)
 	end
 
 	table.insert(scope, function()
-		if isState(props.anchor) then
+		if anchorIsState then
 			props.anchor:set(nil)
 		end
-		if isState(props.anchorUri) then
+		if anchorUriIsState then
 			props.anchorUri:set(nil)
 		end
 	end)
 
 	return scope:Computed(function(use: Use, innerScope: Scope)
-		viewInstance:set(nil)
 		local externalAnchor = unwrap(props.anchorInstance, use)
 		if externalAnchor then return end
 

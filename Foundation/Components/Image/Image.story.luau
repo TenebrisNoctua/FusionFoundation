@@ -32,6 +32,8 @@ local AssetKeys = Dash.keys(Assets)
 
 local function AssetStory(scope, layoutOrder)
 	local theme = ThemeProvider()
+	local tokens = unwrap(theme.Tokens)
+	
 	return View {
 		scope = scope,
 		backgroundStyle = {
@@ -43,7 +45,7 @@ local function AssetStory(scope, layoutOrder)
 			Image {
 				scope = scope,
 				Image = "rbxassetid://7229442422",
-				backgroundStyle = theme:GetStyle("Extended", "White", "White_100"),
+				backgroundStyle = tokens.Color.Extended.White.White_100,
 				tag = "size-2800"
 			},
 			
@@ -53,14 +55,14 @@ local function AssetStory(scope, layoutOrder)
 				slice = {
 					center = Rect.new(11, 11, 12, 12),
 				},
-				backgroundStyle = theme:GetStyle("Extended", "White", "White_0"),
+				backgroundStyle = tokens.Color.Extended.White.White_0,
 				tag = "col align-x-center align-y-center size-2800-800",
 				children = {
 					Text {
 						scope = scope,
 						Text = "Slice Center",
 						AutomaticSize = Enum.AutomaticSize.XY,
-						textStyle = theme:GetStyle("Content", "Emphasis")
+						textStyle = tokens.Color.Content.Emphasis
 					}
 				}
 			}
@@ -71,6 +73,7 @@ end
 local function StoryGuiState(scope, layoutOrder)
 	local guiState = scope:Value(ControlState.Initialize)
 	local theme = ThemeProvider()
+	local tokens = unwrap(theme.Tokens)
 	
 	local function onStateChanged(new: ControlState)
 		guiState:set(new)
@@ -89,7 +92,7 @@ local function StoryGuiState(scope, layoutOrder)
 			end
 			return getRbxThumb(ThumbnailType.Asset, 23155833, ThumbnailSize.Large)
 		end),
-		backgroundStyle = theme:GetStyle("Extended", "Purple", "Purple_500"),
+		backgroundStyle = tokens.Color.Extended.Purple.Purple_500,
 		tag = "col align-x-center align-y-center size-2800",
 		onStateChanged = onStateChanged,
 		LayoutOrder = layoutOrder
@@ -98,6 +101,8 @@ end
 
 local function ImageSliceWithChildren(scope, layoutOrder)
 	local theme = ThemeProvider()
+	local tokens = unwrap(theme.Tokens)
+	
 	return Image {
 		scope = scope,
 		tag = "auto-xy",
@@ -150,7 +155,7 @@ local function ImageSliceWithChildren(scope, layoutOrder)
 								scope = scope,
 								Image = "icons/controls/speaker",
 								Size = UDim2.fromOffset(32, 32),
-								imageStyle = theme:GetStyle("Extended", "Gray", "Gray_300"),
+								imageStyle = tokens.Color.Extended.Gray.Gray_300,
 								ZIndex = 2,
 								tag = "position-center-center anchor-center-center"
 							}

@@ -23,8 +23,6 @@ local BaseMenu = require(Components.BaseMenu)
 local View = require(Components.View)
 local ScrollView = require(Components.ScrollView)
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
 type Scope = Types.Scope
 
 type ItemId = Types.ItemId
@@ -431,8 +429,6 @@ return {
 		local scope = props.scope
 		local controls = props.controls
 
-		local theme = ThemeProvider()
-
 		return ScrollView {
 			scope = scope,
 			backgroundStyle = {
@@ -572,9 +568,7 @@ return {
 							layoutOrder = 2
 						}
 					}
-				},
-				
-				theme.StyleLink
+				}
 			}
 		}
 	end)

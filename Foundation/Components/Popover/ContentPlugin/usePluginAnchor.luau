@@ -33,17 +33,16 @@ return function(
 	local overlayProvider = OverlayProvider()
 
 	local isVirtualAnchor = scope:Computed(function(use: Use)
-		local currentAnchor = unwrap(anchor, use)
-		return currentAnchor ~= nil and typeof(currentAnchor) ~= "Instance"
+		local anchorValue = unwrap(anchor, use)
+		return anchorValue ~= nil and typeof(anchorValue) ~= "Instance"
 	end)
 
 	-- For instance anchors, use the anchor directly as the widget gui
 	local instanceAnchorGui = scope:Computed(function(use: Use)
-		local currentAnchor = unwrap(anchor, use)
+		local anchorValue = unwrap(anchor, use)
 		local isVirtual = unwrap(isVirtualAnchor, use)
-		if not isVirtual and typeof(currentAnchor) == "Instance" then
-			return currentAnchor :: GuiBase2d?
-		end
+		if isVirtual and typeof(anchorValue) ~= "Instance" then return end
+		return anchorValue :: GuiBase2d?
 	end)
 
 	-- For virtual anchors, track the View instance that will be created in the overlay
@@ -58,7 +57,7 @@ return function(
 	end)
 
 	local anchorWidget = useUniqueWidget(scope, {
-		gui = widgetGui,
+		gui = widgetGui
 	})
 
 	local anchorPosition = scope:Value(Vector2.zero)
@@ -70,23 +69,22 @@ return function(
 	local offsetConnection: RBXScriptConnection? = nil
 
 	local function setupVirtualAnchorConnections()
-		if positionConnection then positionConnection:Disconnect() positionConnection = nil end
-		if sizeConnection then sizeConnection:Disconnect() sizeConnection = nil end
-		if offsetConnection then offsetConnection:Disconnect() offsetConnection = nil end
+		if positionConnection then positionConnection:Disconnect(); positionConnection = nil end
+		if sizeConnection then sizeConnection:Disconnect(); sizeConnection = nil end
+		if offsetConnection then offsetConnection:Disconnect(); offsetConnection = nil end
 
 		local currentAnchor = unwrap(anchor)
 		local isVirtual = unwrap(isVirtualAnchor)
-		if not isVirtual or currentAnchor == nil then return end
+		if not isVirtual or not currentAnchor then return end
 
-		local measurableAnchor = currentAnchor :: any
-		anchorPosition:set(measurableAnchor.AbsolutePosition)
-		anchorSize:set(measurableAnchor.AbsoluteSize)
+		anchorPosition:set(currentAnchor.AbsolutePosition)
+		anchorSize:set(currentAnchor.AbsoluteSize)
 
-		positionConnection = measurableAnchor:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
-			anchorPosition:set(measurableAnchor.AbsolutePosition)
+		positionConnection = currentAnchor:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
+			anchorPosition:set(currentAnchor.AbsolutePosition)
 		end)
-		sizeConnection = measurableAnchor:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-			anchorSize:set(measurableAnchor.AbsoluteSize)
+		sizeConnection = currentAnchor:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+			anchorSize:set(currentAnchor.AbsoluteSize)
 		end)
 
 		-- Track overlay offset
@@ -164,27 +162,28 @@ return function(
 		end)
 	end
 
-	-- Determine URI: use uriAnchor if provided, otherwise use widget URI
 	local uri = scope:Computed(function(use: Use)
 		local uriVal = if uriAnchor then unwrap(uriAnchor, use) else nil
 		if uriVal ~= nil then return uriVal end
 		return unwrap(anchorWidget.uri, use)
 	end)
 
-	-- Determine isReady
 	local isReady = scope:Computed(function(use: Use)
 		local uriVal = if uriAnchor then unwrap(uriAnchor, use) else nil
 		if uriVal ~= nil then return true end
-		local currentAnchor = unwrap(anchor, use)
-		if not currentAnchor then return false end
+		
+		local anchorValue = unwrap(anchor, use)
+		if not anchorValue then return false end
+		
 		local isVirtual = unwrap(isVirtualAnchor, use)
 		if not isVirtual then return true end
+		
 		return overlayProvider.instance ~= nil
 	end)
 
 	return {
 		uri = uri,
 		isVirtual = isVirtualAnchor,
-		isReady = isReady,
+		isReady = isReady
 	}
 end

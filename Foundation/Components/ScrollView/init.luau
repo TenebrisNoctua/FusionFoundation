@@ -77,75 +77,77 @@ return function(scrollViewProps: ScrollViewProps)
 	assert(Scope, "A scope has not been provided for the ScrollView component.")
 	
 	local props = withDefaults(scrollViewProps, defaultProps)
-	local controlState = Scope:Value(ControlState.Initialize)
 	
-	local tagsWithDefaults = useDefaultTags(Scope, props.tag, defaultTags)
-	local tag = useStyleTags(Scope, tagsWithDefaults, Theme.AddTags)
-	props.tag = unwrap(tag)
-	
-	local function onStateChanged(state: ControlState)
-		controlState:set(state)
-		if props.onStateChanged ~= nil then
-			props.onStateChanged(state)
-		end
-	end
-	
-	local viewComponentProps = {
-		onStateChanged = onStateChanged,
-		-- Special check on props.onStateChanged since we don't want state layer on all scrolling frames
-		stateLayer = if props.onStateChanged or props.onActivated then props.stateLayer else { affordance = "None" },
-		selection = {
-			-- We don't want to show selection cursor on ScrollView because ScrollingFrame already has it
-			Selectable = false,
-		},
-		tag = props.tag
-	}
-	
-	local viewProps = Dash.union(props, viewComponentProps)
-	viewProps.scroll = nil
-	viewProps.layout = nil
-	
-	local listChildren = {
-		ListLayout = Scope:New "UIListLayout" {
-			FillDirection = props.layout.FillDirection,
-			ItemLineAlignment = props.layout.ItemLineAlignment,
-			HorizontalAlignment = props.layout.HorizontalAlignment,
-			HorizontalFlex = props.layout.HorizontalFlex,
-			VerticalAlignment = props.layout.VerticalAlignment,
-			VerticalFlex = props.layout.VerticalFlex,
-			Padding = props.layout.Padding,
-			SortOrder = props.layout.SortOrder,
-			Wraps = props.layout.Wraps,
-		}
-	}
-	
-	return View(Dash.join(viewProps, {children = {ScrollingFrame {
-		scope = Scope,
-		controlState = controlState,
-		selection = props.selection,
-		scrollBarVisibility = props.scroll.scrollBarVisibility,
-		onCanvasPositionChanged = props.onCanvasPositionChanged,
-		onAbsoluteCanvasSizeChanged = props.onAbsoluteCanvasSizeChanged,
-		onAbsoluteWindowSizeChanged = props.onAbsoluteWindowSizeChanged,
-		tag = props.tag,
-
-		-- Scrolling props
-		AutomaticSize = props.scroll.AutomaticSize,
-		AutomaticCanvasSize = props.scroll.AutomaticCanvasSize,
-		CanvasSize = props.scroll.CanvasSize,
-		ClipsDescendants = false,
-		ScrollingDirection = props.scroll.ScrollingDirection,
-		ScrollingEnabled = props.scroll.ScrollingEnabled,
-		VerticalScrollBarInset = props.scroll.VerticalScrollBarInset,
-		HorizontalScrollBarInset = props.scroll.HorizontalScrollBarInset,
+	return Scope:Computed(function(use: Use, innerScope: Scope) 
+		local controlState = innerScope:Value(ControlState.Initialize)
+		local tagsWithDefaults = useDefaultTags(innerScope, props.tag, defaultTags)
+		local tag = useStyleTags(innerScope, tagsWithDefaults, Theme.AddTags)
+		props.tag = unwrap(tag, use)
 		
-		children = if props.children
-			and typeof(props.children) == "table"
-			and props.layout ~= nil
-			and props.layout.FillDirection ~= nil
-		then
-			Dash.union(listChildren, props.children)
-		else
-			props.children
-	}}}))
+		local function onStateChanged(state: ControlState)
+			controlState:set(state)
+			if props.onStateChanged ~= nil then
+				props.onStateChanged(state)
+			end
+		end
+		
+		local viewComponentProps = {
+			onStateChanged = onStateChanged,
+			-- Special check on props.onStateChanged since we don't want state layer on all scrolling frames
+			stateLayer = if props.onStateChanged or props.onActivated then props.stateLayer else { affordance = "None" },
+			selection = {
+				-- We don't want to show selection cursor on ScrollView because ScrollingFrame already has it
+				Selectable = false,
+			},
+			tag = props.tag
+		}
+
+		local viewProps = Dash.union(props, viewComponentProps)
+		viewProps.scroll = nil
+		viewProps.layout = nil
+
+		local listChildren = {
+			ListLayout = innerScope:New "UIListLayout" {
+				FillDirection = props.layout.FillDirection,
+				ItemLineAlignment = props.layout.ItemLineAlignment,
+				HorizontalAlignment = props.layout.HorizontalAlignment,
+				HorizontalFlex = props.layout.HorizontalFlex,
+				VerticalAlignment = props.layout.VerticalAlignment,
+				VerticalFlex = props.layout.VerticalFlex,
+				Padding = props.layout.Padding,
+				SortOrder = props.layout.SortOrder,
+				Wraps = props.layout.Wraps,
+			}
+		}
+
+		return View(Dash.join(viewProps, {children = {ScrollingFrame {
+			scope = innerScope,
+			controlState = controlState,
+			selection = props.selection,
+			scrollBarVisibility = props.scroll.scrollBarVisibility,
+			onCanvasPositionChanged = props.onCanvasPositionChanged,
+			onAbsoluteCanvasSizeChanged = props.onAbsoluteCanvasSizeChanged,
+			onAbsoluteWindowSizeChanged = props.onAbsoluteWindowSizeChanged,
+			tag = props.tag,
+
+			-- Scrolling props
+			AutomaticSize = props.scroll.AutomaticSize,
+			AutomaticCanvasSize = props.scroll.AutomaticCanvasSize,
+			CanvasSize = props.scroll.CanvasSize,
+			ClipsDescendants = false,
+			ScrollingDirection = props.scroll.ScrollingDirection,
+			ScrollingEnabled = props.scroll.ScrollingEnabled,
+			VerticalScrollBarInset = props.scroll.VerticalScrollBarInset,
+			HorizontalScrollBarInset = props.scroll.HorizontalScrollBarInset,
+
+			children = if props.children
+				and typeof(props.children) == "table"
+				and props.layout ~= nil
+				and props.layout.FillDirection ~= nil
+				then
+				Dash.union(listChildren, props.children)
+				else
+				props.children
+		}}}))
+	end)
 end

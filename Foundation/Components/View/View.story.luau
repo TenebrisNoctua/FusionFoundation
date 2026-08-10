@@ -4,12 +4,13 @@ local Foundation = script.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
-local Children = Fusion.Children
 
 local View = require(Foundation.Components.View)
 local Text = require(Foundation.Components.Text)
 
+local unwrap = require(Foundation.Utility.unwrap)
 local ControlState = require(Foundation.Enums.ControlState)
+
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 type ControlState = ControlState.ControlState
@@ -17,6 +18,7 @@ type ControlState = ControlState.ControlState
 local function Story(props)
 	local Scope = props.scope
 	local Theme = ThemeProvider()
+	local tokens = unwrap(Theme.Tokens)
 	
 	return View {
 		scope = Scope,
@@ -24,20 +26,20 @@ local function Story(props)
 		GroupTransparency = props.GroupTransparency,
 		padding = 10,
 		stroke = {
-			Color = Theme:GetColor("Stroke", "Emphasis"),
-			Transparency = Theme:GetTransparency("Stroke", "Emphasis"),
+			Color = tokens.Color.Stroke.Emphasis.Color3,
+			Transparency = tokens.Color.Stroke.Emphasis.Transparency,
 			Thickness = 2
 		},
 		children = {
 			View {
 				scope = Scope,
 				Size = UDim2.new(0, 100, 0, 100),
-				backgroundStyle = Theme:GetStyle("Surface", "Surface_200"),
+				backgroundStyle = tokens.Color.Surface.Surface_200,
 				tag = "row align-x-center align-y-center",
 				children = {
 					Text {
 						scope = Scope,
-						textStyle = Theme:GetStyle("Content", "Emphasis"),
+						textStyle = tokens.Color.Content.Emphasis,
 						fontStyle = {
 							Font = Enum.Font.BuilderSansMedium,
 							FontSize = 24,
@@ -54,6 +56,7 @@ end
 local function StoryGuiState(props)
 	local Scope = props.scope
 	local Theme = ThemeProvider()
+	local tokens = unwrap(Theme.Tokens)
 	
 	local guiState = Scope:Value(ControlState.Initialize)
 	local function onStateChanged(new: ControlState)
@@ -65,7 +68,7 @@ local function StoryGuiState(props)
 		Size = UDim2.new(0, 120, 0, 120),
 		LayoutOrder = 2,
 		GroupTransparency = props.GroupTransparency,
-		backgroundStyle = Theme:GetStyle("Extended", "Purple", "Purple_500"),
+		backgroundStyle = tokens.Color.Extended.Purple.Purple_500,
 		layout = {
 			FillDirection = Enum.FillDirection.Vertical,
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
@@ -75,7 +78,7 @@ local function StoryGuiState(props)
 		children = {
 			Text {
 				scope = Scope,
-				textStyle = Theme:GetStyle("Content", "Emphasis"),
+				textStyle = tokens.Color.Content.Emphasis,
 				Text = guiState,
 			}
 		}

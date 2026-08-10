@@ -15,6 +15,7 @@ local PopoverAnchor = Popover.Anchor
 local PopoverContent = Popover.Content
 local useMeasurableRef = require(script.Parent.useMeasurableRef)
 
+local ScrollView = require(Components.ScrollView)
 local View = require(Components.View)
 local Button = require(Components.Button)
 local Text = require(Components.Text)
@@ -529,7 +530,7 @@ return {
 
 		local theme = ThemeProvider()
 
-		return View {
+		return ScrollView {
 			scope = scope,
 			backgroundStyle = {
 				Transparency = 1
