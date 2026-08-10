@@ -74,7 +74,7 @@ export type BaseMenuProps<Item = BaseMenuItem> = {
 	-- If the provided width is bigger than the max width of the menu menu will have the width provided.
 	-- If used with relative width, e.g. UDim.new(0.5, 0), the constraints always kick in.
 	couldGrow: boolean?,
-	children: {Child},
+	children: Child?,
 	-- Maximum height after which the menu starts scrolling
 	maxHeight: UsedAs<number?>,
 	-- Radius of the menu

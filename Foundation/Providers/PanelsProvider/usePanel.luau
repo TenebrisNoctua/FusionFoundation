@@ -23,13 +23,11 @@ export type UsePanelOptions = {
 	onClose: () -> (),
 	position: UsedAs<PanelPosition>,
 	depth: UsedAs<number?>?,
-	parentPopoverId: UsedAs<string?>?,
 	registerPanelAsync: (
 		anchorUri: StudioUri,
 		position: PanelPosition,
 		onClose: () -> (),
-		depth: number?,
-		parentPopoverId: string?
+		depth: number?
 	) -> (PanelHandle, () -> ()),
 }
 
@@ -46,11 +44,17 @@ return function(options: UsePanelOptions): UsedAs<PanelHandle?>
 			task.cancel(registerThread)
 			registerThread = nil
 		end
-		if currentClosePanel then
-			currentClosePanel()
-			currentClosePanel = nil
-		end
+		--[[
+			Set panelState to nil first so Fusion's can re-parent content away from the QWidget.
+			The actual panel close runs synchronously, and leftover content cleanup is handled at
+			acquisition time in PopoverManager._tryAcquireFromPool, which re-parents any remaining children to a trash folder.
+		]]
 		panelState:set(nil)
+		local closePanel = currentClosePanel
+		currentClosePanel = nil
+		if closePanel then
+			closePanel()
+		end
 	end
 
 	local function handleRegistration()
@@ -70,8 +74,7 @@ return function(options: UsePanelOptions): UsedAs<PanelHandle?>
 					unwrap(options.anchorUri),
 					unwrap(options.position),
 					options.onClose,
-					unwrap(options.depth),
-					unwrap(options.parentPopoverId)
+					unwrap(options.depth)
 				)
 			end, function(problem)
 				warn("Failed to register panel asynchronously: " .. tostring(problem))

@@ -52,13 +52,16 @@ local function createButtonVariantStyles(
 	isInverse: boolean?
 ): { [ColorMode]: VariantProps }
 	local themeProvider = ThemeProvider()
+	local tokens = unwrap(themeProvider.Tokens, use)
+	
 	local buttonStyle: ButtonStyle = {}
 	if type(actionName) == "table" then
-		buttonStyle.Foreground = unwrap(themeProvider:GetStyle(actionName[1], actionName[2]), use)
+		buttonStyle.Foreground = tokens.Color[actionName[1]][actionName[2]]
 	else
-		buttonStyle.Background = unwrap(themeProvider:GetStyle(actionName, "Background"), use)
-		buttonStyle.Border = unwrap(themeProvider:GetStyle(actionName, "Border", use))
-		buttonStyle.Foreground = unwrap(themeProvider:GetStyle(actionName, "Foreground"), use)
+		local actionColor = tokens.Color[actionName]
+		buttonStyle.Background = actionColor.Background
+		buttonStyle.Border = actionColor.Border
+		buttonStyle.Foreground = actionColor.Foreground
 	end
 
 	local styles: { [ColorMode]: any } = {}
@@ -113,13 +116,15 @@ end
 
 local function getSizes(use: Use): { [InputSize]: VariantProps }
 	local themeProvider = ThemeProvider()
-	local radiusSmall = unwrap(themeProvider.Tokens).Radius.Small
-	local radiusMedium = unwrap(themeProvider.Tokens).Radius.Medium
+	local tokens = unwrap(themeProvider.Tokens, use)
+	
+	local radiusSmall = tokens.Radius.Small
+	local radiusMedium = tokens.Radius.Medium
 
-	local size600 = unwrap(themeProvider.Tokens).Size.Size_600
-	local size800 = unwrap(themeProvider.Tokens).Size.Size_800
-	local size1000 = unwrap(themeProvider.Tokens).Size.Size_1000
-	local size1200 = unwrap(themeProvider.Tokens).Size.Size_1200
+	local size600 = tokens.Size.Size_600
+	local size800 = tokens.Size.Size_800
+	local size1000 = tokens.Size.Size_1000
+	local size1200 = tokens.Size.Size_1200
 
 	return {
 		[InputSize.XSmall] = {
@@ -133,7 +138,7 @@ local function getSizes(use: Use): { [InputSize]: VariantProps }
 		},
 		[InputSize.Large] = {
 			container = { radius = radiusMedium, height = size1200 },
-		},
+		}
 	}
 end
 

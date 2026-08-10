@@ -65,7 +65,6 @@ return {
 		local theme, cleanup = ThemeProvider({
 			theme = props.controls.theme
 		})
-		
 		table.insert(scope, cleanup)
 
 		return View {
@@ -126,7 +125,8 @@ return {
 						LayoutOrder = 2,
 						tag = "row gap-medium align-y-center padding-medium radius-medium",
 						backgroundStyle = if variant == ButtonVariant.OverMedia
-							then theme:GetStyle("Extended", "White", "White_100")
+							then unwrap(theme.Tokens).Color.Extended.White.White_100
+
 							elseif colorMode then unwrap(theme.Tokens)[colorMode].Surface.Surface_100
 							else nil,
 						children = {

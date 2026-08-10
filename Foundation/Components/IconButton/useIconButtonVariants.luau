@@ -1,12 +1,10 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
 
-local Fusion = PackageManager.getPackage("Fusion")
-
-local Enums = Foundation.Enums
+local Components = Foundation.Components
 local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
-local getSharedVariants = require(script.Parent.getSharedVariants)
+local getSharedVariants = require(Components.Button.getSharedVariants)
 
 local composeStyleVariant = require(Utility.composeStyleVariant)
 local useVariants = require(Utility.useVariants)
@@ -32,25 +30,19 @@ type StateLayer = Types.StateLayer
 type Stroke = Types.Stroke
 
 type VariantProps = composeStyleVariant.VariantProps
-type ButtonStroke = getSharedVariants.ButtonStroke
 
-type ButtonVariantProps = {
+type IconButtonVariantProps = {
 	container: {
 		tag: string,
-		height: number,
-		stroke: ButtonStroke?,
+		size: UDim2,
+		stroke: Stroke?,
 		radius: number,
 		style: ColorStyleValue,
+		padding: UDim,
 		stateLayer: StateLayer?,
 	},
 	content: {
 		style: ColorStyleValue,
-	},
-	text: {
-		tag: string,
-	},
-	icon: {
-		size: UDim2,
 	},
 }
 
@@ -59,71 +51,47 @@ local function variantsMap(use: Use)
 	local themeProvider = ThemeProvider()
 	local tokens = unwrap(themeProvider.Tokens, use)
 
-	local common = {
-		container = {
-			tag = "row align-y-center align-x-center clip",
-		},
-		text = {
-			tag = "size-0-full auto-x text-truncate-end shrink",
-		},
-	}
-
-	local size300 = tokens.Size.Size_300
-	local size400 = tokens.Size.Size_400
-	local size500 = tokens.Size.Size_500
-	local size600 = tokens.Size.Size_600
+	local common = {}
 
 	local sizes: { [InputSize]: VariantProps } = {
 		[InputSize.XSmall] = {
 			container = {
-				tag = "gap-xsmall padding-small",
 				radius = sharedVariants.sizes[InputSize.XSmall].container.radius,
-				height = sharedVariants.sizes[InputSize.XSmall].container.height,
-			},
-			icon = {
-				size = UDim2.fromOffset(size300, size300),
-			},
-			text = {
-				tag = "text-title-small",
+				size = UDim2.fromOffset(
+					sharedVariants.sizes[InputSize.XSmall].container.height,
+					sharedVariants.sizes[InputSize.XSmall].container.height
+				),
+				padding = UDim.new(0, tokens.Size.Size_150),
 			},
 		},
 		[InputSize.Small] = {
 			container = {
-				tag = "gap-xsmall padding-small",
 				radius = sharedVariants.sizes[InputSize.Small].container.radius,
-				height = sharedVariants.sizes[InputSize.Small].container.height,
-			},
-			icon = {
-				size = UDim2.fromOffset(size400, size400),
-			},
-			text = {
-				tag = "text-title-small",
+				size = UDim2.fromOffset(
+					sharedVariants.sizes[InputSize.Small].container.height,
+					sharedVariants.sizes[InputSize.Small].container.height
+				),
+				padding = UDim.new(0, tokens.Size.Size_200),
 			},
 		},
 		[InputSize.Medium] = {
 			container = {
-				tag = "gap-small padding-medium",
 				radius = sharedVariants.sizes[InputSize.Medium].container.radius,
-				height = sharedVariants.sizes[InputSize.Medium].container.height,
-			},
-			icon = {
-				size = UDim2.fromOffset(size500, size500),
-			},
-			text = {
-				tag = "text-title-medium",
+				size = UDim2.fromOffset(
+					sharedVariants.sizes[InputSize.Medium].container.height,
+					sharedVariants.sizes[InputSize.Medium].container.height
+				),
+				padding = UDim.new(0, tokens.Size.Size_250),
 			},
 		},
 		[InputSize.Large] = {
 			container = {
-				tag = "gap-small padding-medium",
 				radius = sharedVariants.sizes[InputSize.Large].container.radius,
-				height = sharedVariants.sizes[InputSize.Large].container.height,
-			},
-			icon = {
-				size = UDim2.fromOffset(size600, size600),
-			},
-			text = {
-				tag = "text-title-large",
+				size = UDim2.fromOffset(
+					sharedVariants.sizes[InputSize.Large].container.height,
+					sharedVariants.sizes[InputSize.Large].container.height
+				),
+				padding = UDim.new(0, tokens.Size.Size_300),
 			},
 		},
 	}
@@ -131,9 +99,9 @@ local function variantsMap(use: Use)
 	return { common = common, sizes = sizes, types = sharedVariants.types }
 end
 
-local function useButtonVariants(scope: Scope, size: InputSize, variant: ButtonVariant, colorMode: UsedAs<ColorMode>?): UsedAs<ButtonVariantProps>
+return function(scope: Scope, size: InputSize, variant: ButtonVariant, colorMode: UsedAs<ColorMode>?): UsedAs<IconButtonVariantProps>
 	return scope:Computed(function(use: Use)
-		local variants = useVariants(use, "Button", variantsMap)
+		local variants = useVariants(use, "IconButton", variantsMap)
 		return composeStyleVariant(
 			variants.common,
 			variants.sizes[size],
@@ -141,5 +109,3 @@ local function useButtonVariants(scope: Scope, size: InputSize, variant: ButtonV
 		)
 	end)
 end
-
-return useButtonVariants

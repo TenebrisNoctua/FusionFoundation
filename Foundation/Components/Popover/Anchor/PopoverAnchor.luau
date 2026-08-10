@@ -7,17 +7,20 @@ local withCommonProps = require(Utility.withCommonProps)
 local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
+local StudioUri = require(Utility.Plugin.StudioUri)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
 type Use = Types.Use
 type Child = Types.Child
 
+type StudioUri = StudioUri.StudioUri
+
 export type PopoverAnchorProps = {
 	scope: Scope,
 	-- From PopoverContext:
 	anchor: UsedAs<Instance?>?,
-	setAnchor: ((instance: Instance?) -> ())?,
+	anchorUri: UsedAs<StudioUri?>?,
 	isOpen: UsedAs<boolean>?,
 	-- The target state or instance to anchor the popover to. If provided, children will not be rendered.
 	anchorInstance: UsedAs<Instance?>?,
@@ -35,14 +38,29 @@ return function(props: PopoverAnchorProps)
 
 	local activeAnchor = scope:Computed(function(use: Use)
 		local externalAnchor = unwrap(props.anchorInstance, use)
-		if externalAnchor then return externalAnchor end
+		if externalAnchor and not StudioUri.isStudioUri(externalAnchor) then
+			return externalAnchor
+		end
 		return unwrap(viewInstance, use)
 	end)
 
 	local function handleAnchorRegistration()
-		local anchor = unwrap(activeAnchor)
-		if props.setAnchor then
-			props.setAnchor(anchor)
+		local externalAnchor = unwrap(props.anchorInstance)
+		if StudioUri.isStudioUri(externalAnchor) then
+			if isState(props.anchorUri) then
+				props.anchorUri:set(externalAnchor)
+			end
+			if isState(props.anchor) then
+				props.anchor:set(nil)
+			end
+		else
+			local anchor = unwrap(activeAnchor)
+			if isState(props.anchor) then
+				props.anchor:set(anchor)
+			end
+			if isState(props.anchorUri) then
+				props.anchorUri:set(nil)
+			end
 		end
 	end
 
@@ -57,8 +75,11 @@ return function(props: PopoverAnchorProps)
 	end
 
 	table.insert(scope, function()
-		if props.setAnchor then
-			props.setAnchor(nil)
+		if isState(props.anchor) then
+			props.anchor:set(nil)
+		end
+		if isState(props.anchorUri) then
+			props.anchorUri:set(nil)
 		end
 	end)
 
@@ -68,11 +89,13 @@ return function(props: PopoverAnchorProps)
 		if externalAnchor then return end
 
 		local viewProps = withCommonProps(props, {
-			scope = scope,
+			scope = innerScope,
 			tag = "auto-xy",
 			children = props.children
 		})
 
-		return viewInstance:set(unwrap(View(viewProps)))
+		local instance = unwrap(View(viewProps))
+		viewInstance:set(instance)
+		return instance
 	end)
 end

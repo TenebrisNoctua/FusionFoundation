@@ -8,7 +8,7 @@ local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 type Use = Types.Use
 
-local function useScaledValue(value: number, use: Use): number
+local function useScaledValue(value: number, use: Use?): number
 	local themeProvider = ThemeProvider()
 	local tokens = unwrap(themeProvider.Tokens, use)
 	local scaledValue = value * tokens.Config.UI.Scale

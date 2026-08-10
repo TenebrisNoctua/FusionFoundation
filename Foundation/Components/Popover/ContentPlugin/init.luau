@@ -1,7 +1,4 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Providers = Foundation.Providers
 local Utility = Foundation.Utility
@@ -13,6 +10,7 @@ local PopoverShadow = require(script.Parent.PopoverShadow)
 local getPanelPosition = require(script.getPanelPosition)
 local useArrowPosition = require(script.useArrowPosition)
 local usePanelSizing = require(script.usePanelSizing)
+local usePluginAnchor = require(script.usePluginAnchor)
 
 local View = require(Foundation.Components.View)
 
@@ -26,7 +24,6 @@ local ElevationProvider = require(Providers.ElevationProvider)
 local useElevation = require(Providers.ElevationProvider.useElevation)
 local PanelsProvider = require(Providers.PanelsProvider)
 local usePanel = require(Providers.PanelsProvider.usePanel)
-local useUniqueWidget = require(Providers.WidgetsProvider.useUniqueWidget)
 
 local unwrap = require(Utility.unwrap)
 local isState = require(Utility.isState)
@@ -37,8 +34,6 @@ local Types = require(Utility.Types)
 
 local Constants = require(Foundation.Constants)
 local ProviderTypes = require(Foundation.Providers.PanelsProvider.Types)
-
-local FoundationPopoverPluginDepthPool = true
 
 local SHADOW_SIZE = Constants.SHADOW_SIZE
 local SHADOW_VERTICAL_OFFSET = 2
@@ -73,7 +68,7 @@ type PanelHandle = ProviderTypes.PanelHandle
 type PopoverContentProps = PopoverContent.PopoverContentProps
 
 type ContentPluginProps = PopoverContentProps & {
-	parentPopoverId: UsedAs<string?>?
+	anchorUri: UsedAs<StudioUri?>?,
 }
 
 return function(contentProps: ContentPluginProps)
@@ -87,12 +82,8 @@ return function(contentProps: ContentPluginProps)
 	local themeProvider = ThemeProvider()
 	
 	local tokens = unwrap(themeProvider.Tokens)
-	local depth, elevationToken
-	
-	if FoundationPopoverPluginDepthPool then
-		elevationToken = useElevation(scope, ElevationLayer.Popover, { stackAboveOwner = true })
-		depth = elevationProvider.getRelativeIndex(unwrap(elevationToken))
-	end
+	local elevationToken = useElevation(scope, ElevationLayer.Popover, { stackAboveOwner = true })
+	local depth = elevationProvider.getRelativeIndex(unwrap(elevationToken))
 	
 	local contentInstance = scope:Value(nil :: GuiObject?)
 	
@@ -127,14 +118,26 @@ return function(contentProps: ContentPluginProps)
 		return 0
 	end)
 	
-	local anchor = useUniqueWidget(scope, {
-		gui = props.anchor
-	})
+	local pluginAnchor = usePluginAnchor(scope, props.anchor, props.anchorUri)
+	
+	local hasArrow = scope:Computed(function(use: Use)
+		local isVirtual = unwrap(pluginAnchor.isVirtual, use)
+		if isVirtual then return false end
+		return unwrap(props.hasArrow, use)
+	end)
+	
+	local anchorInstance = scope:Computed(function(use: Use)
+		local isVirtual = unwrap(pluginAnchor.isVirtual, use)
+		if isVirtual then return nil end
+		local a = props.anchor and unwrap(props.anchor, use) or nil
+		if typeof(a) ~= "Instance" then return nil end
+		return a :: GuiBase2d?
+	end)
 	
 	local position = scope:Computed(function(use: Use)
 		local resolvedSide = unwrap(props.side, use) or PopoverSide.Bottom
 		local resolvedAlign = unwrap(props.align, use) or PopoverAlign.Start
-		local resolvedHasArrow = unwrap(props.hasArrow, use)
+		local resolvedHasArrow = unwrap(hasArrow, use)
 		return getPanelPosition(
 			resolvedSide,
 			resolvedAlign,
@@ -150,8 +153,7 @@ return function(contentProps: ContentPluginProps)
 		onClose: () -> (),
 		panelDepth: number?
 	)
-		local parentId = if FoundationPopoverPluginDepthPool then props.parentPopoverId else nil
-		return panelsProvider:registerPopoverAsync(anchorUri, panelPosition, onClose, panelDepth, parentId)
+		return panelsProvider:registerPopoverAsync(anchorUri, panelPosition, onClose, panelDepth)
 	end
 	
 	-- This can be converted back to Logger Utility if Lumberyak is added as a package.
@@ -169,21 +171,43 @@ return function(contentProps: ContentPluginProps)
 		end
 	end
 	
-	local panelDepth = if FoundationPopoverPluginDepthPool then (if depth ~= nil then depth else 0) else depth
+	local panelDepth = if depth ~= nil then depth else 0
+
 	local panel = usePanel({
 		scope = scope,
-		isOpen = props.isOpen,
+		isOpen = scope:Computed(function(use: Use)
+			local isOpen = unwrap(props.isOpen, use)
+			local isReady = unwrap(pluginAnchor.isReady, use)
+			return isOpen and isReady
+		end),
 		onClose = onPanelClose,
-		anchorUri = anchor.uri,
-		anchorGui = props.anchor,
+		anchorUri = pluginAnchor.uri,
 		registerPanelAsync = registerPanelAsync,
 		position = position,
 		depth = panelDepth,
-		parentPopoverId = if FoundationPopoverPluginDepthPool then props.parentPopoverId else nil,
 	})
+	
+	local dummyContainer = scope:New "Frame" {
+		Name = "PopoverDummyContainer",
+		Visible = false,
+		BackgroundTransparency = 1,
+	}
+
+	local panelContainer = scope:Computed(function(use: Use)
+		local currentPanel = unwrap(panel, use)
+		if currentPanel then
+			return currentPanel.container
+		end
+		return dummyContainer
+	end)
+	
+	local contentVisible = scope:Computed(function(use: Use)
+		local currentPanel = unwrap(panel, use)
+		return currentPanel ~= nil
+	end)
 
 	local arrowHeightState = scope:Computed(function(use: Use)
-		return if unwrap(props.hasArrow, use) then arrowHeight else 0
+		return if unwrap(hasArrow, use) then arrowHeight else 0
 	end)
 
 	local popoverSize, contentSize = usePanelSizing(
@@ -202,12 +226,11 @@ return function(contentProps: ContentPluginProps)
 		props.radius,
 		alignValue,
 		arrowHeight,
-		props.anchor
+		anchorInstance
 	)
 	
-	local contentViewParent = scope:Value(nil :: Instance?)
 	local children = props.children
-	
+
 	table.insert(children, scope:New "StyleLink" {
 		StyleSheet = themeProvider.RegistryStyleSheet
 	})
@@ -215,7 +238,8 @@ return function(contentProps: ContentPluginProps)
 	local contentView = View {
 		Name = "ContentView",
 		scope = scope,
-		Parent = contentViewParent,
+		Parent = panelContainer,
+		Visible = contentVisible,
 		Position = UDim2.fromOffset(SHADOW_SIZE, SHADOW_SIZE),
 		backgroundStyle = backgroundStyle,
 		ZIndex = 3,
@@ -227,43 +251,33 @@ return function(contentProps: ContentPluginProps)
 
 	contentInstance:set(unwrap(contentView))
 
-	return scope:Computed(function(use: Use, innerScope: Scope)
-		local currentPanel = unwrap(panel, use)
-		if not currentPanel then
-			contentViewParent:set(nil)
-			return
-		end
-
-		local shouldShowArrow = unwrap(props.hasArrow, use)
-		contentViewParent:set(currentPanel.container)
-
-		unwrap(View(withCommonProps(props, {
-			Name = "Content",
-			scope = innerScope,
-			Parent = currentPanel.container,
-			Size = popoverSize,
-			tag = "size-full",
-			children = {
-				PopoverShadow {
-					scope = innerScope,
-					contentSize = contentSize,
-					position = UDim2.fromOffset(SHADOW_SIZE / 2, SHADOW_SIZE / 2 + SHADOW_VERTICAL_OFFSET),
-					ZIndex = 1,
-				},
-				if shouldShowArrow
-					then PopoverArrow {
-						scope = innerScope,
-						size = arrowSide,
-						position = arrowPosition,
-						ZIndex = 2,
-						backgroundStyle = backgroundStyle,
-					}
-					else nil,
-
-				innerScope:New "StyleLink" {
-					StyleSheet = themeProvider.RegistryStyleSheet
-				},
-			}
-		})))
-	end)
+	local contentProps = withCommonProps(props, {
+		Name = "Content",
+		scope = scope,
+		Parent = panelContainer,
+		Size = popoverSize,
+		tag = "size-full",
+		children = {
+			PopoverShadow {
+				scope = scope,
+				contentSize = contentSize,
+				position = UDim2.fromOffset(SHADOW_SIZE / 2, SHADOW_SIZE / 2 + SHADOW_VERTICAL_OFFSET),
+				ZIndex = 1,
+			},
+			PopoverArrow {
+				scope = scope,
+				size = arrowSide,
+				position = arrowPosition,
+				ZIndex = 2,
+				backgroundStyle = backgroundStyle,
+				Visible = hasArrow,
+			},
+			scope:New "StyleLink" {
+				StyleSheet = themeProvider.RegistryStyleSheet,
+			},
+		}
+	})
+	
+	contentProps.Visible = contentVisible
+	return View(contentProps)
 end

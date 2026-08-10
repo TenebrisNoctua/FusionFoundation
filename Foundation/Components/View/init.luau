@@ -74,7 +74,7 @@ return function(viewProps: ViewProps): UsedAs<Frame | CanvasGroup>
 		props.tag = unwrap(tag)
 
 		local isInteractable = props.onStateChanged ~= nil or props.onActivated ~= nil or props.onSecondaryActivated ~= nil
-
+		
 		local usesCanvasGroup = innerScope:Computed(function(use: Use) 
 			local value = unwrap(props.GroupTransparency, use)
 			return if value then value > 0 else false

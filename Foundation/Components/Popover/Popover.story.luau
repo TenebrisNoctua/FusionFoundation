@@ -59,10 +59,6 @@ local function StoryBasic(props)
 	local controls = props.controls
 
 	local anchor = scope:Value(nil)
-	local function setAnchor(instance)
-		anchor:set(instance)
-	end
-	
 	local isOpen = scope:Value(true)
 	local backgroundStyle = getBackgroundStyle(scope, theme, controls.backgroundStyle)
 
@@ -75,7 +71,6 @@ local function StoryBasic(props)
 			PopoverAnchor {
 				scope = scope,
 				anchor = anchor,
-				setAnchor = setAnchor,
 				isOpen = isOpen,
 				children = {
 					View {
@@ -138,9 +133,6 @@ local function StoryClickOutside(props)
 	local controls = props.controls
 
 	local anchor = scope:Value(nil)
-	local function setAnchor(instance)
-		anchor:set(instance)
-	end
 	local open = scope:Value(false)
 
 	return View {
@@ -151,7 +143,6 @@ local function StoryClickOutside(props)
 			PopoverAnchor {
 				scope = scope,
 				anchor = anchor,
-				setAnchor = setAnchor,
 				isOpen = open,
 				children = {
 					View {
@@ -224,9 +215,6 @@ local function StoryAnchorRef(props)
 	local controls = props.controls
 
 	local anchor = scope:Value(nil)
-	local function setAnchor(instance)
-		anchor:set(instance)
-	end
 	local open = scope:Value(false)
 
 	local buttonInstance = unwrap(Button {
@@ -248,7 +236,6 @@ local function StoryAnchorRef(props)
 			PopoverAnchor {
 				scope = scope,
 				anchor = anchor,
-				setAnchor = setAnchor,
 				isOpen = open,
 				anchorInstance = buttonInstance,
 			},
@@ -290,9 +277,6 @@ local function StoryKeyboardAware(props)
 	local controls = props.controls
 
 	local anchor = scope:Value(nil)
-	local function setAnchor(instance)
-		anchor:set(instance)
-	end
 	local open = scope:Value(false)
 
 	return View {
@@ -311,7 +295,6 @@ local function StoryKeyboardAware(props)
 			PopoverAnchor {
 				scope = scope,
 				anchor = anchor,
-				setAnchor = setAnchor,
 				isOpen = open,
 				children = {
 					View {
@@ -371,9 +354,6 @@ local function StoryMousePositionTooltip(props)
 	local controls = props.controls
 
 	local anchor = scope:Value(nil)
-	local function setAnchor(instance)
-		anchor:set(instance)
-	end
 	local open = scope:Value(false)
 	local virtualRef = useMeasurableRef(scope, Vector2.zero)
 
@@ -393,7 +373,6 @@ local function StoryMousePositionTooltip(props)
 			PopoverAnchor {
 				scope = scope,
 				anchor = anchor,
-				setAnchor = setAnchor,
 				isOpen = open,
 				anchorInstance = virtualRef,
 			},
@@ -421,8 +400,8 @@ local function StoryMousePositionTooltip(props)
 	})
 	
 	local mouseMoveConnection = viewInstance.MouseMoved:Connect(function(x, y)
-		unwrap(virtualRef):SetPosition(Vector2.new(x, y))
 		open:set(true)
+		unwrap(virtualRef):SetPosition(Vector2.new(x, y))
 	end)
 	
 	local mouseLeaveConnection = viewInstance.MouseLeave:Connect(function()
@@ -442,9 +421,6 @@ local function StoryContextMenu(props)
 	local controls = props.controls
 
 	local anchor = scope:Value(nil)
-	local function setAnchor(instance)
-		anchor:set(instance)
-	end
 	local open = scope:Value(false)
 	local virtualRef = useMeasurableRef(scope, Vector2.zero)
 
@@ -469,7 +445,6 @@ local function StoryContextMenu(props)
 			PopoverAnchor {
 				scope = scope,
 				anchor = anchor,
-				setAnchor = setAnchor,
 				isOpen = open,
 				anchorInstance = virtualRef,
 			},
@@ -505,8 +480,8 @@ local function StoryContextMenu(props)
 	})
 	
 	local mouseButtonRightConnection = viewInstance.MouseButton2Up:Connect(function(x, y)
-		unwrap(virtualRef):SetPosition(Vector2.new(x, y))
 		open:set(true)
+		unwrap(virtualRef):SetPosition(Vector2.new(x, y))
 	end)
 	
 	table.insert(scope, function()

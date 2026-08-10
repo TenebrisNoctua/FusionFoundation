@@ -9,6 +9,8 @@ local PackageManager = require(Foundation.PackageManager)
 local Dash = PackageManager.getPackage("Dash")
 local join = Dash.join
 
+type FIXME<T = any> = T
+
 export type StudioUri = {
 	Category: string?,
 	DataModel: string?,
@@ -41,14 +43,14 @@ StudioUri.RESTRICTED_Mt = table.freeze({
 -- Applies the metatable to a StudioUri object and freezes it
 function StudioUri.wrap(uri: StudioUri): StudioUri
 	-- If already frozen and has the correct metatable, return it to avoid cloning
-	if table.isfrozen(uri) and getmetatable(uri) == StudioUri.RESTRICTED_Mt then
+	if table.isfrozen(uri) and getmetatable(uri :: FIXME) == StudioUri.RESTRICTED_Mt then
 		return uri
 	end
 	-- Clone if frozen and not the correct metatable
 	if table.isfrozen(uri) then
-		uri = table.clone(uri) :: any -- The type solver is unfortunately too weak for this apparently.
+		uri = table.clone(uri)
 	end
-	return table.freeze(setmetatable(uri, StudioUri.RESTRICTED_Mt) :: any)
+	return table.freeze(setmetatable(uri :: FIXME, StudioUri.RESTRICTED_Mt))
 end
 
 function StudioUri.join(uri: StudioUri, other: StudioUri): StudioUri
@@ -95,6 +97,19 @@ end
 
 function StudioUri.isValid(uri: any)
 	return type(uri) == "table"
+end
+
+-- Distinguishes a URI table from other values (e.g. a React ref object), which
+-- never carry these fields.
+function StudioUri.isStudioUri(value: any): boolean
+	if type(value) ~= "table" then
+		return false
+	end
+	return value.DataModel ~= nil
+		or value.PluginType ~= nil
+		or value.PluginId ~= nil
+		or value.Category ~= nil
+		or value.ItemId ~= nil
 end
 
 function StudioUri.fromAction(pluginId: string, itemId: string): StudioUri

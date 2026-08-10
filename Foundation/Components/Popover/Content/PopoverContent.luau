@@ -68,8 +68,6 @@ type AlignConfig = useFloating.AlignConfig
 export type PopoverContentProps = {
 	-- The scope the component will be created in.
 	scope: Scope,
-	-- The scope the children will be created in.
-	childrenScope: Scope,
 	-- The side the popover should be anchored to.
 	side: UsedAs<SideConfig>?,
 	-- The alignment of the popover relative to the anchor.
@@ -94,7 +92,7 @@ export type PopoverContentProps = {
 return function(contentProps: PopoverContentProps)
 	local scope = contentProps.scope
 	assert(scope, "A scope has not been provided for the PopoverContent component.")
-
+	
 	local props = withDefaults(contentProps, defaultProps)
 	local theme = ThemeProvider()
 	local overlay = OverlayProvider()

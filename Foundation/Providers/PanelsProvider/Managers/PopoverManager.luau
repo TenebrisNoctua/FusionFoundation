@@ -15,7 +15,6 @@ type PanelPosition = Types.PanelPosition
 type PanelHandle = Types.PanelHandle
 
 local MAX_SIZE = 3000
-
 local BASE_ZINDEX = 200
 
 local function bindToClose(panel: PluginGui, onClose: () -> ())
@@ -30,6 +29,7 @@ type Popover = {
 	panel: PluginGui,
 	open: boolean,
 	depth: number,
+	generation: number,
 	parentPopoverId: string?,
 	onClose: (() -> ())?,
 }
@@ -62,6 +62,15 @@ function PopoverManager.new(plugin: Plugin, uriScope: string?)
 
 	self._active = {} :: { [string]: Popover }
 	self._pool = {} :: { [number]: { Popover } }
+	self._didPrewarm = false
+	
+	--[[
+		Trash container holds leftover content re-parented from pooled QWidgets.
+		We re-parent (not destroy) to avoid errors when Fusion later tries
+		to update instances it still manages.
+	]]
+	self._trash = Instance.new("Folder")
+	self._trash.Name = "PopoverTrash"
 
 	return self
 end
@@ -78,6 +87,7 @@ function PopoverManager.openAtAsync(
 	local resolvedDepth = if depth == nil then 0 else depth
 	local popover = self:_acquirePanelAsync(onClose, resolvedDepth, parentPopoverId)
 
+	-- Make sure it's hidden before we attach to avoid visual flash.
 	popover.panel.Enabled = false
 
 	self._panels:SetAttachmentAsync(popover.uri, {
@@ -91,16 +101,20 @@ function PopoverManager.openAtAsync(
 	popover.panel.Enabled = true
 	popover.open = true
 
+	local generation = popover.generation
 	local handle: PanelHandle = {
 		container = popover.panel,
 		popoverId = popover.id,
 		setSizeAsync = function(size: Vector2)
+			if popover.generation ~= generation or not popover.open then
+				return
+			end
 			local width = math.ceil(math.min(MAX_SIZE, size.X))
 			local height = math.ceil(math.min(MAX_SIZE, size.Y))
 			self._panels:SetSizeAsync(popover.uri, Vector2.new(width, height))
 		end,
 		updateAsync = function(newConfig: PanelPosition & { targetWidgetUri: StudioUri })
-			if not popover.uri then
+			if popover.generation ~= generation or not popover.open or not popover.uri then
 				return
 			end
 
@@ -112,8 +126,8 @@ function PopoverManager.openAtAsync(
 			})
 		end,
 		close = function()
-			self:_closePopover(popover, true)
-		end,
+			self:_closePopover(popover, true, generation)
+		end
 	}
 
 	return handle
@@ -137,6 +151,50 @@ function PopoverManager._createPanelAsync(self: PopoverManager, id: string, dept
 	})
 end
 
+function PopoverManager._makePopoverId(self: PopoverManager): string
+	local uriScopeSegment = if self._uriScope then `/{self._uriScope}` else ""
+	return `Popovers{uriScopeSegment}/{HttpService:GenerateGUID(false)}`
+end
+
+function PopoverManager._createPopoverAsync(self: PopoverManager, id: string, depth: number): Popover
+	local panel, uri = self:_createPanelAsync(id, depth)
+	local newPopover: Popover = {
+		id = id,
+		uri = uri,
+		panel = panel,
+		open = false,
+		depth = depth,
+		generation = 0,
+		parentPopoverId = nil,
+		onClose = nil,
+	}
+
+	bindToClose(panel, function()
+		self:_closePopover(newPopover, false, newPopover.generation)
+	end)
+
+	panel.InputBegan:Connect(function(input: InputObject)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 and newPopover.open then
+			self:_closeChildPopovers(newPopover)
+		end
+	end)
+
+	return newPopover
+end
+
+function PopoverManager._activatePopover(
+	self: PopoverManager,
+	popover: Popover,
+	onClose: (() -> ())?,
+	parentPopoverId: string?
+)
+	popover.generation += 1
+	popover.onClose = onClose
+	popover.parentPopoverId = parentPopoverId
+	popover.open = false
+	self._active[popover.id] = popover
+end
+
 function PopoverManager._tryAcquireFromPool(
 	self: PopoverManager,
 	onClose: (() -> ())?,
@@ -148,11 +206,19 @@ function PopoverManager._tryAcquireFromPool(
 	if not popover then
 		return nil
 	end
+	
+	--[[
+		Clear any leftover content from the previous popover usage.
+		To avoid Frame.Parent issues, we re-parent to the trash folder.
+		By acquisition time, Fusion has usually already re-parented content 
+		to the dummy container when it detects a state change, so this loop often does nothing.
+		It is mainly here for a fallback for cases when evaluation hasn't been processed yet.
+	]]
+	for _, child in ipairs(popover.panel:GetChildren()) do
+		child.Parent = self._trash
+	end
 
-	popover.onClose = onClose
-	popover.parentPopoverId = parentPopoverId
-	popover.open = false
-	self._active[popover.id] = popover
+	self:_activatePopover(popover, onClose, parentPopoverId)
 	return popover
 end
 
@@ -167,33 +233,32 @@ function PopoverManager._acquirePanelAsync(
 		return pooled
 	end
 
-	local uriScopeSegment = if self._uriScope then `/{self._uriScope}` else ""
-	local id = `Popovers{uriScopeSegment}/{HttpService:GenerateGUID(false)}`
-
-	local panel, uri = self:_createPanelAsync(id, depth)
-
-	local newPopover: Popover = {
-		id = id,
-		uri = uri,
-		panel = panel,
-		open = false,
-		depth = depth,
-		parentPopoverId = parentPopoverId,
-		onClose = onClose,
-	}
-
-	bindToClose(panel, function()
-		self:_closePopover(newPopover)
-	end)
-
-	panel.InputBegan:Connect(function(input: InputObject)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and newPopover.open then
-			self:_closeChildPopovers(newPopover)
-		end
-	end)
-
-	self._active[id] = newPopover
+	local id = self:_makePopoverId()
+	local newPopover = self:_createPopoverAsync(id, depth)
+	self:_activatePopover(newPopover, onClose, parentPopoverId)
 	return newPopover
+end
+
+function PopoverManager.prewarmPoolAsync(self: PopoverManager, maxDepth: number)
+	if self._didPrewarm then
+		return
+	end
+
+	local resolvedMaxDepth = math.max(0, maxDepth)
+	for depth = 0, resolvedMaxDepth do
+		if self._pool[depth] == nil then
+			self._pool[depth] = {}
+		end
+
+		local depthPool = self._pool[depth] -- Guarnateed to exist
+		if #depthPool == 0 then
+			local popover = self:_createPopoverAsync(self:_makePopoverId(), depth)
+			popover.panel.Enabled = false
+			table.insert(depthPool, popover)
+		end
+	end
+
+	self._didPrewarm = true
 end
 
 function PopoverManager._closeChildPopovers(self: PopoverManager, parentPopover: Popover)
@@ -207,14 +272,19 @@ function PopoverManager._closeChildPopovers(self: PopoverManager, parentPopover:
 		end
 	end
 	for _, popover in toClose do
+		-- User-driven dismissals should notify consumers to update open state.
 		self:_closePopover(popover)
 	end
 end
 
-function PopoverManager._closePopover(self: PopoverManager, popover: Popover, silent: boolean?)
-	if not popover.open then
-		return
-	end
+function PopoverManager._closePopover(
+	self: PopoverManager,
+	popover: Popover,
+	silent: boolean?,
+	expectedGeneration: number?
+)
+	if expectedGeneration ~= nil and popover.generation ~= expectedGeneration then return end
+	if not popover.open then return end
 
 	popover.open = false
 	popover.panel.Enabled = false
@@ -253,6 +323,11 @@ function PopoverManager.destroy(self: PopoverManager)
 		end
 	end
 	self._pool = {}
+
+	if self._trash then
+		self._trash:Destroy()
+		self._trash = nil
+	end
 end
 
 return PopoverManager
