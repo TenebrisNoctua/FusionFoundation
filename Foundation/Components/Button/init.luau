@@ -24,7 +24,7 @@ local InputSize = require(Enums.InputSize)
 local ButtonVariant = require(Enums.ButtonVariant)
 local FillBehavior = require(Enums.FillBehavior)
 local ControlState = require(Enums.ControlState)
-local ColorMode = require(Enums.ColorMode)
+local ColorNamespace = require(Enums.ColorNamespace)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
@@ -53,7 +53,7 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"inputDelay",
 	"textSizeOffset",
 	"isIconSize",
-	"colorMode"
+	"colorNamespace"
 }
 
 local defaultProps = {
@@ -80,7 +80,7 @@ type Use = Types.Use
 
 type InputSize = InputSize.InputSize
 type ButtonVariant = ButtonVariant.ButtonVariant
-type ColorMode = ColorMode.ColorMode
+type ColorNamespace = ColorNamespace.ColorNamespace
 type SupportedButtonVariant = ButtonVariant.ButtonVariant
 type FillBehavior = FillBehavior.FillBehavior
 type ControlState = ControlState.ControlState
@@ -106,7 +106,7 @@ export type ButtonProps = {
 	-- These properties are converted from contexts.
 	textSizeOffset: UsedAs<number>?,
 	isIconSize: UsedAs<boolean>?,
-	colorMode: UsedAs<ColorMode>?,
+	colorNamespace: UsedAs<ColorNamespace>?,
 } & Types.SelectionProps & Types.CommonProps
 
 return function(buttonProps: ButtonProps)
@@ -136,11 +136,12 @@ return function(buttonProps: ButtonProps)
 		
 		local buttonSize = unwrap(props.size, use)
 		local buttonVariant = unwrap(props.variant, use)
-		local buttonColor = unwrap(props.colorMode, use)
+		local buttonColor = unwrap(props.colorNamespace, use)
 		
-		local variantProps = useButtonVariants(innerScope, buttonSize, buttonVariant, buttonColor)
-		local currentVariantProps = unwrap(variantProps, use)
-		local defaultTransparency = currentVariantProps.content.style.Transparency or 0
+		local tokens = unwrap(Theme.Tokens, use)
+		
+		local variantProps = useButtonVariants(buttonSize, buttonVariant, buttonColor)
+		local defaultTransparency = variantProps.content.style.Transparency or 0
 		
 		local motion = useButtonMotionStates(innerScope, buttonState, defaultTransparency, Constants.DISABLED_TRANSPARENCY)
 		
@@ -176,10 +177,10 @@ return function(buttonProps: ButtonProps)
 				[Children] = {
 					Spinner = Spinner {
 						scope = innerScope,
-						Size = currentVariantProps.icon.size,
+						Size = variantProps.icon.size,
 						style = innerScope:Computed(function(use: Use)
 							return {
-								Color3 = currentVariantProps.content.style.Color3,
+								Color3 = variantProps.content.style.Color3,
 								Transparency = unwrap(motion.iconTransparency, use),
 							}
 						end)
@@ -191,7 +192,7 @@ return function(buttonProps: ButtonProps)
 		if isIcon then
 			buttonChildren.IconWrapper = View {
 				scope = innerScope,
-				Size = currentVariantProps.icon.size,
+				Size = variantProps.icon.size,
 				LayoutOrder = if isEndAligned then 3 else 1,
 				children = {
 					Icon = ButtonIcon {
@@ -213,12 +214,12 @@ return function(buttonProps: ButtonProps)
 				scope = innerScope,
 				Text = innerScope:Computed(formatText),
 				RichText = if BUTTON_VARIANT_TO_RICH_TEXT_FORMAT[buttonVariant] ~= nil then true else false,
-				tag = currentVariantProps.text.tag,
+				tag = variantProps.text.tag,
 				textStyle = innerScope:Computed(function(use: Use)
 					local disabledTransp = unwrap(motion.transparency, use)
 					local textTransp = unwrap(motion.textTransparency, use)
 					return {
-						Color3 = currentVariantProps.content.style.Color3,
+						Color3 = variantProps.content.style.Color3,
 						Transparency = textTransp + disabledTransp,
 					}
 				end),
@@ -240,13 +241,13 @@ return function(buttonProps: ButtonProps)
 			scope = innerScope,
 			AutomaticSize = if currentWidth.Scale == 0 then Enum.AutomaticSize.X else nil,
 			LayoutOrder = props.LayoutOrder,
-			cornerRadius = UDim.new(0, currentVariantProps.container.radius),
+			cornerRadius = UDim.new(0, variantProps.container.radius),
 
-			backgroundStyle = if currentVariantProps.container.style
+			backgroundStyle = if variantProps.container.style
 				then {
-					Color3 = currentVariantProps.container.style.Color3,
+					Color3 = variantProps.container.style.Color3,
 					Transparency = innerScope:Computed(function(use: Use)
-						local baseTransp = currentVariantProps.container.style.Transparency or 0
+						local baseTransp = variantProps.container.style.Transparency or 0
 						local disabledVal = unwrap(motion.transparency, use)
 						return baseTransp + (1 - baseTransp) * disabledVal
 					end),
@@ -261,11 +262,11 @@ return function(buttonProps: ButtonProps)
 				}
 				else nil,
 
-			stroke = if currentVariantProps.container.stroke
+			stroke = if variantProps.container.stroke
 				then {
-					Color = currentVariantProps.container.stroke.Color,
+					Color = variantProps.container.stroke.Color,
 					Transparency = innerScope:Computed(function(use: Use)
-						local baseTransp = currentVariantProps.container.stroke.Transparency or 0
+						local baseTransp = variantProps.container.stroke.Transparency or 0
 						local disabledVal = unwrap(motion.transparency, use)
 						return baseTransp + (1 - baseTransp) * disabledVal
 					end),
@@ -276,7 +277,7 @@ return function(buttonProps: ButtonProps)
 				if currentFillBehavior == FillBehavior.Fill then 1 else currentWidth.Scale,
 				if currentFillBehavior == FillBehavior.Fill then 0 else currentWidth.Offset,
 				0,
-				currentVariantProps.container.height
+				variantProps.container.height
 			),
 
 			selection = {
@@ -288,9 +289,9 @@ return function(buttonProps: ButtonProps)
 			},
 
 			cursor = {
-				radius = UDim.new(0, currentVariantProps.container.radius),
-				offset = unwrap(Theme.Tokens, use).Size.Size_200,
-				borderWidth = unwrap(Theme.Tokens, use).Stroke.Thicker,
+				radius = UDim.new(0, variantProps.container.radius),
+				offset = tokens.Size.Size_200,
+				borderWidth = tokens.Stroke.Thicker,
 			},
 
 			onActivated = props.onActivated,
@@ -300,8 +301,8 @@ return function(buttonProps: ButtonProps)
 				return not (unwrap(props.isDisabled, use) or currentLoading or unwrap(isDelaying, use))
 			end),
 
-			stateLayer = currentVariantProps.container.stateLayer,
-			tag = currentVariantProps.container.tag,
+			stateLayer = variantProps.container.stateLayer,
+			tag = variantProps.container.tag,
 			children = buttonChildren
 		}
 		

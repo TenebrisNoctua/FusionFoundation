@@ -2,6 +2,7 @@ local Foundation = script.Parent.Parent.Parent
 
 local BaseMenuDivider = require(script.Parent.BaseMenuDivider)
 local BaseMenuTitleItem = require(script.Parent.BaseMenuTitleItem)
+local BaseMenuContext = require(script.Parent.BaseMenuContext)
 
 local View = require(Foundation.Components.View)
 
@@ -31,19 +32,21 @@ export type BaseMenuGroupProps = {
 	title: UsedAs<string?>?,
 	children: { Child }?,
 	LayoutOrder: UsedAs<number>,
-	size: UsedAs<InputSize>?,
 }
 
 local function BaseMenuGroup(props: BaseMenuGroupProps)
 	local scope = props.scope
 	assert(scope, "A scope has not been provided for the BaseMenuGroup component.")
 
+	local context = BaseMenuContext:now()
+
 	return scope:Computed(function(use: Use, innerScope: Scope) 
 		local groupIndex = unwrap(props.LayoutOrder, use) or 1
-		local currentSize = unwrap(props.size, use) or InputSize.Medium
+		local currentSize = unwrap(context.size, use) or InputSize.Medium
 		local currentTitle = unwrap(props.title, use)
 		local paddingTag = SIZE_TO_PADDING[currentSize] or "padding-small"
-
+		
+		local children = props.children
 		local childrenResult = {}
 
 		if groupIndex ~= 1 then
@@ -52,6 +55,13 @@ local function BaseMenuGroup(props: BaseMenuGroupProps)
 				LayoutOrder = groupIndex * 2 - 1,
 			}
 		end
+		
+		-- If children is a function, call it within the context so child components can read it
+		if type(children) == "function" then
+			children = BaseMenuContext:is(context):during(function()
+				return children(innerScope)
+			end)
+		end
 
 		childrenResult.Group = View {
 			scope = innerScope,
@@ -59,14 +69,15 @@ local function BaseMenuGroup(props: BaseMenuGroupProps)
 			tag = `col gap-xxsmall size-full-0 auto-y {paddingTag}`,
 			children = {
 				Title = if currentTitle
-					then BaseMenuTitleItem {
-						scope = innerScope,
-						text = currentTitle,
-						size = currentSize,
-					}
+					then BaseMenuContext:is(context):during(function()
+						return BaseMenuTitleItem {
+							scope = innerScope,
+							text = currentTitle,
+						}
+						end)
 					else nil,
-				Items = props.children,
-			},
+				Items = children
+			}
 		}
 
 		return childrenResult

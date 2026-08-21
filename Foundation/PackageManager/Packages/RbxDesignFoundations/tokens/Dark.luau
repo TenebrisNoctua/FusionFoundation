@@ -1,5 +1,5 @@
 return function(scale)
-	return {
+	return table.freeze {
 		Color = {
 			ActionAlert = {
 				Background = { Color3 = Color3.fromRGB(208, 217, 251), Transparency = 0.88 },

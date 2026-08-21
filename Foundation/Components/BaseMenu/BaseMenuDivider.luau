@@ -43,7 +43,7 @@ return function(dividerProps: BaseMenuDividerProps)
 
 	return Scope:Computed(function(use: Use, innerScope: Scope)
 		local tokens = unwrap(Theme.Tokens, use)
-		local currentLayoutOrder = unwrap(props.LayoutOrder, use)
+		local currentLayoutOrder = unwrap(props.LayoutOrder)
 
 		local viewProps = {
 			scope = innerScope,
@@ -55,7 +55,7 @@ return function(dividerProps: BaseMenuDividerProps)
 					scope = innerScope,
 					tag = "grow size-0-full",
 					backgroundStyle = tokens.Color.Stroke.Default,
-				},
+				}
 			},
 		}
 

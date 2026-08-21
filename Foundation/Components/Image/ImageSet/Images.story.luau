@@ -131,7 +131,7 @@ return {
 
 		return View {
 			scope = props.scope,
-			tag = "column auto-xy",
+			tag = "col auto-xy",
 			children = storyViews
 		}
 	end

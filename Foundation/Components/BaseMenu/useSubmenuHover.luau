@@ -22,6 +22,8 @@ type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
 type ItemId = Types.ItemId
 
+local EMPTY_PATH: { ItemId } = {}
+
 local function truncatePath(path: { ItemId }, toLength: number): { ItemId }
 	local newPath = {}
 	for i = 1, toLength do
@@ -55,7 +57,7 @@ local function useSubmenuHover(scope: Scope): SubmenuHoverState
 
 	local Theme = ThemeProvider()
 
-	local openPath = scope:Value({} :: { ItemId })
+	local openPath = scope:Value(EMPTY_PATH)
 	local openTimer: thread? = nil
 	local closeTimer: thread? = nil
 
@@ -114,7 +116,7 @@ local function useSubmenuHover(scope: Scope): SubmenuHoverState
 
 	local function reset()
 		cancelTimers()
-		openPath:set({})
+		openPath:set(EMPTY_PATH)
 	end
 
 	table.insert(scope, function()

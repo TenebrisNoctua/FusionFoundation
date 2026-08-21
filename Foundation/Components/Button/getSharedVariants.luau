@@ -1,4 +1,7 @@
 local Foundation = script.Parent.Parent.Parent
+local PackageManager = require(Foundation.PackageManager)
+
+local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
@@ -7,19 +10,19 @@ local composeStyleVariant = require(Utility.composeStyleVariant)
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 
-local ButtonVariant = require(Enums.ButtonVariant)
-local ColorMode = require(Enums.ColorMode)
-local StateLayerMode = require(Enums.StateLayerMode)
 local InputSize = require(Enums.InputSize)
+local ButtonVariant = require(Enums.ButtonVariant)
+local StateLayerMode = require(Enums.StateLayerMode)
+local ColorNamespace = require(Enums.ColorNamespace)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 local Constants = require(Foundation.Constants)
 
+type ColorNamespace = ColorNamespace.ColorNamespace
 type ColorStyleValue = Types.ColorStyleValue
 type StateLayer = Types.StateLayer
 type ButtonVariant = ButtonVariant.ButtonVariant
-type ColorMode = ColorMode.ColorMode
 type StateLayerMode = StateLayerMode.StateLayerMode
 type VariantProps = composeStyleVariant.VariantProps
 type InputSize = InputSize.InputSize
@@ -29,6 +32,19 @@ type ButtonStyle = {
 	Background: ColorStyleValue?,
 	Border: ColorStyleValue?,
 	Foreground: ColorStyleValue?,
+}
+
+type SharedButtonVariantProps = {
+	container: {
+		height: UDim2,
+		stroke: ButtonStroke?,
+		radius: number,
+		style: ColorStyleValue,
+		stateLayer: StateLayer?,
+	},
+	content: {
+		style: ColorStyleValue,
+	},
 }
 
 export type ButtonStroke = {
@@ -47,32 +63,24 @@ end
 
 -- Helper function to create a standard button variant style
 local function createButtonVariantStyles(
-	use: Use,
 	actionName: string | { string },
 	isInverse: boolean?
-): { [ColorMode]: VariantProps }
+): { [ColorNamespace]: VariantProps }
 	local themeProvider = ThemeProvider()
-	local tokens = unwrap(themeProvider.Tokens, use)
+	local tokens = unwrap(themeProvider.Tokens)
+	local styles: { [ColorNamespace]: any } = {}
 	
-	local buttonStyle: ButtonStyle = {}
-	if type(actionName) == "table" then
-		buttonStyle.Foreground = tokens.Color[actionName[1]][actionName[2]]
-	else
-		local actionColor = tokens.Color[actionName]
-		buttonStyle.Background = actionColor.Background
-		buttonStyle.Border = actionColor.Border
-		buttonStyle.Foreground = actionColor.Foreground
-	end
-
-	local styles: { [ColorMode]: any } = {}
-
-	for colorMode in ColorMode do
-		styles[colorMode :: ColorMode] = {
+	for colorNamespace in ColorNamespace do
+		local colors = tokens[colorNamespace]
+		local buttonStyle = if type(actionName) == "table"
+			then { Foreground = Dash.get(colors, actionName) }
+			else colors[actionName]
+		styles[colorNamespace :: ColorNamespace] = {
 			container = {
 				style = buttonStyle.Background,
-				stroke = toStroke(buttonStyle.Border),
+				stroke = if buttonStyle.Border then toStroke(buttonStyle.Border) else nil,
 				stateLayer = {
-					mode = Constants.COLOR_MODE_TO_STATE_LAYER_MODE[isInverse or false][colorMode :: ColorMode],
+					mode = Constants.COLOR_NAMESPACE_TO_STATE_LAYER_MODE[isInverse or false][colorNamespace :: ColorNamespace],
 				},
 			},
 			content = {
@@ -80,43 +88,30 @@ local function createButtonVariantStyles(
 			},
 		}
 	end
-
 	return styles
 end
 
-type SharedButtonVariantProps = {
-	container: {
-		height: UDim2,
-		stroke: ButtonStroke?,
-		radius: number,
-		style: ColorStyleValue,
-		stateLayer: StateLayer?,
-	},
-	content: {
-		style: ColorStyleValue,
-	},
-}
-
-local function getButtonTypes(use: Use): { [ButtonVariant]: { [ColorMode]: VariantProps } }
+-- Returns all button variant types - indexed by variant then by ColorNamespace
+local function getButtonTypes(): { [ButtonVariant]: { [ColorNamespace]: VariantProps } }
 	return {
-		[ButtonVariant.Utility] = createButtonVariantStyles(use, "ActionUtility"),
-		[ButtonVariant.Standard] = createButtonVariantStyles(use, "ActionStandard"),
+		[ButtonVariant.Utility] = createButtonVariantStyles("ActionUtility"),
+		[ButtonVariant.Standard] = createButtonVariantStyles("ActionStandard"),
 		-- TODO: Update to use StateLayerMode.Dark
-		[ButtonVariant.Emphasis] = createButtonVariantStyles(use, "ActionEmphasis"),
-		[ButtonVariant.Alert] = createButtonVariantStyles(use, "ActionAlert"),
-		[ButtonVariant.SubEmphasis] = createButtonVariantStyles(use, "ActionSubEmphasis", true),
+		[ButtonVariant.Emphasis] = createButtonVariantStyles("ActionEmphasis"),
+		[ButtonVariant.Alert] = createButtonVariantStyles("ActionAlert"),
+		[ButtonVariant.SubEmphasis] = createButtonVariantStyles("ActionSubEmphasis", true),
 		-- TODO: Update to use StateLayerMode.Inverse
-		[ButtonVariant.SoftEmphasis] = createButtonVariantStyles(use, "ActionSoftEmphasis"),
-		[ButtonVariant.Subtle] = createButtonVariantStyles(use, "ActionSubtle"),
-		[ButtonVariant.Text] = createButtonVariantStyles(use, { "Content", "Emphasis" }),
-		[ButtonVariant.Link] = createButtonVariantStyles(use, { "Content", "Link" }),
-		[ButtonVariant.OverMedia] = createButtonVariantStyles(use, "ActionOverMedia", true),
+		[ButtonVariant.SoftEmphasis] = createButtonVariantStyles("ActionSoftEmphasis"),
+		[ButtonVariant.Subtle] = createButtonVariantStyles("ActionSubtle"),
+		[ButtonVariant.Text] = createButtonVariantStyles({ "Content", "Emphasis" }),
+		[ButtonVariant.Link] = createButtonVariantStyles({ "Content", "Link" }),
+		[ButtonVariant.OverMedia] = createButtonVariantStyles("ActionOverMedia", true),
 	}
 end
 
-local function getSizes(use: Use): { [InputSize]: VariantProps }
+local function getSizes(): { [InputSize]: VariantProps }
 	local themeProvider = ThemeProvider()
-	local tokens = unwrap(themeProvider.Tokens, use)
+	local tokens = unwrap(themeProvider.Tokens)
 	
 	local radiusSmall = tokens.Radius.Small
 	local radiusMedium = tokens.Radius.Medium
@@ -142,12 +137,12 @@ local function getSizes(use: Use): { [InputSize]: VariantProps }
 	}
 end
 
-local function getSharedVariants(use: Use): {
+local function getSharedVariants(): {
 	sizes: { [InputSize]: VariantProps },
-	types: { [ButtonVariant]: { [ColorMode]: VariantProps } }
+	types: { [ButtonVariant]: { [ColorNamespace]: VariantProps } },
 }
-	local sizes = getSizes(use)
-	local types = getButtonTypes(use)
+	local sizes = getSizes()
+	local types = getButtonTypes()
 
 	return { sizes = sizes, types = types }
 end

@@ -13,7 +13,7 @@ local Types = require(Utility.Types)
 
 local InputSize = require(Enums.InputSize)
 local ButtonVariant = require(Enums.ButtonVariant)
-local ColorMode = require(Enums.ColorMode)
+local ColorNamespace = require(Enums.ColorNamespace)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
@@ -23,7 +23,7 @@ type Use = Types.Use
 
 type InputSize = InputSize.InputSize
 type ButtonVariant = ButtonVariant.ButtonVariant
-type ColorMode = ColorMode.ColorMode
+type ColorNamespace = ColorNamespace.ColorNamespace
 
 type ColorStyleValue = Types.ColorStyleValue
 type StateLayer = Types.StateLayer
@@ -46,10 +46,10 @@ type IconButtonVariantProps = {
 	},
 }
 
-local function variantsMap(use: Use)
-	local sharedVariants = getSharedVariants(use)
+local function variantsMap()
+	local sharedVariants = getSharedVariants()
 	local themeProvider = ThemeProvider()
-	local tokens = unwrap(themeProvider.Tokens, use)
+	local tokens = unwrap(themeProvider.Tokens)
 
 	local common = {}
 
@@ -99,13 +99,12 @@ local function variantsMap(use: Use)
 	return { common = common, sizes = sizes, types = sharedVariants.types }
 end
 
-return function(scope: Scope, size: InputSize, variant: ButtonVariant, colorMode: UsedAs<ColorMode>?): UsedAs<IconButtonVariantProps>
-	return scope:Computed(function(use: Use)
-		local variants = useVariants(use, "IconButton", variantsMap)
-		return composeStyleVariant(
-			variants.common,
-			variants.sizes[size],
-			variants.types[variant][unwrap(colorMode, use) or ColorMode.Color]
-		)
-	end)
+return function(size: InputSize, variant: ButtonVariant, colorNamespace: ColorNamespace?): IconButtonVariantProps
+	local variants = useVariants("IconButton", variantsMap)
+	local resolvedColorMode = colorNamespace or ColorNamespace.Color
+	return composeStyleVariant(
+		variants.common,
+		variants.sizes[size],
+		variants.types[variant][resolvedColorMode]
+	)
 end

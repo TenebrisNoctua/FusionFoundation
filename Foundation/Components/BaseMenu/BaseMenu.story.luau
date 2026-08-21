@@ -15,12 +15,14 @@ local Types = require(Utility.Types)
 
 local StoryMiddleware = require(Utility.Stories.StoryMiddleware)
 local StorySection = require(Utility.Stories.StorySection)
+local CommonControls = require(Utility.Stories.CommonControls)
 
 local InputSize = require(Enums.InputSize)
 local ThumbnailType = require(Enums.ThumbnailType)
 
-local BaseMenu = require(Components.BaseMenu)
 local View = require(Components.View)
+local BaseMenu = require(Components.BaseMenu)
+local Fragment = require(Components.Fragment)
 local ScrollView = require(Components.ScrollView)
 
 type Scope = Types.Scope
@@ -81,45 +83,45 @@ local function StoryBasic(props)
 	local controls = props.controls
 	
 	local selectedItem = scope:Value("1" :: ItemId)
-	local icon = scope:Computed(function(use) 
-		return if unwrap(controls.hasIcon, use) then unwrap(controls.icon, use) else ""
+	local icon = scope:Computed(function(use)
+		return if unwrap(controls.hasIcon, use) then unwrap(controls.icon, use) else nil
 	end)
-	
+
+	local items = scope:Computed(function(use)
+		local selected = unwrap(selectedItem, use)
+		local iconValue = unwrap(icon, use)
+		return {
+			{
+				id = "1",
+				icon = iconValue,
+				isChecked = selected == "1",
+				isDisabled = false,
+				text = "Item 1",
+			},
+			{
+				id = "2",
+				icon = iconValue,
+				isChecked = selected == "2",
+				isDisabled = false,
+				text = "Item with a longer label",
+			},
+			{
+				id = "3",
+				icon = iconValue,
+				isChecked = selected == "3",
+				isDisabled = true,
+				text = "Item 3",
+			},
+		}
+	end)
+
 	return BaseMenu.Root {
 		scope = scope,
 		size = controls.size,
 		onActivated = function(id)
 			selectedItem:set(id)
 		end,
-		items = {
-			{
-				id = "1",
-				icon = icon,
-				isChecked = scope:Computed(function(use)
-					return unwrap(selectedItem, use) == "1"	
-				end),
-				isDisabled = false,
-				text = "Item 1",
-			},
-			{
-				id = "2",
-				icon = icon,
-				isChecked = scope:Computed(function(use)
-					return unwrap(selectedItem, use) == "2"	
-				end),
-				isDisabled = false,
-				text = "Item 2,000,000,000,000,000,000,000,000",
-			},
-			{
-				id = "3",
-				icon = icon,
-				isChecked = scope:Computed(function(use)
-					return unwrap(selectedItem, use) == "3"	
-				end),
-				isDisabled = true,
-				text = "Item 3",
-			},
-		},
+		items = items,
 		LayoutOrder = props.layoutOrder
 	}
 end
@@ -273,81 +275,63 @@ local function StoryComposites(props)
 		print(`Clicked {id}`)
 	end
 	
-	local hasLeading = true
-
+	
 	return BaseMenu.Root {
 		scope = scope,
+
 		size = props.controls.size,
+
 		LayoutOrder = props.layoutOrder,
-		children = {
-			BaseMenu.Group {
-				scope = scope,
+
+		children = Fragment {
+			{BaseMenu.Group, {
 				LayoutOrder = 1, 
 				title = "Test title",
-				children = {
-					BaseMenu.Item {
-						scope = scope,
+				children = Fragment {
+					{BaseMenu.Item, {
 						LayoutOrder = 1, 
 						id = "a1", 
 						text = "Text 1",
 						icon = "icons/common/robux",
-						size = props.controls.size,
-						onActivated = onActivated,
-						hasLeading = hasLeading
-					},
-					BaseMenu.Item {
-						scope = scope,
+												onActivated = onActivated,
+											}},
+					{BaseMenu.Item, {
 						LayoutOrder = 2, 
 						id = "a2", 
 						text = "Text 2",
-						size = props.controls.size,
-						onActivated = onActivated,
-						hasLeading = hasLeading
-					},
-					BaseMenu.Item {
-						scope = scope,
+												onActivated = onActivated,
+											}},
+					{BaseMenu.Item, {
 						LayoutOrder = 3, 
 						id = "a3", 
 						text = "Text 3",
-						size = props.controls.size,
-						onActivated = onActivated,
-						hasLeading = hasLeading
-					}
+												onActivated = onActivated,
+											}}
 				}
-			},
-			BaseMenu.Group {
-				scope = scope,
+			}},
+			{BaseMenu.Group, {
 				LayoutOrder = 2,
-				children = {
-					BaseMenu.Item {
-						scope = scope,
+				children = Fragment {
+					{BaseMenu.Item, {
 						LayoutOrder = 1, 
 						id = "b1", 
 						text = "Text 11",
-						size = props.controls.size,
-						onActivated = onActivated,
-						hasLeading = hasLeading
-					},
-					BaseMenu.Item {
-						scope = scope,
+												onActivated = onActivated,
+											}},
+					{BaseMenu.Item, {
 						LayoutOrder = 2, 
 						id = "b2", 
 						text = "Text 22",
-						size = props.controls.size,
-						onActivated = onActivated,
-						hasLeading = hasLeading
-					},
-					BaseMenu.Item {
-						scope = scope,
+												onActivated = onActivated,
+											}},
+					{BaseMenu.Item, {
 						LayoutOrder = 3, 
 						id = "b3", 
 						text = "Text 33",
-						size = props.controls.size,
-						onActivated = onActivated,
-						hasLeading = hasLeading
-					}
+												onActivated = onActivated,
+											}}
 				}
-			}
+			}}
 		}
 	}
 end
@@ -369,11 +353,53 @@ local function StoryOverflow(props)
 
 	return BaseMenu.Root {
 		scope = scope,
-		size = props.controls.size,
-		items = items,
+				items = items,
 		maxHeight = 500,
 		onActivated = Dash.noop(),
 		LayoutOrder = props.layoutOrder
+	}
+end
+
+local function StoryDynamicallySizing(props)
+	local scope = props.scope
+	local controls = props.controls
+
+	local searchContent = scope:Value("")
+
+	local filteredItems = scope:Computed(function(use)
+		local searchText = unwrap(searchContent, use)
+		return Dash.map(
+			Dash.filter(BuilderIcons.Icon, function(icon)
+				return string.find(icon, searchText, nil, true) ~= nil
+			end),
+			function(item)
+				return { id = item, icon = item, text = item }
+			end
+		)
+	end)
+
+	return View {
+		scope = scope,
+		LayoutOrder = props.layoutOrder,
+		tag = "col gap-large auto-xy",
+		children = {
+			Search = scope:New "TextBox" {
+				PlaceholderText = "Search",
+				Size = UDim2.fromOffset(200, 32),
+				LayoutOrder = 1,
+				[Fusion.OnChange("Text")] = function(text)
+					searchContent:set(text)
+				end,
+			},
+			Menu = BaseMenu.Root {
+				scope = scope,
+				width = UDim.new(0, 260),
+				items = filteredItems,
+				maxHeight = 600,
+				onActivated = Dash.noop(),
+				LayoutOrder = 2,
+			},
+		}
 	}
 end
 
@@ -382,23 +408,24 @@ local function StoryExperienceIcons(props)
 	local controls = props.controls
 	
 	local selectedItem = scope:Value(EXPERIENCE_DATA[1].name)
-	
-	local items = {}
-	for _, experience in EXPERIENCE_DATA do
-		table.insert(items, {
-			id = experience.name,
-			icon = getRbxThumb(ThumbnailType.GameIcon, experience.universeId),
-			isChecked = scope:Computed(function(use) 
-				return unwrap(selectedItem, use) == experience.name
-			end),
-			text = experience.name,
-		})
-	end
+
+	local items = scope:Computed(function(use)
+		local selected = unwrap(selectedItem, use)
+		local result = {}
+		for _, experience in EXPERIENCE_DATA do
+			table.insert(result, {
+				id = experience.name,
+				icon = getRbxThumb(ThumbnailType.GameIcon, experience.universeId),
+				isChecked = selected == experience.name,
+				text = experience.name,
+			})
+		end
+		return result
+	end)
 
 	return BaseMenu.Root {
 		scope = scope,
-		size = props.controls.size,
-		onActivated = function(id)
+				onActivated = function(id)
 			selectedItem:set(id)
 		end,
 		items = items,
@@ -423,153 +450,170 @@ return {
 			List = Dash.values(exampleIcons),
 			DefIndex = 1
 		},
+		theme = CommonControls.theme,
 		hasIcon = true
 	},
 	story = StoryMiddleware(function(props)
 		local scope = props.scope
 		local controls = props.controls
-
-		return ScrollView {
-			scope = scope,
-			backgroundStyle = {
-				Transparency = 1
-			},
-			tag = "auto-xy padding-x-large padding-top-large",
-			children = {
-				scope:New "UIListLayout" {
-					Padding = UDim.new(0, 16),
-					SortOrder = Enum.SortOrder.LayoutOrder,
+		
+		return scope:Computed(function(use, innerScope: Scope) 
+			unwrap(controls.theme, use)
+			return ScrollView {
+				scope = innerScope,
+				backgroundStyle = {
+					Transparency = 1
 				},
-				
-				StorySection {
-					scope = scope,
-					title = "Base",
-					children = {
-						StoryBasic {
-							scope = scope,
-							controls = controls,
-							layoutOrder = 2
+				tag = "auto-xy padding-x-large padding-top-large",
+				children = {
+					innerScope:New "UIListLayout" {
+						Padding = UDim.new(0, 16),
+						SortOrder = Enum.SortOrder.LayoutOrder,
+					},
+					
+					StorySection {
+						scope = innerScope,
+						title = "Playground",
+						children = {
+							StoryBasic {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
 						}
-					}
-				},
-
-				StorySection {
-					scope = scope,
-					title = "Multi select",
-					layoutOrder = 2,
-					children = {
-						StoryMultiSelect {
-							scope = scope,
-							controls = controls,
-							layoutOrder = 2
+					},
+	
+					StorySection {
+						scope = innerScope,
+						title = "Multi select",
+						layoutOrder = 2,
+						children = {
+							StoryMultiSelect {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
 						}
-					}
-				},
-				
-				StorySection {
-					scope = scope,
-					title = "Actions menu",
-					layoutOrder = 3,
-					children = {
-						StoryActionsMenu {
-							scope = scope,
-							controls = controls,
-							layoutOrder = 2
+					},
+					
+					StorySection {
+						scope = innerScope,
+						title = "Actions menu",
+						layoutOrder = 3,
+						children = {
+							StoryActionsMenu {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
 						}
-					}
-				},
-				
-				StorySection {
-					scope = scope,
-					title = "All Sizes",
-					layoutOrder = 4,
-					children = {
-						StoryAllSizes {
-							scope = scope,
-							controls = controls,
-							layoutOrder = 2
+					},
+					
+					StorySection {
+						scope = innerScope,
+						title = "All Sizes",
+						layoutOrder = 4,
+						children = {
+							StoryAllSizes {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
 						}
-					}
-				},
-				
-				StorySection {
-					scope = scope,
-					title = "Fixed width",
-					layoutOrder = 5,
-					children = {
-						StoryFixedWidth {
-							scope = scope,
-							controls = controls,
-							layoutOrder = 2
+					},
+					
+					StorySection {
+						scope = innerScope,
+						title = "Fixed width",
+						layoutOrder = 5,
+						children = {
+							StoryFixedWidth {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
 						}
-					}
-				},
-				
-				StorySection {
-					scope = scope,
-					title = "Full width",
-					layoutOrder = 6,
-					children = {
-						StoryFullWidth {
-							scope = scope,
-							controls = controls,
-							layoutOrder = 2
+					},
+					
+					StorySection {
+						scope = innerScope,
+						title = "Full width",
+						layoutOrder = 6,
+						children = {
+							StoryFullWidth {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
 						}
-					}
-				},
-				
-				StorySection {
-					scope = scope,
-					title = "Grouped",
-					layoutOrder = 7,
-					children = {
-						StoryGrouped {
-							scope = scope,
-							controls = controls,
-							layoutOrder = 2
+					},
+					
+					StorySection {
+						scope = innerScope,
+						title = "Grouped",
+						layoutOrder = 7,
+						children = {
+							StoryGrouped {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
 						}
-					}
-				},
-				
-				StorySection {
-					scope = scope,
-					title = "Composites",
-					layoutOrder = 8,
-					children = {
-						StoryComposites {
-							scope = scope,
-							controls = controls,
-							layoutOrder = 2
+					},
+					
+					StorySection {
+						scope = innerScope,
+						title = "Composites",
+						layoutOrder = 8,
+						children = {
+							StoryComposites {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
 						}
-					}
-				},
-				
-				StorySection {
-					scope = scope,
-					title = "Overflow",
-					layoutOrder = 9,
-					children = {
-						StoryOverflow {
-							scope = scope,
-							controls = controls,
-							layoutOrder = 2
+					},
+					
+					StorySection {
+						scope = innerScope,
+						title = "Overflow",
+						layoutOrder = 9,
+						children = {
+							StoryOverflow {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
 						}
-					}
-				},
+					},
+					
+					StorySection {
+						scope = innerScope,
+						title = "Dynamically Sizing",
+						layoutOrder = 10,
+						children = {
+							StoryDynamicallySizing {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
+						}
+					},
 				
-				StorySection {
-					scope = scope,
-					title = "Experience Icons",
-					layoutOrder = 10,
-					children = {
-						StoryExperienceIcons {
-							scope = scope,
-							controls = controls,
-							layoutOrder = 2
+					StorySection {
+						scope = innerScope,
+						title = "Experience Icons",
+						layoutOrder = 11,
+						children = {
+							StoryExperienceIcons {
+								scope = innerScope,
+								controls = controls,
+								layoutOrder = 2
+							}
 						}
 					}
 				}
 			}
-		}
+		end)
 	end)
 }

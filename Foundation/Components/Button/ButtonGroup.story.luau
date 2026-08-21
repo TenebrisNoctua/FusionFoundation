@@ -12,6 +12,7 @@ local Types = require(Utility.Types)
 
 local StoryMiddleware = require(Utility.Stories.StoryMiddleware)
 local StorySection = require(Utility.Stories.StorySection)
+local CommonControls = require(Utility.Stories.CommonControls)
 
 local InputSize = require(Enums.InputSize)
 local ButtonVariant = require(Enums.ButtonVariant)
@@ -19,8 +20,6 @@ local FillBehavior = require(Enums.FillBehavior)
 
 local Button = require(Foundation.Components.Button)
 local View = require(Foundation.Components.View)
-
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 type InputSize = InputSize.InputSize
 type ButtonVariant = ButtonVariant.ButtonVariant
@@ -111,13 +110,8 @@ return {
 			List = Dash.values(InputSize),
 			DefIndex = 1,
 		},
-		fillBehavior = {
-			EntryType = "Control",
-			Type = "Choose",
-			ControlValue = FillBehavior.Fit,
-			List = { FillBehavior.Fit, FillBehavior.Fill },
-			DefIndex = 1,
-		},
+		fillBehavior = CommonControls.fillBehavior,
+		theme = CommonControls.theme
 	},
 	story = StoryMiddleware(function(props)
 		local scope = props.scope

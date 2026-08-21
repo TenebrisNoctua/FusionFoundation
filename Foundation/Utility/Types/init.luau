@@ -16,6 +16,7 @@ local StateLayerMode = require(Enums.StateLayerMode)
 local CursorType = require(Enums.CursorType)
 local ControlState = require(Enums.ControlState)
 local ButtonVariant = require(Enums.ButtonVariant)
+local BadgeVariant = require(Enums.BadgeVariant)
 
 --// General Use Types
 
@@ -29,6 +30,7 @@ type StateLayerMode = StateLayerMode.StateLayerMode
 type CursorType = CursorType.CursorType
 type ControlState = ControlState.ControlState
 type ButtonVariant = ButtonVariant.ButtonVariant
+type BadgeVariant = BadgeVariant.BadgeVariant
 
 --// Fusion Types
 
@@ -144,6 +146,29 @@ export type ColorStyle = ColorStyleValue
 
 export type ItemId = string | number
 export type OnItemActivated = (id: ItemId) -> ()
+
+export type IconAccessoryConfig = {
+	type: nil,
+	iconName: string,
+	iconVariant: any?,
+}
+
+export type AvatarAccessoryConfig = {
+	type: "Avatar",
+	userId: number,
+}
+
+export type HintAccessoryConfig = {
+	type: "Hint",
+	text: string,
+}
+
+export type BadgeAccessoryConfig = {
+	type: "Badge",
+	text: string?,
+	icon: string?,
+	variant: BadgeVariant?,
+}
 
 export type StateLayer = {
 	inset: boolean?,

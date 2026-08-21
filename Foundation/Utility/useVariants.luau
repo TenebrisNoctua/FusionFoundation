@@ -1,8 +1,4 @@
 local Foundation = script.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
-
 local Utility = Foundation.Utility
 
 local unwrap = require(Utility.unwrap)
@@ -16,9 +12,9 @@ type ValueFactory<Result, Args...> = (Use, Args...) -> Result
 local cache = {}
 local currentTheme = nil
 
-local function useVariants<Result, Args...>(use: Use, componentName: string, variantsFactory: ValueFactory<Result, Args...>, ...: Args...): Result
+local function useVariants<Result, Args...>(componentName: string, variantsFactory: ValueFactory<Result, Args...>, ...: Args...): Result
 	local themeProvider = ThemeProvider()
-	local theme = unwrap(themeProvider.Theme, use)
+	local theme = unwrap(themeProvider.Theme)
 
 	-- Invalidate the cache if the theme swaps (e.g., Light -> Dark)
 	if currentTheme ~= theme then
@@ -28,7 +24,7 @@ local function useVariants<Result, Args...>(use: Use, componentName: string, var
 
 	local value = cache[componentName]
 	if not value then
-		value = variantsFactory(use, ...)
+		value = variantsFactory(...)
 		cache[componentName] = value
 	end
 

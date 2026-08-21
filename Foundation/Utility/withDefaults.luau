@@ -2,12 +2,13 @@ local Foundation = script.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Dash = PackageManager.getPackage("Dash")
-local unwrap = require(script.Parent.unwrap)
+
+local isState = require(script.Parent.isState)
 
 local function deepJoin(a: any, b: any)
 	local result = table.clone(a)
 	for key, value in b do
-		if type(value) == "table" and unwrap(value) == value then
+		if not isState(value) and not isState(result[key]) and typeof(result[key]) == "table" then
 			result[key] = deepJoin(result[key], value)
 		else
 			result[key] = value
@@ -16,10 +17,7 @@ local function deepJoin(a: any, b: any)
 	return result
 end
 
--- Internal intersect<> type function is not compatible with generics. This results in a type-error at a table operation.
--- So we use Generic | any.
-
-local function withDefaults<P, D>(props: P | any, defaults: D | any): P & D
+local function withDefaults<P, D>(props: P, defaults: D): P & D
 	local propsDefaultsOnly = {}
 
 	if type(props) == "table" and type(defaults) == "table" then
@@ -29,7 +27,8 @@ local function withDefaults<P, D>(props: P | any, defaults: D | any): P & D
 	end
 
 	local deepJoinDefaults: D = deepJoin(defaults, propsDefaultsOnly)
-	return Dash.union(props, deepJoinDefaults)
+
+	return ((Dash.union(props :: any, deepJoinDefaults :: any)) :: unknown) :: P & D
 end
 
 return withDefaults

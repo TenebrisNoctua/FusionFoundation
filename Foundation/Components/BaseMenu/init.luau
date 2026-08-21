@@ -13,5 +13,5 @@ return {
 	Root = BaseMenu,
 	Item = BaseMenuItem,
 	Context = BaseMenuContext,
-	Group = BaseMenuGroup,
+	Group = BaseMenuGroup
 }

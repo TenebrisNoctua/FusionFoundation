@@ -1,7 +1,4 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Enums = Foundation.Enums
 local Utility = Foundation.Utility
@@ -27,115 +24,136 @@ type ColorStyleValue = Types.ColorStyleValue
 type VariantProps = composeStyleVariant.VariantProps
 
 export type BaseMenuItemVariantProps = {
-	container: { tag: string },
-	icon: { tag: string, style: ColorStyleValue, size: number },
+	container: {
+		tag: string,
+		paddingLeftWithCheck: number?,
+		paddingLeftWithoutCheck: number?,
+		paddingRight: number?,
+	},
+	wrapper: { gap: number? }?,
+	icon: { tag: string, style: Types.ColorStyleValue, size: number },
 	text: { tag: string },
-	check: { tag: string, style: ColorStyleValue, size: number },
-	title: { tag: string },
+	check: { tag: string, style: Types.ColorStyleValue, size: number },
+	title: {
+		tag: string,
+		checkColumnWidth: number?,
+	},
 	chevron: { size: IconSize },
 	groupPadding: { size: number },
+	slotAlign: { tag: string },
+	submenuContent: { tag: string }
 }
 
-local FOUNDATION_BASE_MENU_ITEM_IMAGE_RADIUS = true
-
-local function variantsMap(use: Use)
+local function variantsMap()
 	local themeProvider = ThemeProvider()
-	local tokens = unwrap(themeProvider.Tokens, use)
+	local tokens = unwrap(themeProvider.Tokens)
 
 	local common = {
-		container = {
-			tag = "row flex-x-between align-y-center auto-x",
-		},
+		container = { tag = "" },
 		icon = {
-			tag = if FOUNDATION_BASE_MENU_ITEM_IMAGE_RADIUS
-				then "radius-small content-emphasis"
-				else "content-emphasis",
+			tag = "radius-small content-emphasis",
 			style = tokens.Color.Content.Emphasis,
 		},
 		text = {
-			tag = "fill auto-xy text-align-x-left text-truncate-split content-emphasis",
+			tag = "fill auto-xy text-align-x-left text-truncate-end content-emphasis",
 		},
 		title = {
-			tag = "fill auto-xy text-align-x-left text-truncate-split content-default",
+			tag = "fill auto-xy text-align-x-left text-truncate-end content-default",
 		},
-		check = { 
-			tag = "content-emphasis", 
-			style = tokens.Color.Content.Emphasis 
-		},
+		check = { tag = "content-emphasis", style = tokens.Color.Content.Emphasis },
+		slotAlign = { tag = "align-x-center align-y-center" },
+		submenuContent = { tag = "stroke-standard stroke-default radius-medium" },
 	}
 
 	local sizes: { [InputSize]: VariantProps } = {
 		[InputSize.XSmall] = {
 			container = {
-				tag = "gap-xsmall size-full-600 padding-x-medium radius-small",
+				tag = "size-full-600 radius-small",
+				paddingLeftWithCheck = 0,
+				paddingLeftWithoutCheck = tokens.Padding.Small,
+				paddingRight = tokens.Padding.Small,
 			},
+			wrapper = { gap = tokens.Size.Size_150 },
 			icon = { tag = "size-400", size = IconSize.XSmall :: IconSize },
 			text = { tag = "text-body-small" },
-			title = { tag = "text-caption-small" },
-			check = { tag = "size-300", size = tokens.Size.Size_600 },
+			title = { tag = "text-caption-small", checkColumnWidth = tokens.Size.Size_500 },
+			check = { tag = "size-500-400", size = tokens.Size.Size_400 },
 			chevron = { size = IconSize.Small :: IconSize },
 			groupPadding = { size = tokens.Padding.XSmall },
 		},
 		[InputSize.Small] = {
 			container = {
-				tag = "gap-xsmall size-full-800 padding-x-medium radius-medium",
+				tag = "size-full-800 radius-small",
+				paddingLeftWithCheck = 0,
+				paddingLeftWithoutCheck = tokens.Padding.Small,
+				paddingRight = tokens.Padding.Small,
 			},
+			wrapper = { gap = tokens.Size.Size_150 },
 			icon = { tag = "size-500", size = IconSize.Small :: IconSize },
 			text = { tag = "text-body-small" },
-			title = { tag = "text-caption-small" },
-			check = { tag = "size-400", size = tokens.Size.Size_700 },
+			title = { tag = "text-caption-small", checkColumnWidth = tokens.Size.Size_600 },
+			check = { tag = "size-600-400", size = tokens.Size.Size_400 },
 			chevron = { size = IconSize.Small :: IconSize },
 			groupPadding = { size = tokens.Padding.Small },
 		},
 		[InputSize.Medium] = {
 			container = {
-				tag = "gap-small size-full-1000 padding-x-medium radius-medium",
+				tag = "size-full-1000 radius-medium",
+				paddingLeftWithCheck = 0,
+				paddingLeftWithoutCheck = tokens.Size.Size_250,
+				paddingRight = tokens.Size.Size_250,
 			},
-			icon = { tag = "size-600", size = IconSize.Medium :: IconSize },
+			wrapper = { gap = tokens.Size.Size_150 },
+			icon = { tag = "size-500", size = IconSize.Medium :: IconSize },
 			text = { tag = "text-body-medium" },
-			title = { tag = "text-caption-medium" },
-			check = { tag = "size-500", size = tokens.Size.Size_800 },
+			title = { tag = "text-caption-medium", checkColumnWidth = tokens.Size.Size_700 },
+			check = { tag = "size-700-500", size = tokens.Size.Size_500 },
 			chevron = { size = IconSize.Medium :: IconSize },
 			groupPadding = { size = tokens.Padding.Small },
 		},
 		[InputSize.Large] = {
 			container = {
-				tag = "gap-small size-full-1200 padding-x-large radius-medium",
+				tag = "size-full-1200 radius-medium",
+				paddingLeftWithCheck = 0,
+				paddingLeftWithoutCheck = tokens.Size.Size_350,
+				paddingRight = tokens.Size.Size_350,
 			},
-			icon = { tag = "size-700", size = IconSize.Large :: IconSize },
+			wrapper = { gap = tokens.Padding.Small },
+			icon = { tag = "size-600", size = IconSize.Large :: IconSize },
 			text = { tag = "text-body-large" },
-			title = { tag = "text-caption-large" },
-			check = { tag = "size-600", size = tokens.Size.Size_900 },
+			title = { tag = "text-caption-large", checkColumnWidth = tokens.Size.Size_800 },
+			check = { tag = "size-800-600", size = tokens.Size.Size_600 },
 			chevron = { size = IconSize.Large :: IconSize },
 			groupPadding = { size = tokens.Padding.Small },
 		},
 	}
-
-	local isChecked = {
-		[false] = { container = { tag = "" } },
-		[true] = { container = { tag = "bg-surface-200" } },
+	
+	local isScrollable = {
+		[false] = { submenuContent = { tag = "col auto-xy" } },
+		[true] = { submenuContent = { tag = "" } },
 	}
 
-	return { common = common, sizes = sizes, isChecked = isChecked }
+	local defaultSize = { container = { tag = "auto-x" } }
+
+	return {
+		common = common,
+		sizes = sizes,
+		isScrollable = isScrollable,
+		defaultSize = defaultSize
+	}
 end
 
 local function useBaseMenuItemVariants(
-	scope: Scope,
-	tokens: any?,
-	size: UsedAs<InputSize>,
-	isChecked: UsedAs<boolean>
-): UsedAs<BaseMenuItemVariantProps>
-	return scope:Computed(function(use: Use)
-		local variants = useVariants(use, "BaseMenuItem", variantsMap)
-		local currentSize = unwrap(size, use)
-		local currentIsChecked = unwrap(isChecked, use)
-
-		return composeStyleVariant(
-			variants.common,
-			variants.sizes[currentSize],
-			variants.isChecked[currentIsChecked]
-		)
-	end)
+	size: InputSize,
+	isScrollable: boolean
+): BaseMenuItemVariantProps
+	local variants = useVariants("BaseMenuItem", variantsMap)
+	return composeStyleVariant(
+		variants.common,
+		variants.sizes[size],
+		variants.defaultSize,
+		variants.isScrollable[isScrollable]
+	)
 end
 
 return useBaseMenuItemVariants

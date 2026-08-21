@@ -1,6 +1,6 @@
 export type ColorMode = "Color" | "Inverse" | "LightMode" | "DarkMode"
 
-local ColorModeEnum = {
+local ColorMode = {
 	-- Color is the default namespace for color tokens
 	Color = "Color" :: "Color",
 	Inverse = "Inverse" :: "Inverse",
@@ -8,4 +8,4 @@ local ColorModeEnum = {
 	DarkMode = "DarkMode" :: "DarkMode",
 }
 
-return ColorModeEnum
+return ColorMode

@@ -6,11 +6,7 @@ local strict = require(script.Utility.strict)
 local Tokens = require(script.Providers.ThemeProvider.Tokens)
 local Types = require(script.Utility.Types)
 
-local FoundationUseStyleSheetRegistry = true
-
-local StyleSheetRegistry = if FoundationUseStyleSheetRegistry
-	then require(script.StyleSheet.StyleSheetRegistry)
-	else nil :: never
+local StyleSheetRegistry = require(script.StyleSheet.StyleSheetRegistry)
 
 local PackageManager = require(script.PackageManager)
 local BuilderIcons = PackageManager.getPackage("BuilderIcons")
@@ -40,12 +36,17 @@ local AccessoryType = require(script.Enums.AccessoryType)
 local AlertSeverity = require(script.Enums.AlertSeverity)
 local AlertVariant = require(script.Enums.AlertVariant)
 local AvatarGroupType = require(script.Enums.AvatarGroupType)
+local AvatarIconSize = require(script.Enums.AvatarIconSize)
+local AvatarSize = require(script.Enums.AvatarSize)
+local BadgeShape = require(script.Enums.BadgeShape)
 local BadgeSize = require(script.Enums.BadgeSize)
 local BadgeVariant = require(script.Enums.BadgeVariant)
 local Breakpoint = require(script.Enums.Breakpoint)
 local ButtonVariant = require(script.Enums.ButtonVariant)
+local ChipGroupVariant = require(script.Enums.ChipGroupVariant)
 local ChipSize = require(script.Enums.ChipSize)
 local ChipVariant = require(script.Enums.ChipVariant)
+local ColorMode = require(script.Enums.ColorMode)
 local ControlState = require(script.Enums.ControlState)
 local CursorType = require(script.Enums.CursorType)
 local DateTimePickerVariant = require(script.Enums.DateTimePickerVariant)
@@ -67,15 +68,21 @@ local NumberInputControlsVariant = require(script.Enums.NumberInputControlsVaria
 local OnChangeCallbackReason = require(script.Enums.OnChangeCallbackReason)
 local OnCloseCallbackReason = require(script.Enums.OnCloseCallbackReason)
 local Orientation = require(script.Enums.Orientation)
+local PaginationSize = require(script.Enums.PaginationSize)
+local PaginationVariant = require(script.Enums.PaginationVariant)
 local PopoverAlign = require(script.Enums.PopoverAlign)
 local PopoverSide = require(script.Enums.PopoverSide)
 local ProgressShape = require(script.Enums.ProgressShape)
 local ProgressSize = require(script.Enums.ProgressSize)
 local Radius = require(script.Enums.Radius)
+local RatingValue = require(script.Enums.RatingValue)
+local ScrubBehavior = require(script.Enums.ScrubBehavior)
 local SearchInputShape = require(script.Enums.SearchInputShape)
 local SliderVariant = require(script.Enums.SliderVariant)
 local StateLayerAffordance = require(script.Enums.StateLayerAffordance)
 local StateLayerMode = require(script.Enums.StateLayerMode)
+local StatusIndicatorShape = require(script.Enums.StatusIndicatorShape)
+local StatusIndicatorSize = require(script.Enums.StatusIndicatorSize)
 local StatusIndicatorVariant = require(script.Enums.StatusIndicatorVariant)
 local Theme = require(script.Enums.Theme)
 local ThumbnailSize = require(script.Enums.ThumbnailSize)
@@ -83,14 +90,21 @@ local ThumbnailType = require(script.Enums.ThumbnailType)
 local UserPresence = require(script.Enums.UserPresence)
 local Visibility = require(script.Enums.Visibility)
 
+export type AccessoryType = AccessoryType.AccessoryType
 export type AlertSeverity = AlertSeverity.AlertSeverity
 export type AlertVariant = AlertVariant.AlertVariant
 export type AvatarGroupType = AvatarGroupType.AvatarGroupType
+export type AvatarIconSize = AvatarIconSize.AvatarIconSize
+export type AvatarSize = AvatarSize.AvatarSize
+export type BadgeShape = BadgeShape.BadgeShape
 export type BadgeSize = BadgeSize.BadgeSize
 export type BadgeVariant = BadgeVariant.BadgeVariant
 export type Breakpoint = Breakpoint.Breakpoint
 export type ButtonVariant = ButtonVariant.ButtonVariant
+export type ChipGroupVariant = ChipGroupVariant.ChipGroupVariant
 export type ChipSize = ChipSize.ChipSize
+export type ChipVariant = ChipVariant.ChipVariant
+export type ColorMode = ColorMode.ColorMode
 export type ControlState = ControlState.ControlState
 export type CursorType = CursorType.CursorType
 export type DateTimePickerVariant = DateTimePickerVariant.DateTimePickerVariant
@@ -98,23 +112,37 @@ export type Device = Device.Device
 export type DialogSize = DialogSize.DialogSize
 export type DividerVariant = DividerVariant.DividerVariant
 export type FillBehavior = FillBehavior.FillBehavior
+export type IconName = typeof(BuilderIcons.Icon)
 export type IconPosition = IconPosition.IconPosition
 export type IconSize = IconSize.IconSize
+export type IconVariant = typeof(BuilderIcons.IconVariant)
+export type InputFocusBehavior = InputFocusBehavior.InputFocusBehavior
 export type InputLabelSize = InputLabelSize.InputLabelSize
 export type InputPlacement = InputPlacement.InputPlacement
 export type InputSize = InputSize.InputSize
+export type InputVariant = InputVariant.InputVariant
+export type ListItemInputType = ListItemInputType.ListItemInputType
 export type NumberInputControlsVariant = NumberInputControlsVariant.NumberInputControlsVariant
+export type ScrubBehavior = ScrubBehavior.ScrubBehavior
+export type OnChangeCallbackReason = OnChangeCallbackReason.OnChangeCallbackReason
 export type OnCloseCallbackReason = OnCloseCallbackReason.OnCloseCallbackReason
 export type Orientation = Orientation.Orientation
+export type PaginationSize = PaginationSize.PaginationSize
+export type PaginationVariant = PaginationVariant.PaginationVariant
 export type PopoverAlign = PopoverAlign.PopoverAlign
 export type PopoverSide = PopoverSide.PopoverSide
 export type ProgressShape = ProgressShape.ProgressShape
 export type ProgressSize = ProgressSize.ProgressSize
+export type RatingValue = RatingValue.RatingValue
 export type Radius = Radius.Radius
+export type SearchInputShape = SearchInputShape.SearchInputShape
 export type SliderVariant = SliderVariant.SliderVariant
 export type StateLayerAffordance = StateLayerAffordance.StateLayerAffordance
 export type StateLayerMode = StateLayerMode.StateLayerMode
+export type StatusIndicatorShape = StatusIndicatorShape.StatusIndicatorShape
+export type StatusIndicatorSize = StatusIndicatorSize.StatusIndicatorSize
 export type StatusIndicatorVariant = StatusIndicatorVariant.StatusIndicatorVariant
+-- **DEPRECATED**: Theme is deprecated. Use ColorMode instead.
 export type Theme = Theme.Theme
 export type ThumbnailSize = ThumbnailSize.ThumbnailSize
 export type ThumbnailType = ThumbnailType.ThumbnailType
@@ -150,8 +178,8 @@ export type ButtonProps = Button.ButtonProps
 --local Checkbox = require(script.Components.Checkbox)
 --export type CheckboxProps = Checkbox.CheckboxProps
 
---local Coachmark = require(script.Components.Coachmark)
---export type CoachmarkProps = Coachmark.CoachmarkProps
+local EducationalTooltip = require(script.Components.EducationalTooltip)
+export type EducationalTooltipProps = EducationalTooltip.EducationalTooltipProps
 
 --local Chip = require(script.Components.Chip)
 --export type ChipProps = Chip.ChipProps
@@ -198,8 +226,8 @@ export type GridDebugProps = Grid.GridDebugProps
 local Icon = require(script.Components.Icon)
 export type IconProps = Icon.IconProps
 
---local IconButton = require(script.Components.IconButton)
---export type IconButtonProps = IconButton.IconButtonProps
+local IconButton = require(script.Components.IconButton)
+export type IconButtonProps = IconButton.IconButtonProps
 
 local Image = require(script.Components.Image)
 export type ImageProps = Image.ImageProps
@@ -241,7 +269,6 @@ export type OptionSelectorGroupItemProps = OptionSelectorGroup.OptionSelectorGro
 
 local Popover = require(script.Components.Popover)
 export type PopoverProps = Popover.PopoverProps
-export type PopoverContext = Popover.PopoverContext
 export type PopoverAnchorProps = Popover.PopoverAnchorProps
 export type PopoverContentProps = Popover.PopoverContentProps
 
@@ -323,7 +350,7 @@ local Foundation = strict({
 	Button = Button,
 	--Checkbox = Checkbox,
 	--Chip = Chip,
-	--Coachmark = Coachmark,
+	EducationalTooltip = EducationalTooltip,
 	--ColorPicker = ColorPicker,
 	--DateTimePicker = DateTimePicker,
 	--Dialog = Dialog,
@@ -333,7 +360,7 @@ local Foundation = strict({
 	--Empty = Empty,
 	--FeedbackAlert = FeedbackAlert,
 	Icon = Icon,
-	--IconButton = IconButton,
+	IconButton = IconButton,
 	Image = Image,
 	InputLabel = InputLabel,
 	--KeyLabel = KeyLabel,
@@ -372,28 +399,27 @@ local Foundation = strict({
 	PanelsProvider = require(script.Providers.PanelsProvider),
 	PluginProvider = require(script.Providers.PluginProvider),
 	WidgetsProvider = require(script.Providers.WidgetsProvider),
+	ResponsiveProvider = require(script.Providers.ResponsiveProvider),
+	CursorProvider = require(script.Providers.CursorProvider),
+	PreferencesProvider = require(script.Providers.PreferencesProvider),
 	FoundationProvider = require(script.Providers.FoundationProvider),
 
 	-- Hooks
 	Hooks = {
-		--useBreakpoint = require(script.Providers.Responsive.Hooks.useBreakpoint),
-		--useResponsiveValue = require(script.Providers.Responsive.Hooks.useResponsiveValue),
-		--useResponsive = require(script.Providers.Responsive.useResponsive),
+		useBreakpoint = require(script.Providers.ResponsiveProvider.Hooks.useBreakpoint),
+		useResponsiveValue = require(script.Providers.ResponsiveProvider.Hooks.useResponsiveValue),
 		--useCumulativeBackground = require(script.Utility.useCumulativeBackground),
-		--useCursor = require(script.Providers.Cursor.useCursor),
 		useDefaultTags = require(script.Utility.useDefaultTags),
 		--useDialogNavigation = require(script.Components.Dialog.useDialogNavigation),
 		--useSheetNavigation = require(script.Components.Sheet.useSheetNavigation),
 		useIconSize = require(script.Utility.useIconSize),
 		useMeasurableRef = require(script.Components.Popover.useMeasurableRef),
 		usePointerPosition = require(script.Utility.usePointerPosition),
-		--usePreferences = require(script.Providers.Preferences.usePreferences),
 		--usePulseBinding = require(script.Utility.usePulseBinding),
 		useRotation = require(script.Utility.useRotation),
 		useScaledValue = require(script.Utility.useScaledValue),
 		useStyleTags = require(script.Providers.ThemeProvider.useStyleTags),
-		--useTextSizeOffset = require(script.Providers.Style.useTextSizeOffset),
-		--withCursor = require(script.Providers.Cursor.withCursor),
+		--withCursor = require(script.Providers.CursorProvider.withCursor)
 	},
 
 	-- Enums
@@ -402,6 +428,9 @@ local Foundation = strict({
 		AlertSeverity = AlertSeverity,
 		AlertVariant = AlertVariant,
 		AvatarGroupType = AvatarGroupType,
+		AvatarIconSize = AvatarIconSize,
+		AvatarSize = AvatarSize,
+		BadgeShape = BadgeShape,
 		BadgeSize = BadgeSize,
 		BadgeVariant = BadgeVariant,
 		Breakpoint = Breakpoint,
@@ -411,8 +440,10 @@ local Foundation = strict({
 		-- **DEPRECATED**: CheckboxSize is deprecated. Use InputSize instead.
 		CheckboxSize = require(script.Enums.InputSize),
 		ControlState = ControlState,
+		ChipGroupVariant = ChipGroupVariant,
 		ChipSize = ChipSize,
 		ChipVariant = ChipVariant,
+		ColorMode = ColorMode,
 		CursorType = CursorType,
 		DateTimePickerVariant = DateTimePickerVariant,
 		Device = Device,
@@ -432,13 +463,17 @@ local Foundation = strict({
 		InputLabelSize = InputLabelSize,
 		ListItemInputType = ListItemInputType,
 		NumberInputControlsVariant = NumberInputControlsVariant,
+		ScrubBehavior = ScrubBehavior,
 		OnChangeCallbackReason = OnChangeCallbackReason,
 		OnCloseCallbackReason = OnCloseCallbackReason,
 		Orientation = Orientation,
+		PaginationSize = PaginationSize,
+		PaginationVariant = PaginationVariant,
 		PopoverAlign = PopoverAlign,
 		PopoverSide = PopoverSide,
 		ProgressShape = ProgressShape,
 		ProgressSize = ProgressSize,
+		RatingValue = RatingValue,
 		Radius = Radius,
 		SearchInputShape = SearchInputShape,
 		-- **DEPRECATED**: ScrollBarVisibility is deprecated. Use Visibility instead.
@@ -446,7 +481,10 @@ local Foundation = strict({
 		SliderVariant = SliderVariant,
 		StateLayerAffordance = StateLayerAffordance,
 		StateLayerMode = StateLayerMode,
+		StatusIndicatorShape = StatusIndicatorShape,
+		StatusIndicatorSize = StatusIndicatorSize,
 		StatusIndicatorVariant = StatusIndicatorVariant,
+		-- **DEPRECATED**: Theme is deprecated. Use ColorMode instead.
 		Theme = Theme,
 		ThumbnailType = ThumbnailType,
 		ThumbnailSize = ThumbnailSize,
@@ -458,13 +496,14 @@ local Foundation = strict({
 
 	-- Utility
 	Utility = {
-		getStyleSheet = if FoundationUseStyleSheetRegistry then StyleSheetRegistry.getStyleSheet else nil,
-		addStyleTags = if FoundationUseStyleSheetRegistry then StyleSheetRegistry.addStyleTags else nil,
+		getStyleSheet = StyleSheetRegistry.getStyleSheet,
+		addStyleTags = StyleSheetRegistry.addStyleTags,
 		getTokens = Tokens.getTokens,
 		blendColors = require(script.Utility.blendColors),
 		composeStyleVariant = require(script.Utility.composeStyleVariant),
 		getBuilderIconForKeycode = require(script.Utility.getBuilderIconForKeycode),
 		getBuilderIconForCurrentPlatform = require(script.Utility.getBuilderIconForCurrentPlatform),
+		--getBuilderIconVariant = require(script.Utility.getBuilderIconVariant),
 		--getGridMetrics = require(script.Utility.getGridMetrics),
 		getRbxThumb = require(script.Utility.getRbxThumb),
 		getIconRichText = require(script.Utility.getIconRichText),
@@ -478,7 +517,8 @@ local Foundation = strict({
 	-- Unstable APIs, do not use
 	UNSTABLE = {
 		-- Use View/Text/Image instead
-		Interactable = require(script.Components.Interactable)
+		Interactable = require(script.Components.Interactable),
+		BaseMenu = BaseMenu
 	}
 })
 

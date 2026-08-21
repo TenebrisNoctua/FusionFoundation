@@ -4,18 +4,19 @@ local Enums = Foundation.Enums
 
 local Types = require(Utility.Types)
 
-local ColorMode = require(Enums.ColorMode)
 local StateLayerMode = require(Enums.StateLayerMode)
 local InputPlacement = require(Enums.InputPlacement)
+local ColorNamespace = require(Enums.ColorNamespace)
 
-type ColorMode = ColorMode.ColorMode
 type StateLayerMode = StateLayerMode.StateLayerMode
 type InputPlacement = InputPlacement.InputPlacement
+type ColorNamespace = ColorNamespace.ColorNamespace
 
 local MAX_LAYOUT_ORDER = 2147483648
 local MIN_LAYOUT_ORDER = -2147483648
 local DEFAULT_DELAY_TIME = 0.15
 
+-- this should live in tokens
 local DISABLED_TRANSPARENCY = 0.5
 local SHADOW_IMAGE = "component_assets/dropshadow_17_8"
 local SHADOW_SIZE = 16
@@ -25,21 +26,18 @@ local INPUT_PLACEMENT_TO_LABEL_ALIGNMENT: { [InputPlacement]: Enum.HorizontalAli
 	[InputPlacement.End] = Enum.HorizontalAlignment.Left,
 }
 
--- Mapping of color mode to state layer mode for normal and inverse buttons
--- Boolean index reflects whether we want an inverted state layer, which requires
--- the correctly inverted state layer corresponding to that ColorMode.
-local ColorModeToStateLayerMode: { [boolean]: { [ColorMode]: StateLayerMode } } = {
+local ColorNamespaceToStateLayerMode: { [boolean]: { [ColorNamespace]: StateLayerMode } } = {
 	[false] = {
-		[ColorMode.Color] = StateLayerMode.Default,
-		[ColorMode.Inverse] = StateLayerMode.Inverse,
-		[ColorMode.LightMode] = StateLayerMode.Light,
-		[ColorMode.DarkMode] = StateLayerMode.Dark,
+		[ColorNamespace.Color] = StateLayerMode.Default,
+		[ColorNamespace.Inverse] = StateLayerMode.Inverse,
+		[ColorNamespace.LightMode] = StateLayerMode.Light,
+		[ColorNamespace.DarkMode] = StateLayerMode.Dark,
 	},
 	[true] = {
-		[ColorMode.Color] = StateLayerMode.Inverse,
-		[ColorMode.Inverse] = StateLayerMode.Default,
-		[ColorMode.LightMode] = StateLayerMode.Dark,
-		[ColorMode.DarkMode] = StateLayerMode.Light,
+		[ColorNamespace.Color] = StateLayerMode.Inverse,
+		[ColorNamespace.Inverse] = StateLayerMode.Default,
+		[ColorNamespace.LightMode] = StateLayerMode.Dark,
+		[ColorNamespace.DarkMode] = StateLayerMode.Light,
 	},
 }
 
@@ -48,6 +46,8 @@ return {
 	MIN_LAYOUT_ORDER = MIN_LAYOUT_ORDER,
 	DISABLED_TRANSPARENCY = DISABLED_TRANSPARENCY,
 	DEFAULT_DELAY_TIME = DEFAULT_DELAY_TIME,
+	DEFAULT_INPUT_FIELD_WIDTH_PIXELS = 400,
+	DEFAULT_NUMBER_INPUT_WIDTH = 300,
 	SHADOW_IMAGE = SHADOW_IMAGE,
 	SHADOW_SIZE = SHADOW_SIZE,
 	MODAL = {
@@ -61,8 +61,9 @@ return {
 			SelectionBehaviorLeft = Enum.SelectionBehavior.Stop,
 			SelectionBehaviorDown = Enum.SelectionBehavior.Stop,
 			SelectionBehaviorUp = Enum.SelectionBehavior.Stop,
-		} :: Types.SelectionGroup,
+		} :: Types.SelectionGroup, 
 	},
-	COLOR_MODE_TO_STATE_LAYER_MODE = ColorModeToStateLayerMode,
+	COLOR_NAMESPACE_TO_STATE_LAYER_MODE = ColorNamespaceToStateLayerMode,
 	INPUT_PLACEMENT_TO_LABEL_ALIGNMENT = INPUT_PLACEMENT_TO_LABEL_ALIGNMENT,
+	BUILDER_SANS_FONT_ASSET = "rbxasset://fonts/families/BuilderSans.json",
 }

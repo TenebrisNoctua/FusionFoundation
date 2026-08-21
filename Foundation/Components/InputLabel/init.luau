@@ -1,9 +1,6 @@
 --!nonstrict
 
 local Foundation = script.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
@@ -50,7 +47,7 @@ local function labelText(text: string, isRequired: boolean?): string
 end
 
 type UsedAs<T> = Types.UsedAs<T>
-type CanBeComputed<T> = (Types.Computed<T> | T)
+type CanBeComputed<T> = (Types.UsedAs<T> | T)
 
 type Scope = Types.Scope
 type Use = Types.Use

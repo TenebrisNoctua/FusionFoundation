@@ -11,14 +11,17 @@ local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
 local IconButton = require(Components.IconButton)
+local ScrollView = require(Components.ScrollView)
 local View = require(Components.View)
 local Text = require(Components.Text)
 
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
-local StorySection = require(Utility.Stories.StorySection)
 
-local ColorMode = require(Enums.ColorMode)
+local StoryMiddleware = require(Utility.Stories.StoryMiddleware)
+local StorySection = require(Utility.Stories.StorySection)
+local CommonControls = require(Utility.Stories.CommonControls)
+
 local InputSize = require(Enums.InputSize)
 local FillBehavior = require(Enums.FillBehavior)
 local ButtonVariant = require(Enums.ButtonVariant)
@@ -33,7 +36,6 @@ type Scope = Types.Scope
 type Use = Types.Use
 
 type InputSize = InputSize.InputSize
-type FillBehavior = FillBehavior.FillBehavior
 type ButtonVariant = ButtonVariant.ButtonVariant
 
 local IconNames = {
@@ -46,7 +48,6 @@ local IconNames = {
 }
 
 local IconVariants = Dash.values(BuilderIcons.IconVariant)
-local ControlModes = Dash.values(ColorMode)
 
 -- Only show the supported variants for IconButton
 local SUPPORTED_VARIANTS = {
@@ -57,41 +58,33 @@ local SUPPORTED_VARIANTS = {
 	ButtonVariant.Alert,
 }
 
-local FillBehaviors = {
-	"None",
-	FillBehavior.Fit,
-	FillBehavior.Fill,
-}
-
 return {
 	fusion = Fusion,
 	summary = "IconButton",
-	story = function(props)
+	story = StoryMiddleware(function(props)
 		local scope = props.scope
 		local controls = props.controls
+		local theme = ThemeProvider()
 
-		local theme, cleanup = ThemeProvider({
-			theme = props.controls.theme
-		})
-		table.insert(scope, cleanup)
-		theme.Presentation.colorMode = controls.colorMode
-
-		return View {
+		return ScrollView {
 			scope = scope,
 			AutomaticSize = Enum.AutomaticSize.XY,
+			scroll = {
+				AutomaticSize = Enum.AutomaticSize.XY,
+				AutomaticCanvasSize = Enum.AutomaticSize.XY
+			},
 			tag = "padding-medium radius-medium back-clear",
 			children = scope:Computed(function(use: Use, innerScope: Scope)
 				local renderedStories = {
 					innerScope:New "UIListLayout" {
 						FillDirection = Enum.FillDirection.Vertical,
 						SortOrder = Enum.SortOrder.LayoutOrder,
-						Padding = UDim.new(0, 16),
-					},
-					theme.StyleLink
+						Padding = UDim.new(0, 16)
+					}
 				}
 
 				local tokens = unwrap(theme.Tokens, use)
-				local colorMode = unwrap(controls.colorMode, use)
+				local colorNamespace = unwrap(controls.colorNamespace, use)
 				local currentFillBehavior = unwrap(controls.fillBehavior, use)
 				local selectedBehavior = if currentFillBehavior == "None" then nil else currentFillBehavior
 
@@ -120,7 +113,7 @@ return {
 							icon = iconProp,
 							variant = variant,
 							onActivated = function()
-								print(`{colorMode} {variant} IconButton ({size}) activated`)
+								print(`{colorNamespace} {variant} IconButton ({size}) activated`)
 							end,
 							isDisabled = controls.isDisabled,
 							size = size,
@@ -135,7 +128,7 @@ return {
 						tag = "row gap-medium align-y-center padding-medium radius-medium",
 						backgroundStyle = if variant == ButtonVariant.OverMedia
 							then tokens.Color.Extended.White.White_100
-							elseif colorMode then tokens[colorMode].Surface.Surface_100
+							elseif colorNamespace then tokens[colorNamespace].Surface.Surface_100
 							else nil,
 						children = {
 							if variant == ButtonVariant.OverMedia
@@ -256,7 +249,7 @@ return {
 					local widthRow = View {
 						scope = innerScope,
 						tag = "col gap-large size-full-0 auto-xy padding-large radius-medium",
-						backgroundStyle = if colorMode then tokens[colorMode].Surface.Surface_100 else nil,
+						backgroundStyle = if colorNamespace then tokens[colorNamespace].Surface.Surface_100 else nil,
 						LayoutOrder = 3,
 						children = widthSubSections,
 					}
@@ -287,7 +280,7 @@ return {
 						icon = iconProp,
 						variant = ButtonVariant.Emphasis,
 						onActivated = function()
-							print(`{colorMode} IconButton row {selectedBehavior} activated`)
+							print(`{colorNamespace} IconButton row {selectedBehavior} activated`)
 						end,
 						isDisabled = controls.isDisabled,
 						size = InputSize.Medium,
@@ -300,7 +293,7 @@ return {
 						icon = iconProp,
 						variant = ButtonVariant.Utility,
 						onActivated = function()
-							print(`{colorMode} IconButton row {selectedBehavior} activated`)
+							print(`{colorNamespace} IconButton row {selectedBehavior} activated`)
 						end,
 						isDisabled = controls.isDisabled,
 						size = InputSize.Medium,
@@ -313,7 +306,7 @@ return {
 						icon = iconProp,
 						variant = ButtonVariant.Utility,
 						onActivated = function()
-							print(`{colorMode} IconButton row {selectedBehavior} activated`)
+							print(`{colorNamespace} IconButton row {selectedBehavior} activated`)
 						end,
 						isDisabled = controls.isDisabled,
 						size = InputSize.Medium,
@@ -324,7 +317,7 @@ return {
 					local fillBehaviorRow = View {
 						scope = innerScope,
 						tag = "row gap-medium size-full-0 auto-y padding-medium radius-medium",
-						backgroundStyle = if colorMode then tokens[colorMode].Surface.Surface_100 else nil,
+						backgroundStyle = if colorNamespace then tokens[colorNamespace].Surface.Surface_100 else nil,
 						LayoutOrder = 2,
 						children = fillBehaviorChildren,
 					}
@@ -341,22 +334,8 @@ return {
 				return renderedStories
 			end)
 		}
-	end,
+	end),
 	controls = {
-		theme = {
-			EntryType = "Control",
-			Type = "Choose",
-			ControlValue = "Dark",
-			List = {"Dark", "Light"},
-			DefIndex = 1
-		},
-		colorMode = {
-			EntryType = "Control",
-			Type = "Choose",
-			ControlValue = ControlModes[1],
-			List = ControlModes,
-			DefIndex = 1
-		},
 		name = {
 			EntryType = "Control",
 			Type = "Choose",
@@ -371,14 +350,10 @@ return {
 			List = IconVariants,
 			DefIndex = 1
 		},
+		colorNamespace = CommonControls.colorNamespace,
+		fillBehavior = CommonControls.fillBehavior,
+		theme = CommonControls.theme,
 		isDisabled = false,
-		isCircular = false,
-		fillBehavior = {
-			EntryType = "Control",
-			Type = "Choose",
-			ControlValue = FillBehaviors[1],
-			List = FillBehaviors,
-			DefIndex = 1
-		},
-	},
+		isCircular = false
+	}
 }

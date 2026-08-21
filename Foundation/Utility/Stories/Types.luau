@@ -7,20 +7,20 @@ local Theme = require(Foundation.Enums.Theme)
 
 local StoryTypes = {}
 
---local PreferencesProvider = require(Foundation.Providers.Preferences.PreferencesProvider)
+local PreferencesProvider = require(Foundation.Providers.PreferencesProvider)
 
 type Scope = Types.Scope
 type Child = Types.Child
 
 type Theme = Theme.Theme
 type Device = Device.Device
---type Preferences = PreferencesProvider.PreferencesProps
+type Preferences = PreferencesProvider.PreferencesProps
 
 export type DeveloperStorybookStoryProps = {
 	focus: LayerCollector,
 	theme: Theme,
 	platform: Platform,
-	--settings: Preferences,
+	settings: Preferences?,
 	plugin: Plugin,
 	host: GuiObject,
 }
@@ -40,8 +40,12 @@ export type UILabsStoryProps = {
 	controls: { 
 		theme: Theme?,
 		device: Device?,
+		preferredTextSize: Enum.PreferredTextSize?,
+		preferredTransparency: number?,
+		reducedMotion: boolean?,
+		scale: number?,
 		[string]: any 
-	},
+	}
 }
 
 export type StoryProps = FlipbookStoryProps | DeveloperStorybookStoryProps

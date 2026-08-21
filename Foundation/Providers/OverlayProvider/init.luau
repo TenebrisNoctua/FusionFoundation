@@ -18,11 +18,7 @@ local Players = Wrappers.Services.Players
 
 local Constants = require(Foundation.Constants)
 
-local FoundationOverlayKeyboardAwareness = true
-local FoundationOverlayKeyboardAwarenessHardened = true
-local FoundationOverlayDisplayOrder = true
-
-local FoundationOverlayDisplayOrderDefault = Constants.MAX_LAYOUT_ORDER - 1
+local defaultDisplayOrder = Constants.MAX_LAYOUT_ORDER - 1
 
 local overlayProvider = {
 	instance = nil :: GuiBase2d?,
@@ -53,10 +49,6 @@ local function getMainGui(): Instance?
 
 	return Players.LocalPlayer:FindFirstChild("PlayerGui")
 end
-
-local defaultDisplayOrder = if FoundationOverlayDisplayOrder
-	then FoundationOverlayDisplayOrderDefault
-	else Constants.MAX_LAYOUT_ORDER - 1
 
 return function(props: OverlayProviderProps?): (overlayProvider, () -> ()?)
 	if overlayProvider.instance then return overlayProvider end
@@ -102,9 +94,8 @@ return function(props: OverlayProviderProps?): (overlayProvider, () -> ()?)
 	
 	local cleanup: () -> ()
 
-	if FoundationOverlayKeyboardAwareness and scope then
-		local screen = if FoundationOverlayKeyboardAwarenessHardened then screenGui else safeAreaFrame
-		local safeAreaSize = useKeyboardAwareSize(scope, screen)
+	if scope then
+		local safeAreaSize = useKeyboardAwareSize(scope, screenGui)
 		cleanup = scope:Observer(safeAreaSize):onChange(function()
 			safeAreaFrame.Size = unwrap(safeAreaSize)
 		end)

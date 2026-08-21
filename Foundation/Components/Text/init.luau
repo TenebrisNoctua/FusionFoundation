@@ -49,7 +49,7 @@ local DEFAULT_TAGS_WITH_BG = `{DEFAULT_TAGS} x-default-transparency`
 local Children = Fusion.Children
 
 type UsedAs<T> = Types.UsedAs<T>
-type CanBeComputed<T> = (Types.Computed<T> | T)
+type CanBeComputed<T> = (Types.UsedAs<T> | T)
 
 type Scope = Types.Scope
 type Use = Types.Use

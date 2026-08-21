@@ -5,7 +5,6 @@ local Enums = Foundation.Enums
 
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
-
 local ElevationLayer = require(Enums.ElevationLayer)
 
 local ElevationProvider = require(script.Parent)
@@ -19,7 +18,7 @@ type Token = ElevationProvider.Token
 
 export type UseElevationOptions = {
 	stackAboveOwner: UsedAs<boolean>?,
-	ownerToken: UsedAs<Token?>?,
+	ownerToken: UsedAs<Token?>?
 }
 
 type ElevationProvider = ElevationProvider.elevationProvider
@@ -72,7 +71,7 @@ return function(scope: Scope, layer: UsedAs<ElevationLayer>, options: UseElevati
 		return {
 			layer = unwrap(layer, use),
 			stackAboveOwner = unwrap(safeOptions.stackAboveOwner, use),
-			ownerToken = unwrap(safeOptions.ownerToken, use),
+			ownerToken = unwrap(safeOptions.ownerToken, use)
 		}
 	end)
 
@@ -87,3 +86,4 @@ return function(scope: Scope, layer: UsedAs<ElevationLayer>, options: UseElevati
 
 	return tokenState
 end
+

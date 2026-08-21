@@ -4,30 +4,28 @@ local Foundation = script.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
-local Dash = PackageManager.getPackage("Dash")
 
-local Children = Fusion.Children
+local Components = Foundation.Components
+local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
-local Button = require(Foundation.Components.Button)
-local View = require(Foundation.Components.View)
+local ScrollView = require(Components.ScrollView)
+local Button = require(Components.Button)
+local View = require(Components.View)
 
-local unwrap = require(Foundation.Utility.unwrap)
-local Types = require(Foundation.Utility.Types)
-local StorySection = require(Foundation.Utility.Stories.StorySection)
+local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types)
 
-local ColorMode = require(Foundation.Enums.ColorMode)
-local InputSize = require(Foundation.Enums.InputSize)
-local ButtonVariant = require(Foundation.Enums.ButtonVariant)
-local FillBehavior = require(Foundation.Enums.FillBehavior)
+local StoryMiddleware = require(Utility.Stories.StoryMiddleware)
+local CommonControls = require(Utility.Stories.CommonControls)
+local StorySection = require(Utility.Stories.StorySection)
+
+local InputSize = require(Enums.InputSize)
+local ButtonVariant = require(Enums.ButtonVariant)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
-local ControlModes = Dash.values(ColorMode)
-local FillBehaviors = {
-	"None",
-	FillBehavior.Fit,
-	FillBehavior.Fill,
-}
+local Children = Fusion.Children
 
 local Icons = {
 	"arrow-up-right-from-square",
@@ -49,27 +47,25 @@ local Icons = {
 	"",
 }
 
-type InputSize = InputSize.InputSize
-type FillBehavior = FillBehavior.FillBehavior
-
 type Scope = Types.Scope
 type Use = Types.Use
+
+type InputSize = InputSize.InputSize
 
 return {
 	fusion = Fusion,
 	summary = "Button",
-	story = function(props)
+	story = StoryMiddleware(function(props)
 		local scope = props.scope
 		local controls = props.controls
+		local theme = ThemeProvider()
 
-		local theme, cleanup = ThemeProvider({
-			theme = props.controls.theme
-		})
-		table.insert(scope, cleanup)
-
-		return View {
+		return ScrollView {
 			scope = scope,
 			AutomaticSize = Enum.AutomaticSize.XY,
+			scroll = {
+				AutomaticSize = Enum.AutomaticSize.XY
+			},
 			tag = "padding-medium radius-medium back-clear",
 			children = scope:Computed(function(use: Use, innerScope: Scope)
 				local renderedStories = {
@@ -77,12 +73,12 @@ return {
 						FillDirection = Enum.FillDirection.Vertical,
 						SortOrder = Enum.SortOrder.LayoutOrder,
 						Padding = UDim.new(0, 16),
-					},
-					theme.StyleLink
+					}
 				}
-
-				local extendedColors = unwrap(theme.Tokens, use).Color.Extended
-				local colorMode = unwrap(controls.colorMode, use)
+				
+				local tokens = unwrap(theme.Tokens, use)
+				local colorNamespace = unwrap(controls.colorNamespace, use)
+				local extendedColors = tokens.Color.Extended
 
 				for _, variant in ButtonVariant do
 					local buttonsForSizes = {
@@ -112,22 +108,21 @@ return {
 								return if fill == "None" then nil else fill
 							end),
 							inputDelay = controls.inputDelay,
-							colorMode = controls.colorMode,
+							colorNamespace = controls.colorNamespace,
 							onActivated = function()
-								print(`{unwrap(controls.colorMode)} {variant} Button ({size}) activated`)
+								print(`{colorNamespace} {variant} Button ({size}) activated`)
 							end,
 						})
 					end
-
-					local variantRow = View {
+					
+					local variantRow = View { 
 						scope = innerScope,
 						AutomaticSize = Enum.AutomaticSize.XY,
 						LayoutOrder = 2,
 						tag = "row gap-medium align-y-center padding-medium radius-medium",
 						backgroundStyle = if variant == ButtonVariant.OverMedia
-							then unwrap(theme.Tokens).Color.Extended.White.White_100
-
-							elseif colorMode then unwrap(theme.Tokens)[colorMode].Surface.Surface_100
+							then tokens.Color.Extended.White.White_100
+							elseif colorNamespace then tokens[colorNamespace].Surface.Surface_100
 							else nil,
 						children = {
 							Gradient = if variant == ButtonVariant.OverMedia
@@ -153,9 +148,9 @@ return {
 				end
 
 				return renderedStories
-			end),
+			end)
 		}
-	end,
+	end),
 	controls = {
 		icon = {
 			EntryType = "Control",
@@ -164,30 +159,12 @@ return {
 			List = Icons,
 			DefIndex = 1
 		},
-		theme = {
-			EntryType = "Control",
-			Type = "Choose",
-			ControlValue = "Dark",
-			List = {"Dark", "Light"},
-			DefIndex = 1
-		},
+		colorNamespace = CommonControls.colorNamespace,
+		fillBehavior = CommonControls.fillBehavior,
+		theme = CommonControls.theme,
 		text = "Lorem ipsum",
 		isDisabled = false,
 		isLoading = false,
-		colorMode = {
-			EntryType = "Control",
-			Type = "Choose",
-			ControlValue = ControlModes[1],
-			List = ControlModes,
-			DefIndex = 1
-		},
-		fillBehavior = {
-			EntryType = "Control",
-			Type = "Choose",
-			ControlValue = FillBehaviors[1],
-			List = FillBehaviors,
-			DefIndex = 1
-		},
-		inputDelay = 0,
+		inputDelay = 0
 	},
 }

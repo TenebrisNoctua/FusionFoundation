@@ -62,19 +62,20 @@ return function(iconProps: IconProps): UsedAs<ImageLabel | TextLabel>
 	
 	return Scope:Computed(function(use: Use, innerScope: Scope) 
 		local name = unwrap(props.name, use)
-		local migratedIcon = migrateIconName(name)
-		
-		local size = unwrap(useIconSize(innerScope, props.size, isBuilderIcon(name)), use)
+		local size = unwrap(props.size, use)
 		local variant = unwrap(props.variant, use)
-		local tokens = unwrap(Theme.Tokens, use)
 		local textSizeOffset = unwrap(props.textSizeOffset, use) or 0
 		
+		local migratedIcon = migrateIconName(name)
+		local size = useIconSize(size, isBuilderIcon(name))
+		
+		local tokens = unwrap(Theme.Tokens, use)
 		local fontSize: number? = if typeof(size) == "table" then nil else size.Y.Offset
 		
 		if not isBuilderIcon(name) then
 			if migratedIcon then
 				if typeof(size) == "table" then
-					error("Binding size isn't supported when migrating a UIBlox icon, use Builder Icons directly")
+					error("[FusionFoundation]: Binding size isn't supported when migrating a UIBlox icon, use Builder Icons directly")
 				end
 				variant = migratedIcon.variant or variant
 				name = migratedIcon.name

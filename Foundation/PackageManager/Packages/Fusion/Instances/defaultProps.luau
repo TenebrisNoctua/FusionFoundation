@@ -30,18 +30,6 @@ return {
 		PixelsPerStud = 50
 	},
 
-	ViewportFrame = {
-		BackgroundColor3 = Color3.new(1, 1, 1),
-		BorderColor3 = Color3.new(0, 0, 0),
-		BorderSizePixel = 0
-	},
-
-	VideoFrame = {
-		BackgroundColor3 = Color3.new(1, 1, 1),
-		BorderColor3 = Color3.new(0, 0, 0),
-		BorderSizePixel = 0
-	},
-
 	SpawnLocation = {
 		Duration = 0
 	},

@@ -25,7 +25,7 @@ local Types = require(Utility.Types)
 local InputSize = require(Enums.InputSize)
 local FillBehavior = require(Enums.FillBehavior)
 local ButtonVariant = require(Enums.ButtonVariant)
-local ColorMode = require(Enums.ColorMode)
+local ColorNamespace = require(Enums.ColorNamespace)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
@@ -51,7 +51,7 @@ type Use = Types.Use
 
 type InputSize = InputSize.InputSize
 type FillBehavior = FillBehavior.FillBehavior
-type ColorMode = ColorMode.ColorMode
+type ColorNamespace = ColorNamespace.ColorNamespace
 
 export type IconButtonProps = {
 	-- The scope in which the component will be created.
@@ -69,7 +69,7 @@ export type IconButtonProps = {
 	variant: UsedAs<SupportedIconButtonVariant>?,
 	icon: UsedAs<string | { name: string, variant: BuilderIcons.IconVariant? }>?,
 	-- These properties are converted from contexts.
-	colorMode: UsedAs<ColorMode>?,
+	colorNamespace: UsedAs<ColorNamespace>?,
 } & Types.SelectionProps & Types.CommonProps
 
 local defaultProps = {
@@ -105,10 +105,8 @@ return function(iconButtonProps: IconButtonProps)
 		end
 
 		local currentVariant = unwrap(props.variant, use)
-		local colorMode = props.colorMode or presentation.colorMode
-
-		-- Use variant system for styling
-		local variantProps = unwrap(useIconButtonVariants(innerScope, currentSize, currentVariant, colorMode), use)
+		local colorNamespace = if props.colorNamespace then unwrap(props.colorNamespace, use) else unwrap(presentation.colorNamespace, use)
+		local variantProps = useIconButtonVariants(currentSize, currentVariant, colorNamespace)
 
 		local containerSize = variantProps.container.size
 
@@ -118,7 +116,7 @@ return function(iconButtonProps: IconButtonProps)
 			then UDim.new(0, tokens.Radius.Circle)
 			else UDim.new(0, variantProps.container.radius or tokens.Radius.Large)
 
-		local iconSize = unwrap(useIconSize(innerScope, props.size, isBuilderIcon(iconName), true), use)
+		local iconSize = useIconSize(currentSize, isBuilderIcon(iconName), true)
 
 		local cursor = {
 			radius = componentRadius,
@@ -192,7 +190,7 @@ return function(iconButtonProps: IconButtonProps)
 			stroke = variantProps.container.stroke,
 			cursor = cursor,
 			GroupTransparency = if currentIsDisabled then Constants.DISABLED_TRANSPARENCY else nil,
-			children = iconChildren,
+			children = iconChildren
 		})
 
 		return View(viewProps)

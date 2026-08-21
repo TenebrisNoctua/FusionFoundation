@@ -1,7 +1,4 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Enums = Foundation.Enums
 local Utility = Foundation.Utility
@@ -15,7 +12,7 @@ local Types = require(Utility.Types)
 
 local InputSize = require(Enums.InputSize)
 local ButtonVariant = require(Enums.ButtonVariant)
-local ColorMode = require(Enums.ColorMode)
+local ColorNamespace = require(Enums.ColorNamespace)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
@@ -25,7 +22,7 @@ type Use = Types.Use
 
 type InputSize = InputSize.InputSize
 type ButtonVariant = ButtonVariant.ButtonVariant
-type ColorMode = ColorMode.ColorMode
+type ColorNamespace = ColorNamespace.ColorNamespace
 
 type ColorStyleValue = Types.ColorStyleValue
 type StateLayer = Types.StateLayer
@@ -54,17 +51,17 @@ type ButtonVariantProps = {
 	},
 }
 
-local function variantsMap(use: Use)
-	local sharedVariants = getSharedVariants(use)
+local function variantsMap()
+	local sharedVariants = getSharedVariants()
 	local themeProvider = ThemeProvider()
-	local tokens = unwrap(themeProvider.Tokens, use)
+	local tokens = unwrap(themeProvider.Tokens)
 
 	local common = {
 		container = {
-			tag = "row align-y-center align-x-center clip",
+			tag = "row align-x-center align-y-center clip",
 		},
 		text = {
-			tag = "size-0-full auto-x text-truncate-end shrink",
+			tag = "shrink size-0-full auto-x text-truncate-end",
 		},
 	}
 
@@ -84,7 +81,7 @@ local function variantsMap(use: Use)
 				size = UDim2.fromOffset(size300, size300),
 			},
 			text = {
-				tag = "text-title-small",
+				tag = "text-label-small",
 			},
 		},
 		[InputSize.Small] = {
@@ -110,7 +107,7 @@ local function variantsMap(use: Use)
 				size = UDim2.fromOffset(size500, size500),
 			},
 			text = {
-				tag = "text-title-medium",
+				tag = "text-label-medium",
 			},
 		},
 		[InputSize.Large] = {
@@ -123,7 +120,7 @@ local function variantsMap(use: Use)
 				size = UDim2.fromOffset(size600, size600),
 			},
 			text = {
-				tag = "text-title-large",
+				tag = "text-label-large",
 			},
 		},
 	}
@@ -131,15 +128,14 @@ local function variantsMap(use: Use)
 	return { common = common, sizes = sizes, types = sharedVariants.types }
 end
 
-local function useButtonVariants(scope: Scope, size: InputSize, variant: ButtonVariant, colorMode: UsedAs<ColorMode>?): UsedAs<ButtonVariantProps>
-	return scope:Computed(function(use: Use)
-		local variants = useVariants(use, "Button", variantsMap)
-		return composeStyleVariant(
-			variants.common,
-			variants.sizes[size],
-			variants.types[variant][unwrap(colorMode, use) or ColorMode.Color]
-		)
-	end)
+local function useButtonVariants(size: InputSize, variant: ButtonVariant, colorNamespace: ColorNamespace?): ButtonVariantProps
+	local variants = useVariants("Button", variantsMap)
+	local resolvedColorMode = colorNamespace or ColorNamespace.Color
+	return composeStyleVariant(
+		variants.common,
+		variants.sizes[size],
+		variants.types[variant][resolvedColorMode]
+	)
 end
 
 return useButtonVariants

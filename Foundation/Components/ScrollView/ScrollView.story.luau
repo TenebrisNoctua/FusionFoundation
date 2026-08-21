@@ -8,6 +8,7 @@ local Utility = Foundation.Utility
 
 local Text = require(Components.Text)
 local View = require(Components.View)
+local Fragment = require(Components.Fragment)
 local ScrollView = require(Components.ScrollView)
 
 local unwrap = require(Utility.unwrap)
@@ -30,6 +31,7 @@ local function StoryScrolling(props)
 				scope = scope,
 				LayoutOrder = 2,
 				Size = UDim2.new(0, 120, 0, 120),
+				tag = "col",
 				layout = {
 					FillDirection = Enum.FillDirection.Vertical,
 				},
@@ -38,29 +40,27 @@ local function StoryScrolling(props)
 				},
 				scroll = {
 					AutomaticCanvasSize = Enum.AutomaticSize.Y,
-					CanvasSize = UDim2.fromOffset(0, 0),
+					CanvasSize = UDim2.fromScale(1, 0),
 					ScrollingDirection = Enum.ScrollingDirection.Y,
 					scrollBarVisibility = props.scrollBarVisibility,
 				},
-				children = {
-					View {
-						scope = scope,
+				children = Fragment {
+					{View, {
 						Size = UDim2.fromOffset(120, 75),
 						backgroundStyle = tokens.Color.Extended.Turquoise.Turquoise_500
-					},
+					}},
 					
-					View {
-						scope = scope,
+					{View, {
 						Size = UDim2.fromOffset(120, 75),
 						backgroundStyle = tokens.Color.Extended.Magenta.Magenta_500
-					}
+					}}
 				}
 			},
-			
 			ScrollView {
 				scope = scope,
 				LayoutOrder = 1,
 				Size = UDim2.new(0, 120, 0, 120),
+				tag = "row",
 				layout = {
 					FillDirection = Enum.FillDirection.Horizontal,
 				},
@@ -69,24 +69,22 @@ local function StoryScrolling(props)
 				},
 				scroll = {
 					AutomaticCanvasSize = Enum.AutomaticSize.X,
-					CanvasSize = UDim2.fromOffset(0, 0),
+					CanvasSize = UDim2.fromScale(0, 1),
 					ScrollingDirection = Enum.ScrollingDirection.X,
 					scrollBarVisibility = props.scrollBarVisibility,
 				},
-				children = {
-					View {
-						scope = scope,
+				children = Fragment {
+					{View, {
 						Size = UDim2.fromOffset(120, 75),
 						backgroundStyle = tokens.Color.Extended.Turquoise.Turquoise_500
-					},
+					}},
 
-					View {
-						scope = scope,
+					{View, {
 						Size = UDim2.fromOffset(120, 75),
 						backgroundStyle = tokens.Color.Extended.Magenta.Magenta_500
-					}
+					}}
 				}
-			},
+			}
 		}
 	}
 end

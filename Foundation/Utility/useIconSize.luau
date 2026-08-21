@@ -21,48 +21,43 @@ local function isNumber(value: any): boolean
 end
 
 local function useIconSize(
-	Scope: Scope,
-	size: UsedAs<IconSize | number>,
+	size: IconSize | number,
 	isBuilderIconBool: boolean,
 	isIconButton: boolean?
-): UsedAs<UDim2>
+): UDim2
 	local Theme = ThemeProvider()
+	local tokens = unwrap(Theme.Tokens)
 
-	return Scope:Computed(function(use: Use)
-		local tokens = unwrap(Theme.Tokens, use)
-		local sizeValue = unwrap(size, use)
+	local iconSizes = if isBuilderIconBool
+		then {
+			[IconSize.XSmall :: IconSize] = if isIconButton then tokens.Size.Size_400 else tokens.Size.Size_300,
+			[IconSize.Small :: IconSize] = if isIconButton then tokens.Size.Size_500 else tokens.Size.Size_400,
+			[IconSize.Medium :: IconSize] = if isIconButton then tokens.Size.Size_600 else tokens.Size.Size_500,
+			[IconSize.Large :: IconSize] = if isIconButton then tokens.Size.Size_700 else tokens.Size.Size_600,
+			[IconSize.XLarge :: IconSize] = if isIconButton then tokens.Size.Size_800 else tokens.Size.Size_700,
+			[IconSize.XXLarge :: IconSize] = if isIconButton then tokens.Size.Size_900 else tokens.Size.Size_800,
+		}
+		else {
+			[IconSize.XSmall :: IconSize] = tokens.Size.Size_200,
+			[IconSize.Small :: IconSize] = tokens.Size.Size_400,
+			[IconSize.Medium :: IconSize] = tokens.Size.Size_900,
+			[IconSize.Large :: IconSize] = tokens.Size.Size_1200,
+			[IconSize.XLarge :: IconSize] = tokens.Size.Size_2400,
+			[IconSize.XXLarge :: IconSize] = 24 * tokens.Size.Size_200,
+		}
 
-		local iconSizes = if isBuilderIconBool
-			then {
-				[IconSize.XSmall :: IconSize] = if isIconButton then tokens.Size.Size_400 else tokens.Size.Size_300,
-				[IconSize.Small :: IconSize] = if isIconButton then tokens.Size.Size_500 else tokens.Size.Size_400,
-				[IconSize.Medium :: IconSize] = if isIconButton then tokens.Size.Size_600 else tokens.Size.Size_500,
-				[IconSize.Large :: IconSize] = if isIconButton then tokens.Size.Size_700 else tokens.Size.Size_600,
-				[IconSize.XLarge :: IconSize] = if isIconButton then tokens.Size.Size_800 else tokens.Size.Size_700,
-				[IconSize.XXLarge :: IconSize] = if isIconButton then tokens.Size.Size_900 else tokens.Size.Size_800,
-			}
-			else {
-				[IconSize.XSmall :: IconSize] = tokens.Size.Size_200,
-				[IconSize.Small :: IconSize] = tokens.Size.Size_400,
-				[IconSize.Medium :: IconSize] = tokens.Size.Size_900,
-				[IconSize.Large :: IconSize] = tokens.Size.Size_1200,
-				[IconSize.XLarge :: IconSize] = tokens.Size.Size_2400,
-				[IconSize.XXLarge :: IconSize] = 24 * tokens.Size.Size_200,
-			}
-
-		if isNumber(sizeValue) then
-			if not isBuilderIconBool then
-				error("Invalid icon size: " .. tostring(sizeValue))
-			end
-			return UDim2.fromOffset(sizeValue, sizeValue)
-		else
-			local resolvedSize = iconSizes[sizeValue :: IconSize]
-			if resolvedSize == nil then
-				error("Invalid icon size: " .. tostring(sizeValue))
-			end
-			return UDim2.fromOffset(resolvedSize, resolvedSize)
+	if isNumber(size) then
+		if not isBuilderIconBool then
+			error("Invalid icon size: " .. tostring(size))
 		end
-	end)
+		return UDim2.fromOffset(size, size)
+	else
+		local resolvedSize = iconSizes[size :: IconSize]
+		if resolvedSize == nil then
+			error("Invalid icon size: " .. tostring(size))
+		end
+		return UDim2.fromOffset(resolvedSize, resolvedSize)
+	end
 end
 
 return useIconSize

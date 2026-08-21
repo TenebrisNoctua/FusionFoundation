@@ -21,8 +21,6 @@ local StateLayerAffordance = require(Foundation.Enums.StateLayerAffordance)
 local StateLayerMode = require(Foundation.Enums.StateLayerMode)
 local ControlState = require(Foundation.Enums.ControlState)
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
 local DEFAULT_GRAY = Color3.fromRGB(163, 162, 165)
 
 local COMPONENT_ONLY_PROPERTIES = {

@@ -50,17 +50,16 @@ return function(props: ButtonIconProps)
 	end
 
 	local currentSize = unwrap(props.size)
-	local variantProps = useButtonVariants(scope, props.size, props.variant, nil)
 	local intrinsicIconSize, scale = getIconScale(currentIcon, currentSize)
 	local textOffset = unwrap(props.textSizeOffset) or 0
 	
 	local mixedIconStyle = scope:Computed(function(use: Use)
-		local currentVariant = unwrap(variantProps, use)
 		local disabledValue = unwrap(props.disabledTransparencyBinding, use) or 0
 		local progressValue = unwrap(props.textTransparencyBinding, use) or 0
-
+		local variantProps = useButtonVariants(currentSize, unwrap(props.variant), nil)
+		
 		return {
-			Color3 = currentVariant.content.style.Color3,
+			Color3 = variantProps.content.style.Color3,
 			Transparency = progressValue + disabledValue
 		}
 	end)
@@ -70,28 +69,30 @@ return function(props: ButtonIconProps)
 			scope = scope,
 			Text = if isMigrated(currentIcon) then migrationLookup[currentIcon].name else currentIcon,
 			fontStyle = scope:Computed(function(use: Use)
-				local currentVariant = unwrap(variantProps, use)
+				local variantProps = useButtonVariants(currentSize, unwrap(props.variant, use), nil)
 				return {
 					Font = BuilderIcons.Font[if isMigrated(currentIcon)
 						then migrationLookup[currentIcon].variant
 						else BuilderIcons.IconVariant.Regular],
-					FontSize = currentVariant.icon.size.Y.Offset,
+					FontSize = variantProps.icon.size.Y.Offset,
 				}
 			end),
 			tag = "position-center-center anchor-center-center",
 			Size = scope:Computed(function(use: Use)
-				return unwrap(variantProps, use).icon.size
+				local variantProps = useButtonVariants(currentSize, unwrap(props.variant, use), nil)
+				return variantProps.icon.size
 			end),
 			textStyle = mixedIconStyle,
 			children = if textOffset > 0
 				then {
 					scope:New "UITextSizeConstraint" {
 						MaxTextSize = scope:Computed(function(use: Use)
-							return unwrap(variantProps, use).icon.size.Y.Offset
-						end),
-					},
+							local variantProps = useButtonVariants(currentSize, unwrap(props.variant, use), nil)
+							return variantProps.icon.size.Y.Offset
+						end)
+					}
 				}
-				else nil,
+				else nil
 		}
 	else
 		return Image {
@@ -101,7 +102,8 @@ return function(props: ButtonIconProps)
 			Size = if intrinsicIconSize
 				then UDim2.fromOffset(intrinsicIconSize.X, intrinsicIconSize.Y)
 				else scope:Computed(function(use: Use)
-					return unwrap(variantProps, use).icon.size
+					local variantProps = useButtonVariants(currentSize, unwrap(props.variant, use), nil)
+					return variantProps.icon.size
 				end),
 			imageStyle = mixedIconStyle,
 			scale = scale,

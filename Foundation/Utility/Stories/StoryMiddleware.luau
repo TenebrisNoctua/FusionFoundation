@@ -6,8 +6,7 @@ local Types = require(Foundation.Utility.Types)
 local StoryTypes = require(Foundation.Utility.Stories.Types)
 
 local FoundationProvider = require(Foundation.Providers.FoundationProvider)
-
-local FoundationPopoverPluginSupport = true
+local PreferencesProvider = require(Foundation.Providers.PreferencesProvider)
 
 type Scope = Types.Scope
 export type UILabsStoryProps = StoryTypes.UILabsStoryProps
@@ -17,8 +16,9 @@ export type UILabsStoryProps = StoryTypes.UILabsStoryProps
 
 	It:
 	1. Creates an overlay Frame for popover/floating content testing
-	2. Initializes FoundationProvider (ThemeProvider, OverlayProvider, ElevationProvider, etc.)
-	   with certain properties from the controls. (Theme and Device)
+	2. Initializes FoundationProvider (ThemeProvider, OverlayProvider, ElevationProvider,
+	   PreferencesProvider, ResponsiveProvider, CursorProvider, etc.)
+	   with certain properties from the controls. (Theme, Device, and Preferences)
 	3. Creates a StyleLink under the overlay so Foundation styles apply to floating content
 	4. Calls the original story function with the same { scope, controls } props
 	5. Wraps the story's result in a padded View that includes the overlay
@@ -42,9 +42,18 @@ local function StoryMiddleware(story: (UILabsStoryProps) -> any)
 		local scope = storyProps.scope
 		local controls = storyProps.controls
 		
-		-- TODO: Add preferences
 		local theme = controls and controls.theme
 		local device = controls and controls.device
+
+		local preferences: PreferencesProvider.PreferencesProps? = nil
+		if controls then
+			preferences = {
+				preferredTextSize = controls.preferredTextSize,
+				preferredTransparency = controls.preferredTransparency,
+				reducedMotion = controls.reducedMotion,
+				scale = controls.scale
+			}
+		end
 
 		-- This Frame serves as the parent for popover content.
 		local overlayFrame = scope:New "Frame" {
@@ -58,8 +67,9 @@ local function StoryMiddleware(story: (UILabsStoryProps) -> any)
 			scope = scope,
 			theme = theme,
 			device = device,
+			preferences = preferences,
 			overlayGui = overlayFrame,
-			plugin = if FoundationPopoverPluginSupport then storyProps.plugin else nil
+			plugin = storyProps.plugin
 		})
 
 		local themeProvider = providers.themeProvider

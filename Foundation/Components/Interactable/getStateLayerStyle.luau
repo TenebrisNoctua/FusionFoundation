@@ -1,5 +1,4 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
@@ -7,14 +6,14 @@ local Enums = Foundation.Enums
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 
-local ColorMode = require(Foundation.Enums.ColorMode)
-local StateLayerMode = require(Foundation.Enums.StateLayerMode)
-local ControlState = require(Foundation.Enums.ControlState)
+local ControlState = require(Enums.ControlState)
+local ColorNamespace = require(Enums.ColorNamespace)
+local StateLayerMode = require(Enums.StateLayerMode)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 type StateLayer = Types.StateLayer
-type ColorMode = ColorMode.ColorMode
+type ColorNamespace = ColorNamespace.ColorNamespace
 type StateLayerMode = StateLayerMode.StateLayerMode
 type ControlState = ControlState.ControlState
 
@@ -26,22 +25,21 @@ function guiStateToStateLayer(guiState: ControlState): "Idle" | "Press" | "Hover
 	elseif guiState == ControlState.Hover then
 		return "Hover"
 	end
-
 	return "Idle"
 end
 
 function stateLayerModeToTokenNamespace(mode: StateLayerMode?)
 	if mode == StateLayerMode.Default then
-		return ColorMode.Color
+		return ColorNamespace.Color
 	elseif mode == StateLayerMode.Inverse then
-		return ColorMode.Inverse
+		return ColorNamespace.Inverse
 	elseif mode == StateLayerMode.Light then
-		return ColorMode.LightMode
+		return ColorNamespace.LightMode
 	elseif mode == StateLayerMode.Dark then
-		return ColorMode.DarkMode
+		return ColorNamespace.DarkMode
 	end
 	-- Default to Color
-	return ColorMode.Color
+	return ColorNamespace.Color
 end
 
 local function getStateLayerStyle(

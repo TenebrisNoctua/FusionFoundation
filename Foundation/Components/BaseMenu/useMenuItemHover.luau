@@ -37,7 +37,7 @@ return function(scope: Scope, options: UseMenuItemHoverOptions)
 		
 		connection = currentItem:GetPropertyChangedSignal("GuiState"):Connect(function()
 			if options.isSubmenu then
-				if options.isDisabled then return end
+				if unwrap(options.isDisabled) then return end
 				local isHovered = currentItem.GuiState == Enum.GuiState.Hover
 
 				if isHovered and options.hoverOpenAtDepth then

@@ -10,8 +10,11 @@ local Enums = Foundation.Enums
 local useBaseMenuItemVariants = require(script.Parent.useBaseMenuItemVariants)
 local useMenuItemHover = require(script.Parent.useMenuItemHover)
 
+local Accessory = require(script.Parent.BaseMenuItemAccessory)
+local BaseMenuContext = require(script.Parent.BaseMenuContext)
+local BaseMenuScrollContainer = require(script.Parent.BaseMenuScrollContainer)
+
 local Icon = require(Foundation.Components.Icon)
-local Image = require(Foundation.Components.Image)
 local Popover = require(Foundation.Components.Popover)
 local Text = require(Foundation.Components.Text)
 local View = require(Foundation.Components.View)
@@ -35,30 +38,17 @@ local Constants = require(Foundation.Constants)
 --// Component Related Variables
 
 local Children = Fusion.Children
-local isBuilderIconOrMigrated = iconMigrationUtils.isBuilderOrMigratedIcon
-
--- Flag replacements
-local FOUNDATION_BASE_MENU_SUBMENU_SUPPORT = true
-local FOUNDATION_FIX_NESTED_SUB_MENU_ON_CLICK = true
-local FOUNDATION_GUI_OBJECT_INPUT_SINK_PROPERTY = true
 
 local COMPONENT_ONLY_PROPERTIES = {
 	"id",
 	"icon",
+	"leading",
+	"trailing",
 	"isChecked",
 	"isDisabled",
 	"text",
 	"onActivated",
-	"size",
-	"hasLeading",
-	"depth",
-	"hoverOpenPath",
-	"hoverOpenAtDepth",
-	"hoverCloseAtDepth",
-	"hoverReset",
-	"onActivatedContext",
-	"onNestedLeafActivated",
-	"setHasLeading"
+	"isOpen",
 }
 
 local defaultProps = {
@@ -67,10 +57,6 @@ local defaultProps = {
 }
 
 local function getInputSinkAll()
-	if not FOUNDATION_GUI_OBJECT_INPUT_SINK_PROPERTY then
-		return nil
-	end
-
 	local hasFeature, enabled = pcall(game.GetEngineFeature, game, "GuiObjectInputSink")
 	if not hasFeature or not enabled then
 		return nil
@@ -85,6 +71,26 @@ end
 
 local InputSinkAll = getInputSinkAll()
 
+local function resolveAccessory(
+	prop: (string | LeadingAccessory | TrailingAccessory)?
+): LeadingAccessory | TrailingAccessory | nil
+	if prop == nil or prop == "" then
+		return nil
+	end
+	if type(prop) == "string" then
+		return { iconName = prop }
+	end
+	return prop
+end
+
+local function getContainerPadding(container: any, menuHasCheck: boolean): Types.PaddingTable
+	local left = if menuHasCheck then container.paddingLeftWithCheck else container.paddingLeftWithoutCheck
+	return {
+		left = UDim.new(0, left or 0),
+		right = UDim.new(0, container.paddingRight or 0),
+	}
+end
+
 --// Type Definitions
 
 type UsedAs<T> = Types.UsedAs<T>
@@ -96,30 +102,26 @@ type OnItemActivated = Types.OnItemActivated
 
 type InputSize = InputSize.InputSize
 
-export type BaseMenuContextProps = {
-	onActivatedContext: OnItemActivated?,
-	onNestedLeafActivated: (() -> ())?,
-	size: UsedAs<InputSize>?,
-	hasLeading: UsedAs<boolean>?,
-	setHasLeading: (() -> ())?,
-	hoverOpenPath: UsedAs<{ ItemId }>?,
-	hoverOpenAtDepth: ((depth: number, id: ItemId, immediate: boolean?) -> ())?,
-	hoverCloseAtDepth: ((depth: number) -> ())?,
-	hoverReset: (() -> ())?,
-	depth: number?,
-}
+export type LeadingAccessory = Accessory.LeadingAccessory
+export type TrailingAccessory = Accessory.TrailingAccessory
+
+-- Re-export for consumers
+export type LeadingAccessoryProp = string | LeadingAccessory
+export type TrailingAccessoryProp = TrailingAccessory
 
 export type BaseMenuItemProps = {
 	scope: Scope,
 	id: UsedAs<ItemId>,
 	icon: UsedAs<string>?,
+	leading: UsedAs<LeadingAccessoryProp>?,
+	trailing: UsedAs<TrailingAccessoryProp>?,
 	isChecked: UsedAs<boolean>?,
 	isDisabled: UsedAs<boolean>?,
 	text: UsedAs<string>,
 	onActivated: OnItemActivated?,
-	size: UsedAs<InputSize>?,
-	children: { Child }?,
-} & BaseMenuContextProps & Types.SelectionProps & Types.CommonProps
+	children: Child?,
+	isOpen: UsedAs<boolean>?,
+} & Types.CommonProps
 
 --// Component Implementation
 
@@ -129,68 +131,79 @@ return function(menuItemProps: BaseMenuItemProps)
 	assert(scope, "A scope has not been provided for the BaseMenuItem component.")
 
 	local props = withDefaults(menuItemProps, defaultProps)
+	local context = BaseMenuContext:now()
 	local itemRef = scope:Value(nil :: GuiObject?)
-
-	if props.icon and props.setHasLeading then
-		props.setHasLeading()
-	end
 
 	return scope:Computed(function(use: Use, innerScope: Scope)
 		local tokens = unwrap(Theme.Tokens, use)
 		local currentId = unwrap(props.id, use)
-		local currentSize = unwrap(props.size, use)
-		local currentDepth = props.depth or 1
+		local currentSize = unwrap(context.size, use)
+		local currentDepth = context.depth
 		local currentIcon = unwrap(props.icon, use)
-		local currentText = unwrap(props.text, use)
-		local isDisabled = unwrap(props.isDisabled, use)
-		local isChecked = unwrap(props.isChecked, use)
-		local hasLeading = unwrap(props.hasLeading, use)
 
-		local isSubmenu = FOUNDATION_BASE_MENU_SUBMENU_SUPPORT and unwrap(props.children, use) ~= nil
-		local hoverPath = unwrap(props.hoverOpenPath, use) or {}
-		local isOpen = isSubmenu and hoverPath[currentDepth] == currentId
+		local hasLeading = unwrap(context.hasLeading, use)
+		local currentLeading = unwrap(props.leading, use)
+		local currentTrailing = unwrap(props.trailing, use)
+		local menuHasLeading = unwrap(context.menuHasLeading, use)
+		local menuHasCheck = unwrap(context.menuHasCheck, use)
+		local currentMaxHeight = unwrap(context.maxHeight, use)
 
-		local variantProps = useBaseMenuItemVariants(innerScope, tokens, currentSize, if isSubmenu then false else isChecked)
-		
-		if FOUNDATION_BASE_MENU_SUBMENU_SUPPORT then
-			useMenuItemHover(innerScope, {
-				itemRef = itemRef,
-				id = currentId,
-				depth = currentDepth,
-				isSubmenu = isSubmenu,
-				isDisabled = isDisabled,
-				hoverOpenAtDepth = props.hoverOpenAtDepth,
-				hoverCloseAtDepth = props.hoverCloseAtDepth,
-			})
-		end
+		local rawChildren = unwrap(props.children, use)
+		local isSubmenu = rawChildren ~= nil
+
+		local currentIsDisabled = unwrap(props.isDisabled, use)
+		local currentIsChecked = unwrap(props.isChecked, use)
+		local groupTransparency = if currentIsDisabled then Constants.DISABLED_TRANSPARENCY else nil
+		local selectable = not currentIsDisabled
+		local checkVisible = currentIsChecked == true and rawChildren == nil
+
+		local resolvedLeading = resolveAccessory(currentLeading or currentIcon)
+		local resolvedTrailing = resolveAccessory(currentTrailing)
+
+		local alignmentHasLeading = if menuHasLeading ~= nil then menuHasLeading else hasLeading == true
+		local checkMenuHasCheck = if menuHasCheck ~= nil then menuHasCheck else currentIsChecked == true
+
+		local isSubmenuScrollable = currentMaxHeight ~= nil
+		local variantProps = useBaseMenuItemVariants(currentSize, isSubmenuScrollable)
+
+		useMenuItemHover(innerScope, {
+			itemRef = itemRef,
+			id = currentId,
+			depth = currentDepth,
+			isSubmenu = isSubmenu,
+			isDisabled = props.isDisabled,
+			hoverOpenAtDepth = context.hoverOpenAtDepth,
+			hoverCloseAtDepth = context.hoverCloseAtDepth,
+		})
 
 		local function onActivated()
 			if isSubmenu then
-				if isDisabled then return end
-				if props.hoverOpenAtDepth and not isOpen then
-					props.hoverOpenAtDepth(currentDepth, currentId, true)
+				if currentIsDisabled then return end
+				local currentIsOpen = unwrap(props.isOpen)
+				if context.hoverOpenAtDepth and not currentIsOpen then
+					context.hoverOpenAtDepth(currentDepth, currentId, true)
 				end
 			else
-				if FOUNDATION_BASE_MENU_SUBMENU_SUPPORT and props.hoverReset then
-					props.hoverReset()
+				if context.hoverReset then
+					context.hoverReset()
 				end
 
-				local callback = props.onActivated or props.onActivatedContext
+				local callback = props.onActivated or context.onActivated
 				if not callback then
-					warn("[FusionFoundation]: Menu should have either onActivated on itself or on all of its children") -- This can be converted back to Logger Utility if Lumberyak is added as a package.
+					warn("[FusionFoundation]: Menu should have either onActivated on itself or on all of its children")
 				else
 					callback(currentId)
 				end
 
-				if FOUNDATION_FIX_NESTED_SUB_MENU_ON_CLICK and currentDepth > 1 and props.onNestedLeafActivated then
-					props.onNestedLeafActivated()
+				if currentDepth > 1 and context.onNestedLeafActivated then
+					context.onNestedLeafActivated()
 				end
 			end
 		end
 
 		local function onSubmenuPressedOutside()
-			if FOUNDATION_BASE_MENU_SUBMENU_SUPPORT and props.hoverReset then
-				props.hoverReset()
+			if context.hoverReset then
+				context.hoverReset()
 			end
 		end
 
@@ -200,72 +213,114 @@ return function(menuItemProps: BaseMenuItemProps)
 			borderWidth = tokens.Stroke.Thicker,
 		}
 
-		local migratedIcon = if currentIcon then BuilderIcons.Migration["uiblox"][currentIcon] else nil
-		local currentVariantProps = unwrap(variantProps, use)
+		local containerPadding = getContainerPadding(variantProps.container, checkMenuHasCheck)
+		local containerLayout = {
+			FillDirection = Enum.FillDirection.Horizontal,
+			VerticalAlignment = Enum.VerticalAlignment.Center,
+			Padding = UDim.new(0, 0),
+			SortOrder = Enum.SortOrder.LayoutOrder,
+		}
+		local wrapperGap: number = (variantProps.wrapper and variantProps.wrapper.gap) or 0
 
 		local viewChildren = {}
-		
-		if currentIcon or hasLeading then
-			if currentIcon and isBuilderIconOrMigrated(currentIcon) then
-				viewChildren.IconWrapper = View {
+
+		-- Check column
+		if checkMenuHasCheck then
+			local checkChildren = {
+				Check = Icon {
 					scope = innerScope,
-					LayoutOrder = 1,
-					tag = `align-x-center align-y-center {currentVariantProps.icon.tag}`,
-					children = {
-						Icon {
-							scope = innerScope,
-							name = if migratedIcon then migratedIcon.name else currentIcon,
-							style = currentVariantProps.icon.style,
-							size = currentVariantProps.icon.size,
-						}
-					}
+					name = BuilderIcons.Icon.Check,
+					style = variantProps.check.style,
+					size = variantProps.check.size,
+					Visible = checkVisible,
 				}
-			else
-				viewChildren.Image = Image {
-					scope = innerScope,
-					Image = currentIcon,
-					LayoutOrder = 1,
-					tag = currentVariantProps.icon.tag,
-				}
-			end
+			}
+			viewChildren.Check = View {
+				scope = innerScope,
+				LayoutOrder = 1,
+				tag = `{variantProps.slotAlign.tag} {variantProps.check.tag}`,
+				children = checkChildren,
+			}
 		end
 
-		viewChildren.Text = Text {
+		-- Build wrapper children
+		local wrapperChildren = {}
+
+		-- Leading node
+		if resolvedLeading ~= nil then
+			wrapperChildren.Leading = Accessory {
+				scope = innerScope,
+				LayoutOrder = 1,
+				accessory = resolvedLeading :: LeadingAccessory,
+				iconVariant = variantProps.icon,
+				size = currentSize,
+				tokens = tokens,
+			}
+		elseif alignmentHasLeading then
+			wrapperChildren.Leading = View {
+				scope = innerScope,
+				LayoutOrder = 1,
+				tag = `{variantProps.slotAlign.tag} {variantProps.icon.tag}`,
+			}
+		end
+
+		-- Title node
+		wrapperChildren.Title = Text {
 			scope = innerScope,
-			Text = currentText,
+			Text = props.text,
 			LayoutOrder = 2,
-			tag = currentVariantProps.text.tag,
+			tag = variantProps.text.tag,
 		}
 
+		-- Trailing node
 		if isSubmenu then
-			viewChildren.Chevron = Icon {
+			wrapperChildren.Trailing = Icon {
 				scope = innerScope,
 				name = BuilderIcons.Icon.ChevronSmallRight,
 				LayoutOrder = 3,
-				style = currentVariantProps.check.style,
-				size = currentVariantProps.chevron.size
+				style = variantProps.check.style,
+				size = variantProps.chevron.size,
 			}
-		elseif isChecked then
-			viewChildren.Check = Icon {
+		elseif resolvedTrailing ~= nil then
+			wrapperChildren.Trailing = Accessory {
 				scope = innerScope,
-				name = BuilderIcons.Icon.Check,
 				LayoutOrder = 3,
-				style = currentVariantProps.check.style,
-				size = currentVariantProps.check.size
+				accessory = resolvedTrailing :: TrailingAccessory,
+				iconVariant = variantProps.icon,
+				size = currentSize,
+				tokens = tokens,
 			}
 		end
-		
+
+		-- Wrapper
+		viewChildren.Wrapper = View {
+			scope = innerScope,
+			LayoutOrder = 2,
+			tag = "auto-xy",
+			flexItem = { FlexMode = Enum.UIFlexMode.Fill },
+			layout = {
+				FillDirection = Enum.FillDirection.Horizontal,
+				HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween,
+				VerticalAlignment = Enum.VerticalAlignment.Center,
+				Padding = UDim.new(0, wrapperGap),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			},
+			children = wrapperChildren,
+		}
+
 		local viewProps = withCommonProps(props, {
 			scope = innerScope,
-			GroupTransparency = if isDisabled then Constants.DISABLED_TRANSPARENCY else nil,
-			isDisabled = isDisabled,
+			GroupTransparency = groupTransparency,
+			isDisabled = props.isDisabled,
 			onActivated = onActivated,
-			selection = { Selectable = not isDisabled },
+			selection = { Selectable = selectable },
 			cursor = cursor,
-			tag = currentVariantProps.container.tag,
-			children = viewChildren
+			tag = variantProps.container.tag,
+			padding = containerPadding,
+			layout = containerLayout,
+			children = viewChildren,
 		})
-		
+
 		local itemElement = unwrap(View(viewProps))
 		itemRef:set(itemElement)
 
@@ -274,15 +329,37 @@ return function(menuItemProps: BaseMenuItemProps)
 		end
 
 		local strokeThickness = tokens.Stroke.Standard
-		local groupPadding = currentVariantProps.groupPadding.size
-		
-		local wrappedChildren = unwrap(props.children, use)
+		local groupPadding = variantProps.groupPadding.size
+
+		local submenuContent
+		if isSubmenuScrollable then
+			submenuContent = BaseMenuScrollContainer {
+				scope = innerScope,
+				maxHeight = currentMaxHeight,
+				scrollViewProps = {
+					tag = variantProps.submenuContent.tag,
+					InputSink = InputSinkAll,
+				},
+				children = rawChildren,
+			}
+		else
+			local submenuChildren = rawChildren
+			if type(submenuChildren) == "function" then
+				submenuChildren = submenuChildren(innerScope)
+			end
+			submenuContent = View {
+				scope = innerScope,
+				tag = variantProps.submenuContent.tag,
+				InputSink = InputSinkAll,
+				children = submenuChildren,
+			}
+		end
 
 		local fragmentChildren = {
 			Item = innerScope:Hydrate(itemElement)(stripProps(props, COMPONENT_ONLY_PROPERTIES)),
 			Submenu = Popover.Root {
 				scope = innerScope,
-				isOpen = isOpen,
+				isOpen = props.isOpen,
 				children = {
 					Anchor = Popover.Anchor {
 						scope = innerScope,
@@ -300,18 +377,13 @@ return function(menuItemProps: BaseMenuItemProps)
 						},
 						hasArrow = false,
 						onPressedOutside = onSubmenuPressedOutside,
-						backgroundStyle = tokens.Color.Surface.Surface_100,
+						backgroundStyle = tokens.Color.Surface.Surface_200,
 						radius = Radius.Medium,
 						children = {
-							MenuContainer = View {
-								scope = innerScope,
-								tag = "col auto-xy stroke-standard stroke-default radius-medium",
-								InputSink = InputSinkAll,
-								children = wrappedChildren
-							}
+							MenuContainer = submenuContent
 						}
-					}
-				}
+					},
+				},
 			}
 		}
 

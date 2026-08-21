@@ -7,6 +7,7 @@ local Components = Foundation.Components
 local DeclarativeBaseMenuContent = require(script.Parent.DeclarativeBaseMenuContent)
 local useSubmenuHover = require(script.Parent.useSubmenuHover)
 local computeAutomaticSize = require(script.Parent.computeAutomaticSize)
+local BaseMenuContext = require(script.Parent.BaseMenuContext)
 
 local ScrollView = require(Components.ScrollView)
 local View = require(Components.View)
@@ -78,17 +79,14 @@ export type BaseMenuProps<Item = BaseMenuItem> = {
 	-- Maximum height after which the menu starts scrolling
 	maxHeight: UsedAs<number?>,
 	-- Radius of the menu
-	radius: Radius?,
+	radius: UsedAs<Radius>?,
 } & Types.CommonProps
 
 local function BaseMenu(baseMenuProps: BaseMenuProps)
 	local scope = baseMenuProps.scope
 	assert(scope, "A scope has not been provided for the BaseMenu component.")
 
-	local isVisible = scope:Value(false)
-	task.defer(function()
-		isVisible:set(true)
-	end)
+	local isVisible = scope:Value(true)
 
 	local defaultWithVisible = table.clone(defaultProps)
 	defaultWithVisible.Visible = isVisible
@@ -98,83 +96,126 @@ local function BaseMenu(baseMenuProps: BaseMenuProps)
 	local hasLeading = scope:Value(false)
 	local submenuHover = useSubmenuHover(scope)
 
-	local function setHasLeading()
-		hasLeading:set(true)
-	end
+	local contextValue = {
+		onActivated = props.onActivated,
+		onNestedLeafActivated = props.onNestedLeafActivated,
+		size = props.size,
+		hasLeading = hasLeading,
+		hoverOpenPath = submenuHover.openPath,
+		hoverOpenAtDepth = submenuHover.openAtDepth,
+		hoverCloseAtDepth = submenuHover.closeAtDepth,
+		hoverReset = submenuHover.reset,
+		maxHeight = props.maxHeight,
+		depth = 1
+	}
 
 	local function onContentAbsoluteSizeChanged(newSize: Vector2)
 		canvasSize:set(UDim2.fromOffset(newSize.X, newSize.Y))
 	end
 
-	return scope:Computed(function(use: Use, innerScope: Scope)
+	local useScrollView = scope:Computed(function(use)
+		return unwrap(props.maxHeight, use) ~= nil
+	end)
+
+	local autoSizeValue = scope:Computed(function(use)
+		local currentWidth = unwrap(props.width, use)
+		local currentCouldGrow = unwrap(props.couldGrow, use)
+		local scaledMaxWidth = useScaledValue(MAX_WIDTH, use)
+		return not currentWidth or (currentCouldGrow and currentWidth.Offset < scaledMaxWidth)
+	end)
+
+	local sizeConstraint = scope:Computed(function(use)
+		local currentWidth = unwrap(props.width, use)
+		local scaledMinWidth = useScaledValue(MIN_WIDTH, use)
+		local scaledMaxWidth = useScaledValue(MAX_WIDTH, use)
+		local autoSize = unwrap(autoSizeValue, use)
+		if not autoSize then return nil end
+		local minWidthValue = if currentWidth then currentWidth.Offset else scaledMinWidth
+		return {
+			MinSize = Vector2.new(minWidthValue, 0),
+			MaxSize = Vector2.new(scaledMaxWidth, math.huge),
+		}
+	end)
+
+	local contentAutomaticSize = scope:Computed(function(use)
+		return if unwrap(autoSizeValue, use) then Enum.AutomaticSize.XY else Enum.AutomaticSize.Y
+	end)
+
+	local scrollAutomaticSize = scope:Computed(function(use)
+		local autoSize = unwrap(autoSizeValue, use)
+		local currentMaxHeight = unwrap(props.maxHeight, use)
+		local currentCanvasSize = unwrap(canvasSize, use)
+		local isOverMaxHeight = currentMaxHeight ~= nil and currentCanvasSize.Y.Offset > currentMaxHeight
+		return computeAutomaticSize({
+			autoSize = autoSize,
+			isOverMaxHeight = isOverMaxHeight,
+		})
+	end)
+
+	local scrollSize = scope:Computed(function(use)
+		local autoSize = unwrap(autoSizeValue, use)
 		local currentWidth = unwrap(props.width, use)
 		local currentMaxHeight = unwrap(props.maxHeight, use)
 		local currentCanvasSize = unwrap(canvasSize, use)
-		local currentCouldGrow = unwrap(props.couldGrow, use)
-
-		local scaledMinWidth = useScaledValue(MIN_WIDTH, use)
-		local scaledMaxWidth = useScaledValue(MAX_WIDTH, use)
-
-		local minWidthValue = if currentWidth then currentWidth.Offset else scaledMinWidth
-		local autoSizeValue = not currentWidth or (currentCouldGrow and currentWidth.Offset < scaledMaxWidth)
-
-		local sizeConstraint = {
-			MinSize = if autoSizeValue then Vector2.new(minWidthValue, 0) else nil,
-			MaxSize = if autoSizeValue then Vector2.new(scaledMaxWidth, math.huge) else nil,
-		}
-
 		local isOverMaxHeight = currentMaxHeight ~= nil and currentCanvasSize.Y.Offset > currentMaxHeight
+		return computeSize {
+			autoSize = autoSize,
+			width = currentWidth,
+			isOverMaxHeight = isOverMaxHeight,
+			maxHeight = currentMaxHeight,
+		}
+	end)
 
-		local menuChildren = props.children
-		if not menuChildren and unwrap(props.items, use) then
+	local viewSize = scope:Computed(function(use)
+		local autoSize = unwrap(autoSizeValue, use)
+		if autoSize then return UDim2.new() end
+		local currentWidth = unwrap(props.width, use)
+		return UDim2.new(currentWidth, UDim.new())
+	end)
+
+	return scope:Computed(function(use: Use, innerScope: Scope)
+		local shouldUseScrollView = unwrap(useScrollView, use)
+		local currentSizeConstraint = unwrap(sizeConstraint, use)
+		local radius = unwrap(props.radius, use)
+		local radiusTag = if radius ~= nil then radiusToTag[radius] or "" else ""
+
+		local menuChildren = unwrap(props.children, use)
+
+		if not menuChildren and props.items then
 			menuChildren = {
-				DeclarativeBaseMenuContent {
-					scope = innerScope,
-					items = props.items,
-					onActivatedContext = props.onActivated,
-					onNestedLeafActivated = props.onNestedLeafActivated,
-					size = props.size,
-					hasLeading = hasLeading,
-					setHasLeading = setHasLeading,
-					hoverOpenPath = submenuHover.openPath,
-					hoverOpenAtDepth = submenuHover.openAtDepth,
-					hoverCloseAtDepth = submenuHover.closeAtDepth,
-					hoverReset = submenuHover.reset,
-					depth = 1,
-				},
+				BaseMenuContext:is(contextValue):during(function()
+					return DeclarativeBaseMenuContent {
+						scope = innerScope,
+						items = props.items,
+					}
+				end)
 			}
 		end
-		
-		local radiusTag = if props.radius ~= nil then radiusToTag[props.radius] or "" else ""
 
-		if currentMaxHeight then
-			local automaticSize = computeAutomaticSize({
-				autoSize = autoSizeValue,
-				isOverMaxHeight = isOverMaxHeight,
-			})
+		if type(menuChildren) == "function" then
+			menuChildren = BaseMenuContext:is(contextValue):during(function()
+				return menuChildren(innerScope)
+			end)
+		end
 
+		if shouldUseScrollView then
 			return ScrollView(withCommonProps(props, {
 				scope = innerScope,
 				scroll = {
-					AutomaticSize = automaticSize,
+					AutomaticSize = scrollAutomaticSize,
 					ScrollingDirection = Enum.ScrollingDirection.Y,
 					CanvasSize = canvasSize,
 				},
-				AutomaticSize = automaticSize,
-				Size = computeSize {
-					autoSize = autoSizeValue,
-					width = currentWidth,
-					isOverMaxHeight = isOverMaxHeight,
-					maxHeight = currentMaxHeight,
-				},
-				sizeConstraint = sizeConstraint,
+				AutomaticSize = scrollAutomaticSize,
+				Size = scrollSize,
+				sizeConstraint = currentSizeConstraint,
 				tag = `stroke-standard stroke-default {radiusTag}`,
 				children = {
 					View {
 						scope = innerScope,
 						tag = "col size-full",
 						Size = UDim2.fromScale(1, 0),
-						AutomaticSize = if autoSizeValue then Enum.AutomaticSize.XY else Enum.AutomaticSize.Y,
+						AutomaticSize = contentAutomaticSize,
 						onAbsoluteSizeChanged = onContentAbsoluteSizeChanged,
 						children = menuChildren,
 					}
@@ -184,10 +225,10 @@ local function BaseMenu(baseMenuProps: BaseMenuProps)
 			return View(withCommonProps(props, {
 				scope = innerScope,
 				tag = `col stroke-standard stroke-default {radiusTag}`,
-				AutomaticSize = if autoSizeValue then Enum.AutomaticSize.XY else Enum.AutomaticSize.Y,
-				Size = if autoSizeValue then nil else UDim2.new(currentWidth, UDim.new()),
-				sizeConstraint = sizeConstraint,
-				children = menuChildren,
+				AutomaticSize = contentAutomaticSize,
+				Size = viewSize,
+				sizeConstraint = currentSizeConstraint,
+				children = menuChildren
 			}))
 		end
 	end)
