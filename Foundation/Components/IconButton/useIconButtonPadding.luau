@@ -7,21 +7,17 @@ local Types = require(Utility.Types)
 
 local IconSize = require(Enums.IconSize)
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
-type Scope = Types.Scope
 type UsedAs<T> = Types.UsedAs<T>
+type Scope = Types.Scope
 type Use = Types.Use
 
 type IconSize = IconSize.IconSize
 
 local function useIconButtonPadding(
 	size: IconSize,
-	isBuilderIcon: boolean
+	isBuilderIcon: boolean,
+	tokens: {[string]: any}
 ): number
-	local Theme = ThemeProvider()
-	local tokens = unwrap(Theme.Tokens)
- 	  	
 	local iconButtonPaddings = if isBuilderIcon
 		then {
 			[IconSize.XSmall :: IconSize] = tokens.Size.Size_150,

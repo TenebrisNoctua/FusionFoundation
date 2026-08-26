@@ -5,21 +5,24 @@ local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
 local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
-local getOriginalBackgroundStyle = require(script.getOriginalBackgroundStyle)
 local getStateLayerStyle = require(script.getStateLayerStyle)
+local getOriginalBackgroundStyle = require(script.getOriginalBackgroundStyle)
 
-local useGuiControlState = require(Utility.Control.useGuiControlState)
-local withDefaults = require(Utility.withDefaults)
-local blendColors = require(Utility.blendColors)
-local stripProps = require(Utility.stripProps)
-local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
+local isState = require(Utility.isState)
+local stripProps = require(Utility.stripProps)
+local blendColors = require(Utility.blendColors)
+local withDefaults = require(Utility.withDefaults)
+local useGuiControlState = require(Utility.Control.useGuiControlState)
 local Types = require(Utility.Types)
 
-local StateLayerAffordance = require(Foundation.Enums.StateLayerAffordance)
-local StateLayerMode = require(Foundation.Enums.StateLayerMode)
-local ControlState = require(Foundation.Enums.ControlState)
+local StateLayerAffordance = require(Enums.StateLayerAffordance)
+local StateLayerMode = require(Enums.StateLayerMode)
+local ControlState = require(Enums.ControlState)
+
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 local DEFAULT_GRAY = Color3.fromRGB(163, 162, 165)
 
@@ -39,6 +42,8 @@ local defaultProps = {
 	isDisabled = false
 }
 
+local OnEvent = Fusion.OnEvent
+
 --[[
 	The behavior for isDisabled can depend if whether or not it's a state object.
 	If it's a plain boolean, then isDisabled is used as one would expect, boolean true disables the component.
@@ -50,8 +55,6 @@ local function getIsDisabled(isDisabled: UsedAs<boolean>, isDisabledAState: bool
 	if not isDisabledAState then return isDisabledValue end
 	return not isDisabledValue
 end
-
-local OnEvent = Fusion.OnEvent
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
@@ -65,25 +68,23 @@ type ColorStyle = Types.ColorStyle
 type ColorStyleValue = Types.ColorStyleValue
 
 export type InteractableProps = {
-	-- The component to render. After deprecation, many `BaseInteractableProps` could support states.
-	component: (Instance | string)?,
-	
 	-- The scope to render the component in.
 	scope: Scope,
-
+	-- The component to render. After deprecation, many `BaseInteractableProps` could support states.
+	component: (Instance | string)?,
 	-- Interactable passes on any other props to the component
-	[any]: any,
+	[any]: any
 } & Types.BaseInteractableProps
 
 return function(interactableProps: InteractableProps)
-	local Scope = interactableProps.scope
-	assert(Scope, "A scope has not been provided for the Interactable component.")
+	local scope = interactableProps.scope
+	local theme = ThemeProvider()
+	assert(scope, "A scope has not been provided for the Interactable component.")
 
 	local props = withDefaults(interactableProps, defaultProps)
-	
-	local guiObjectRef = Scope:Value(nil :: GuiObject)
-	local realBackgroundStyle = Scope:Value(nil :: ColorStyle)
-	local controlState = Scope:Value(ControlState.Initialize)
+	local guiObjectRef = scope:Value(nil :: GuiObject)
+	local realBackgroundStyle = scope:Value(nil :: ColorStyle)
+	local controlState = scope:Value(ControlState.Initialize)
 	
 	local isDisabledAState = isState(props.isDisabled)
 	
@@ -134,16 +135,16 @@ return function(interactableProps: InteractableProps)
 				then realBgStyle.Transparency
 				else nil
 		end
-
-		local stateLayerStyle = getStateLayerStyle(mode, guiState)
+		
+		local stateLayerStyle = getStateLayerStyle(unwrap(theme.Tokens), mode, guiState)
 		return blendColors(finalBackgroundStyle, stateLayerStyle)
 	end
 	
-	local originalBackgroundStyle = Scope:Computed(function(use: Use) 
+	local originalBackgroundStyle = scope:Computed(function(use: Use) 
 		return getOriginalBackgroundStyle(unwrap(props.BackgroundColor3, use), unwrap(props.BackgroundTransparency, use))
 	end)
 	
-	useGuiControlState(Scope, guiObjectRef, onStateChanged)
+	useGuiControlState(scope, guiObjectRef, onStateChanged)
 	
 	local interactableComponentProps = {}
 	local hasExplicitBackground = unwrap(props.BackgroundColor3) ~= nil and unwrap(props.BackgroundTransparency) ~= nil
@@ -159,27 +160,27 @@ return function(interactableProps: InteractableProps)
 	]]
 
 	if hasExplicitBackground then
-		interactableComponentProps.BackgroundColor3 = Scope:Computed(function(use: Use, innerScope: Scope)
+		interactableComponentProps.BackgroundColor3 = scope:Computed(function(use: Use, innerScope: Scope)
 			local mode = if props.stateLayer then props.stateLayer.mode else nil
 			local affordance = if props.stateLayer then props.stateLayer.affordance else nil
 			local backgroundStyle = getBackgroundStyle(unwrap(controlState, use), unwrap(originalBackgroundStyle, use), mode, affordance)
 			return backgroundStyle.Color3
 		end)
 
-		interactableComponentProps.BackgroundTransparency = Scope:Computed(function(use: Use, innerScope: Scope)
+		interactableComponentProps.BackgroundTransparency = scope:Computed(function(use: Use, innerScope: Scope)
 			local mode = if props.stateLayer then props.stateLayer.mode else nil
 			local affordance = if props.stateLayer then props.stateLayer.affordance else nil
 			local backgroundStyle = getBackgroundStyle(unwrap(controlState, use), unwrap(originalBackgroundStyle, use), mode, affordance)
 			return backgroundStyle.Transparency
 		end)
 	else
-		local bgStyleComputed = Scope:Computed(function(use: Use)
+		local bgStyleComputed = scope:Computed(function(use: Use)
 			local mode = if props.stateLayer then props.stateLayer.mode else nil
 			local affordance = if props.stateLayer then props.stateLayer.affordance else nil
 			return getBackgroundStyle(unwrap(controlState, use), unwrap(originalBackgroundStyle, use), mode, affordance)
 		end)
 
-		Scope:Observer(bgStyleComputed):onChange(function()
+		scope:Observer(bgStyleComputed):onChange(function()
 			local guiObject = unwrap(guiObjectRef)
 			if not guiObject then return end
 
@@ -215,5 +216,5 @@ return function(interactableProps: InteractableProps)
 	end else nil
 	
 	local mergedProps = stripProps(Dash.union(props, interactableComponentProps), COMPONENT_ONLY_PROPERTIES)
-	return guiObjectRef:set(Scope:New(props.component)(mergedProps))
+	return guiObjectRef:set(scope:New(props.component)(mergedProps))
 end

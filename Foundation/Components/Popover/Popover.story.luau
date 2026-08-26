@@ -11,14 +11,16 @@ local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
 local Popover = require(script.Parent)
+local PopoverRoot = Popover.Root
 local PopoverAnchor = Popover.Anchor
 local PopoverContent = Popover.Content
 local useMeasurableRef = require(script.Parent.useMeasurableRef)
 
-local ScrollView = require(Components.ScrollView)
 local View = require(Components.View)
-local Button = require(Components.Button)
 local Text = require(Components.Text)
+local Button = require(Components.Button)
+local Fragment = require(Components.Fragment)
+local ScrollView = require(Components.ScrollView)
 
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
@@ -59,7 +61,6 @@ local function StoryBasic(props)
 	local theme = props.theme
 	local controls = props.controls
 
-	local anchor = scope:Value(nil)
 	local isOpen = scope:Value(true)
 	local backgroundStyle = getBackgroundStyle(scope, theme, controls.backgroundStyle)
 
@@ -69,60 +70,55 @@ local function StoryBasic(props)
 		tag = "row align-x-center align-y-center",
 		LayoutOrder = props.layoutOrder,
 		children = {
-			PopoverAnchor {
+			PopoverRoot {
 				scope = scope,
-				anchor = anchor,
 				isOpen = isOpen,
-				children = {
-					View {
-						scope = scope,
-						tag = "col gap-large auto-xy padding-large stroke-neutral radius-medium bg-surface-100",
-						backgroundStyle = {
-							Transparency = 0	
-						},
-						children = {
-							Text {
-								scope = scope,
-								Text = "I am a card",
-								tag = "auto-xy text-heading-medium",
-							},
-							Button {
-								scope = scope,
-								text = "Just a button!",
-								size = InputSize.Medium,
-								onActivated = function()
-									print("Button activated")
-								end,
-							},
+				children = Fragment {
+					{PopoverAnchor, {
+						children = Fragment {
+							{View, {
+								tag = "col gap-large auto-xy padding-large stroke-neutral radius-medium bg-surface-100",
+								backgroundStyle = {
+									Transparency = 0	
+								},
+								children = Fragment {
+									{Text, {
+										Text = "I am a card",
+										tag = "auto-xy text-heading-medium"
+									}},
+									{Button, {
+										text = "Just a button!",
+										size = InputSize.Medium,
+										onActivated = function()
+											print("Button activated")
+										end
+									}}
+								}
+							}}
 						}
-					}
-				}
-			},
-			PopoverContent {
-				scope = scope,
-				anchor = anchor,
-				isOpen = isOpen,
-				align = controls.align,
-				side = controls.side,
-				backgroundStyle = backgroundStyle,
-				radius = controls.radius,
-				children = {
-					View {
-						scope = scope,
-						tag = "col gap-small auto-xy padding-medium",
+					}},
+					{PopoverContent, {
+						align = controls.align,
+						side = controls.side,
+						backgroundStyle = backgroundStyle,
+						radius = controls.radius,
 						children = {
-							Text {
+							View {
 								scope = scope,
-								Text = "Tooltip Title",
-								tag = "auto-xy text-title-medium content-emphasis",
-							},
-							Text {
-								scope = scope,
-								Text = "Here's the tooltip's subtitle and content.",
-								tag = "auto-xy text-body-small",
-							},
+								tag = "col gap-small auto-xy padding-medium",
+								children = Fragment {
+									{Text, {
+										Text = "Tooltip Title",
+										tag = "auto-xy text-title-medium content-emphasis",
+									}},
+									{Text, {
+										Text = "Here's the tooltip's subtitle and content.",
+										tag = "auto-xy text-body-small"
+									}}
+								}
+							}
 						}
-					}
+					}}
 				}
 			}
 		}
@@ -133,7 +129,6 @@ local function StoryClickOutside(props)
 	local scope = props.scope
 	local controls = props.controls
 
-	local anchor = scope:Value(nil)
 	local open = scope:Value(false)
 
 	return View {
@@ -141,63 +136,65 @@ local function StoryClickOutside(props)
 		tag = "row align-x-center align-y-center size-full-0 auto-y",
 		LayoutOrder = props.layoutOrder,
 		children = {
-			PopoverAnchor {
+			PopoverRoot {
 				scope = scope,
-				anchor = anchor,
 				isOpen = open,
-				children = {
-					View {
-						scope = scope,
-						tag = "col gap-large auto-xy padding-large stroke-neutral radius-medium bg-surface-100",
-						backgroundStyle = {
-							Transparency = 0	
-						},
+				children = function(innerScope) return {
+					PopoverAnchor {
+						scope = innerScope,
 						children = {
-							Text {
+							View {
 								scope = scope,
-								Text = "I am a card",
-								tag = "auto-xy text-heading-medium",
-							},
-							Button {
-								scope = scope,
-								text = "Click me to toggle!",
-								size = InputSize.Medium,
-								onActivated = function()
-									open:set(not unwrap(open))
-								end,
-							},
+								tag = "col gap-large auto-xy padding-large stroke-neutral radius-medium bg-surface-100",
+								backgroundStyle = {
+									Transparency = 0	
+								},
+								children = {
+									Text {
+										scope = scope,
+										Text = "I am a card",
+										tag = "auto-xy text-heading-medium",
+									},
+									Button {
+										scope = scope,
+										text = "Click me to toggle!",
+										size = InputSize.Medium,
+										onActivated = function()
+											open:set(not unwrap(open))
+										end,
+									},
+								}
+							}
 						}
-					}
-				}
-			},
-			PopoverContent {
-				scope = scope,
-				anchor = anchor,
-				isOpen = open,
-				align = controls.align,
-				side = controls.side,
-				onPressedOutside = function()
-					open:set(false)
-				end,
-				children = {
-					View {
-						Name = "ContentFrame",
-						scope = scope,
-						tag = "col gap-small auto-xy padding-medium",
+					},
+					PopoverContent {
+						scope = innerScope,
+						align = controls.align,
+						side = controls.side,
+						onPressedOutside = function()
+							open:set(false)
+						end,
 						children = {
-							Text {
+							View {
+								Name = "ContentFrame",
 								scope = scope,
-								Text = "Click outside example",
-								tag = "auto-xy text-title-medium content-emphasis",
-							},
-							Text {
-								scope = scope,
-								Text = "Click anywhere outside to close this",
-								tag = "auto-xy text-body-small",
-							},
+								tag = "col gap-small auto-xy padding-medium",
+								children = {
+									Text {
+										scope = scope,
+										Text = "Click outside example",
+										tag = "auto-xy text-title-medium content-emphasis",
+									},
+									Text {
+										scope = scope,
+										Text = "Click anywhere outside to close this",
+										tag = "auto-xy text-body-small",
+									},
+								}
+							}
 						}
-					}
-				}
+					},
+				} end
 			},
 		}
 	}
@@ -215,7 +212,6 @@ local function StoryAnchorRef(props)
 	local scope = props.scope
 	local controls = props.controls
 
-	local anchor = scope:Value(nil)
 	local open = scope:Value(false)
 
 	local buttonInstance = unwrap(Button {
@@ -234,39 +230,41 @@ local function StoryAnchorRef(props)
 		LayoutOrder = props.layoutOrder,
 		children = {
 			buttonInstance,
-			PopoverAnchor {
+			PopoverRoot {
 				scope = scope,
-				anchor = anchor,
 				isOpen = open,
-				anchorInstance = buttonInstance,
-			},
-			PopoverContent {
-				scope = scope,
-				anchor = anchor,
-				isOpen = open,
-				align = controls.align,
-				side = controls.side,
-				onPressedOutside = function()
-					open:set(false)
-				end,
-				children = {
-					View {
-						scope = scope,
-						tag = "col gap-small auto-xy padding-medium",
+				children = function(innerScope) return {
+					PopoverAnchor {
+						scope = innerScope,
+						anchorInstance = buttonInstance,
+					},
+					PopoverContent {
+						scope = innerScope,
+						align = controls.align,
+						side = controls.side,
+						onPressedOutside = function()
+							open:set(false)
+						end,
 						children = {
-							Text {
+							View {
 								scope = scope,
-								Text = "Anchor Reference Example",
-								tag = "auto-xy text-title-medium content-emphasis",
-							},
-							Text {
-								scope = scope,
-								Text = "This popover is anchored to a button using anchorInstance",
-								tag = "auto-xy text-body-small",
-							},
+								tag = "col gap-small auto-xy padding-medium",
+								children = {
+									Text {
+										scope = scope,
+										Text = "Anchor Reference Example",
+										tag = "auto-xy text-title-medium content-emphasis",
+									},
+									Text {
+										scope = scope,
+										Text = "This popover is anchored to a button using anchorInstance",
+										tag = "auto-xy text-body-small",
+									},
+								}
+							}
 						}
-					}
-				}
+					},
+				} end
 			},
 		}
 	}
@@ -277,7 +275,6 @@ local function StoryKeyboardAware(props)
 	local scope = props.scope
 	local controls = props.controls
 
-	local anchor = scope:Value(nil)
 	local open = scope:Value(false)
 
 	return View {
@@ -293,57 +290,59 @@ local function StoryKeyboardAware(props)
 					bottom = UDim.new(0, 500),
 				},
 			},
-			PopoverAnchor {
+			PopoverRoot {
 				scope = scope,
-				anchor = anchor,
 				isOpen = open,
-				children = {
-					View {
-						scope = scope,
-						tag = "col gap-medium auto-xy",
+				children = function(innerScope) return {
+					PopoverAnchor {
+						scope = innerScope,
 						children = {
-							Button {
+							View {
 								scope = scope,
-								text = scope:Computed(function(use: Use)
-									return if unwrap(open, use) then "Close Popover" else "Open Popover"
-								end),
-								size = InputSize.Medium,
-								onActivated = function()
-									open:set(not unwrap(open))
-								end,
-							},
+								tag = "col gap-medium auto-xy",
+								children = {
+									Button {
+										scope = scope,
+										text = scope:Computed(function(use: Use)
+											return if unwrap(open, use) then "Close Popover" else "Open Popover"
+										end),
+										size = InputSize.Medium,
+										onActivated = function()
+											open:set(not unwrap(open))
+										end,
+									},
+								}
+							}
 						}
-					}
-				}
-			},
-			PopoverContent {
-				scope = scope,
-				anchor = anchor,
-				isOpen = open,
-				side = PopoverSide.Bottom,
-				align = PopoverAlign.Start,
-				onPressedOutside = function()
-					open:set(false)
-				end,
-				children = {
-					View {
-						scope = scope,
-						tag = "col gap-small auto-xy padding-medium",
-						Size = UDim2.fromOffset(300, 0),
+					},
+					PopoverContent {
+						scope = innerScope,
+						side = PopoverSide.Bottom,
+						align = PopoverAlign.Start,
+						onPressedOutside = function()
+							open:set(false)
+						end,
 						children = {
-							Text {
+							View {
 								scope = scope,
-								Text = "Keyboard-Aware Popover",
-								tag = "auto-xy text-title-medium content-emphasis",
-							},
-							Text {
-								scope = scope,
-								Text = "This popover should avoid the on-screen keyboard on touch devices.",
-								tag = "auto-xy text-body-small",
-							},
+								tag = "col gap-small auto-xy padding-medium",
+								Size = UDim2.fromOffset(300, 0),
+								children = {
+									Text {
+										scope = scope,
+										Text = "Keyboard-Aware Popover",
+										tag = "auto-xy text-title-medium content-emphasis",
+									},
+									Text {
+										scope = scope,
+										Text = "This popover should avoid the on-screen keyboard on touch devices.",
+										tag = "auto-xy text-body-small",
+									},
+								}
+							}
 						}
-					}
-				}
+					},
+				} end
 			},
 		}
 	}
@@ -354,7 +353,6 @@ local function StoryMousePositionTooltip(props)
 	local scope = props.scope
 	local controls = props.controls
 
-	local anchor = scope:Value(nil)
 	local open = scope:Value(false)
 	local virtualRef = useMeasurableRef(scope, Vector2.zero)
 
@@ -371,31 +369,33 @@ local function StoryMousePositionTooltip(props)
 				Text = "Move the mouse over this area to see a tooltip",
 				tag = "text-align-x-center auto-xy",
 			},
-			PopoverAnchor {
+			PopoverRoot {
 				scope = scope,
-				anchor = anchor,
 				isOpen = open,
-				anchorInstance = virtualRef,
-			},
-			PopoverContent {
-				scope = scope,
-				anchor = anchor,
-				isOpen = open,
-				align = controls.align,
-				side = controls.side,
-				children = {
-					View {
-						scope = scope,
-						tag = "col gap-small auto-xy padding-medium",
+				children = function(innerScope) return {
+					PopoverAnchor {
+						scope = innerScope,
+						anchorInstance = virtualRef,
+					},
+					PopoverContent {
+						scope = innerScope,
+						align = controls.align,
+						side = controls.side,
 						children = {
-							Text {
+							View {
 								scope = scope,
-								Text = "Can't close unless you are in the area",
-								tag = "auto-xy text-title-medium content-emphasis",
-							},
+								tag = "col gap-small auto-xy padding-medium",
+								children = {
+									Text {
+										scope = scope,
+										Text = "Can't close unless you are in the area",
+										tag = "auto-xy text-title-medium content-emphasis",
+									},
+								}
+							}
 						}
-					}
-				}
+					},
+				} end
 			},
 		}
 	})
@@ -421,7 +421,6 @@ local function StoryContextMenu(props)
 	local scope = props.scope
 	local controls = props.controls
 
-	local anchor = scope:Value(nil)
 	local open = scope:Value(false)
 	local virtualRef = useMeasurableRef(scope, Vector2.zero)
 
@@ -443,39 +442,41 @@ local function StoryContextMenu(props)
 				Text = "Right-click on this area to open the context menu.",
 				tag = "size-full-full text-align-x-center",
 			},
-			PopoverAnchor {
+			PopoverRoot {
 				scope = scope,
-				anchor = anchor,
 				isOpen = open,
-				anchorInstance = virtualRef,
-			},
-			PopoverContent {
-				scope = scope,
-				anchor = anchor,
-				isOpen = open,
-				align = controls.align,
-				side = controls.side,
-				onPressedOutside = function()
-					open:set(false)
-				end,
-				children = {
-					View {
-						scope = scope,
-						tag = "col gap-small auto-xy padding-medium",
+				children = function(innerScope) return {
+					PopoverAnchor {
+						scope = innerScope,
+						anchorInstance = virtualRef,
+					},
+					PopoverContent {
+						scope = innerScope,
+						align = controls.align,
+						side = controls.side,
+						onPressedOutside = function()
+							open:set(false)
+						end,
 						children = {
-							Text {
+							View {
 								scope = scope,
-								Text = "Context Menu",
-								tag = "auto-xy text-title-medium content-emphasis",
-							},
-							Text {
-								scope = scope,
-								Text = "Right-click functionality enabled.",
-								tag = "auto-xy text-body-small",
-							},
+								tag = "col gap-small auto-xy padding-medium",
+								children = {
+									Text {
+										scope = scope,
+										Text = "Context Menu",
+										tag = "auto-xy text-title-medium content-emphasis",
+									},
+									Text {
+										scope = scope,
+										Text = "Right-click functionality enabled.",
+										tag = "auto-xy text-body-small",
+									},
+								}
+							}
 						}
-					}
-				}
+					},
+				} end
 			},
 		}
 	})

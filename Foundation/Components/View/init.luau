@@ -3,19 +3,21 @@ local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
 
+local Components = Foundation.Components
 local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
-local Interactable = require(Foundation.Components.Interactable)
+local Interactable = require(Components.Interactable)
 
-local stripProps = require(Utility.stripProps)
 local unwrap = require(Utility.unwrap)
+local stripProps = require(Utility.stripProps)
 local withDefaults = require(Utility.withDefaults)
-local withGuiObjectProps = require(Utility.withGuiObjectProps)
 local useDefaultTags = require(Utility.useDefaultTags)
-local GuiObjectChildren = require(Utility.GuiObjectChildren)
+local withGuiObjectProps = require(Utility.withGuiObjectProps)
 local Types = require(Utility.Types)
+local GuiObjectChildren = require(Utility.GuiObjectChildren)
 
-local ControlState = require(Foundation.Enums.ControlState)
+local ControlState = require(Enums.ControlState)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
@@ -59,18 +61,17 @@ type GuiObjectProps = Types.GuiObjectProps
 type CommonProps = Types.CommonProps
 export type ViewProps = Types.ViewProps
 
-
 return function(viewProps: ViewProps): UsedAs<Frame | CanvasGroup>
-	local Scope = viewProps.scope
-	local Theme = ThemeProvider()
-	assert(Scope, "A scope has not been provided for the View component.")
+	local scope = viewProps.scope
+	local theme = ThemeProvider()
+	assert(scope, "A scope has not been provided for the View component.")
 	
 	local props = withDefaults(viewProps, defaultProps)
 	local defaultTags = if props.backgroundStyle ~= nil then DEFAULT_TAGS_WITH_BG else DEFAULT_TAGS
 	
-	return Scope:Computed(function(use: Use, innerScope: Scope)
+	return scope:Computed(function(use: Use, innerScope: Scope)
 		local tagsWithDefaults = useDefaultTags(innerScope, props.tag, defaultTags)
-		local tag = useStyleTags(innerScope, tagsWithDefaults, Theme.AddTags)
+		local tag = useStyleTags(innerScope, tagsWithDefaults, theme.AddTags)
 		props.tag = unwrap(tag)
 
 		local isInteractable = props.onStateChanged ~= nil or props.onActivated ~= nil or props.onSecondaryActivated ~= nil
@@ -93,6 +94,10 @@ return function(viewProps: ViewProps): UsedAs<Frame | CanvasGroup>
 			end
 		end)
 		
+		if type(props.children) == "function" then
+			props.children = props.children(innerScope)
+		end
+		
 		local engineComponent = unwrap(engineComponentState, use)
 		local engineComponentProps = withGuiObjectProps(props, {
 			-- When CanvasGroup and Frame support all states, we can remove this.
@@ -104,7 +109,7 @@ return function(viewProps: ViewProps): UsedAs<Frame | CanvasGroup>
 		engineComponentProps[Children] = GuiObjectChildren(props)
 		
 		if isInteractable then
-			engineComponentProps.scope = Scope
+			engineComponentProps.scope = scope
 			engineComponentProps.component = engineComponent
 			engineComponentProps.onActivated = props.onActivated
 			engineComponentProps.onSecondaryActivated = props.onSecondaryActivated
@@ -112,9 +117,9 @@ return function(viewProps: ViewProps): UsedAs<Frame | CanvasGroup>
 			engineComponentProps.stateLayer = props.stateLayer
 			engineComponentProps.isDisabled = props.isDisabled
 			engineComponentProps.cursor = props.cursor
-			return Scope:Hydrate(Interactable(engineComponentProps))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+			return scope:Hydrate(Interactable(engineComponentProps))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 		end
 		
-		return Scope:Hydrate(Scope:New(engineComponent)(engineComponentProps))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+		return scope:Hydrate(scope:New(engineComponent)(engineComponentProps))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

@@ -1,16 +1,15 @@
 local Foundation = script.Parent.Parent.Parent.Parent
 
-local Enums = Foundation.Enums
 local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
 local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 
-local PopoverSide = require(Enums.PopoverSide)
 local Radius = require(Enums.Radius)
+local PopoverSide = require(Enums.PopoverSide)
 
 local Constants = require(Foundation.Constants)
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 local SHADOW_SIZE = Constants.SHADOW_SIZE
 
@@ -27,28 +26,25 @@ return function(
 	sidePosition: UsedAs<PopoverSide>,
 	radius: UsedAs<Radius>,
 	alignValue: UsedAs<number>,
-	arrowHeight: UsedAs<number>,
-	anchor: UsedAs<GuiBase2d?>
+	anchor: UsedAs<GuiBase2d?>,
+	arrowHeight: number,
+	tokens: {[string]: any}
 ): UsedAs<UDim2>
-	local themeProvider = ThemeProvider()
 	return scope:Computed(function(use: Use)
-		local currentTokens = unwrap(themeProvider.Tokens, use)
-
 		local currentSide = unwrap(sidePosition, use)
 		local currentRadius = unwrap(radius, use)
 		local currentAlignValue = unwrap(alignValue, use)
-		local currentArrowHeight = unwrap(arrowHeight, use)
 		local currentAnchor = unwrap(anchor, use)
 
 		local baseRadiusInset = 0
 		if currentRadius == Radius.XSmall then
-			baseRadiusInset = currentTokens.Size.Size_50
+			baseRadiusInset = tokens.Size.Size_50
 		elseif currentRadius == Radius.Small then
-			baseRadiusInset = currentTokens.Size.Size_100
+			baseRadiusInset = tokens.Size.Size_100
 		elseif currentRadius == Radius.Medium then
-			baseRadiusInset = currentTokens.Size.Size_200
+			baseRadiusInset = tokens.Size.Size_200
 		elseif currentRadius == Radius.Large then
-			baseRadiusInset = currentTokens.Size.Size_300
+			baseRadiusInset = tokens.Size.Size_300
 		end
 
 		local value = unwrap(contentSize, use)
@@ -60,7 +56,7 @@ return function(
 			radiusInset = math.min(contentWidth, contentHeight) / 2
 		end
 
-		local cornerInset = radiusInset + currentArrowHeight
+		local cornerInset = radiusInset + arrowHeight
 		local isVertical = currentSide == PopoverSide.Top or currentSide == PopoverSide.Bottom
 
 		local contentCrossSize = if isVertical then contentWidth else contentHeight
@@ -86,9 +82,9 @@ return function(
 				rawPosition = (intersectionStart + intersectionEnd) / 2
 			else
 				if contentCrossSize < anchorStartInContent then
-					rawPosition = contentCrossSize - currentArrowHeight
+					rawPosition = contentCrossSize - arrowHeight
 				else
-					rawPosition = currentArrowHeight
+					rawPosition = arrowHeight
 				end
 			end
 		else

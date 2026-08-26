@@ -7,11 +7,12 @@ local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
-local Button = require(Components.Button)
-local CloseAffordance = require(Components.CloseAffordance)
 local Text = require(Components.Text)
 local View = require(Components.View)
+local Button = require(Components.Button)
 local Popover = require(Components.Popover)
+local Fragment = require(Components.Fragment)
+local CloseAffordance = require(Components.CloseAffordance)
 
 local unwrap = require(Utility.unwrap)
 local withDefaults = require(Utility.withDefaults)
@@ -19,13 +20,13 @@ local useScaledValue = require(Utility.useScaledValue)
 local Types = require(Utility.Types)
 local Translator = require(Utility.Localization.Translator)
 
-local CloseAffordanceVariant = require(Enums.CloseAffordanceVariant)
-local ColorNamespace = require(Enums.ColorNamespace)
-local FillBehavior = require(Enums.FillBehavior)
-local InputSize = require(Enums.InputSize)
-local PopoverAlign = require(Enums.PopoverAlign)
-local PopoverSide = require(Enums.PopoverSide)
 local Radius = require(Enums.Radius)
+local InputSize = require(Enums.InputSize)
+local PopoverSide = require(Enums.PopoverSide)
+local PopoverAlign = require(Enums.PopoverAlign)
+local FillBehavior = require(Enums.FillBehavior)
+local ColorNamespace = require(Enums.ColorNamespace)
+local CloseAffordanceVariant = require(Enums.CloseAffordanceVariant)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
@@ -84,13 +85,13 @@ export type EducationalTooltipProps = {
 } & Types.CommonProps
 
 return function(educationalTooltipProps: EducationalTooltipProps)
-	local Scope = educationalTooltipProps.scope
-	local Theme = ThemeProvider()
-	assert(Scope, "A scope has not been provided for the EducationalTooltip component.")
+	local scope = educationalTooltipProps.scope
+	local theme = ThemeProvider()
+	assert(scope, "A scope has not been provided for the EducationalTooltip component.")
 	
 	local props = withDefaults(educationalTooltipProps, defaultProps)
-	return Scope:Computed(function(use: Use, innerScope: Scope) 
-		local tokens = unwrap(Theme.Tokens, use)
+	return scope:Computed(function(use: Use, innerScope: Scope) 
+		local tokens = unwrap(theme.Tokens, use)
 		local maxXSize = useScaledValue(320, use)
 		local side = unwrap(props.side, use)
 		local children = unwrap(props.children, use)
@@ -135,89 +136,95 @@ return function(educationalTooltipProps: EducationalTooltipProps)
 		return Popover.Root {
 			scope = innerScope,
 			isOpen = props.isOpen,
-			anchorInstance = props.anchorInstance,
-			anchorChildren = children,
-			hasArrow = true,
-			align = props.align,
-			side = {
-				position = side,
-				offset = tokens.Size.Size_200
-			},
-			radius = Radius.Medium,
-			backgroundStyle = tokens.Inverse.Surface.Surface_0,
-			selection = props.selection,
-			selectionGroup = props.selectionGroup,
-			contentChildren = {
-				if props.onClose then 
-					CloseAffordance {
-						scope = innerScope,
-						onActivated = props.onClose,
-						size = InputSize.Small,
-						variant = CloseAffordanceVariant.Utility,
-						colorNamespace = ColorNamespace.Inverse,
-						Position = UDim2.new(1, -tokens.Padding.Small, 0, tokens.Padding.Small),
-						AnchorPoint = Vector2.new(1, 0), -- Top-right anchor
-						ZIndex = 2
-					}
-					else nil,
-				View {
-					scope = innerScope,
-					tag = "col gap-medium auto-xy padding-bottom-medium",
-					sizeConstraint = {
-						MaxSize = Vector2.new(maxXSize, math.huge),
+			children = Fragment {
+				{Popover.Anchor, {
+					anchorInstance = props.anchorInstance,
+					children = children and { children } or nil,
+				}},
+				{Popover.Content, {
+					hasArrow = true,
+					align = props.align,
+					side = {
+						position = side,
+						offset = tokens.Size.Size_200
 					},
+					radius = Radius.Medium,
+					backgroundStyle = tokens.Inverse.Surface.Surface_0,
+					selection = props.selection,
+					selectionGroup = props.selectionGroup,
 					children = {
-						if props.media then
-							View {
+						if props.onClose then 
+							CloseAffordance {
 								scope = innerScope,
-								LayoutOrder = 1,
-								tag = "size-full-0 auto-y",
-								children = props.media
-							}
-							else nil,
-						if props.actions and #props.actions > 0 then
-							View {
-								scope = innerScope,
-								LayoutOrder = 3,
-								tag = "row gap-small size-full-0 auto-y padding-x-medium",
-								children = buttonChildren
+								onActivated = props.onClose,
+								size = InputSize.Small,
+								variant = CloseAffordanceVariant.Utility,
+								colorNamespace = ColorNamespace.Inverse,
+								Position = UDim2.new(1, -tokens.Padding.Small, 0, tokens.Padding.Small),
+								AnchorPoint = Vector2.new(1, 0), -- Top-right anchor
+								ZIndex = 2
 							}
 							else nil,
 						View {
 							scope = innerScope,
-							LayoutOrder = 2,
-							tag = "col gap-xsmall auto-xy padding-x-medium padding-bottom-xsmall padding-top-medium",
+							tag = "col gap-medium auto-xy padding-bottom-medium",
+							sizeConstraint = {
+								MaxSize = Vector2.new(maxXSize, math.huge),
+							},
 							children = {
-								if props.steps then
-									Text {
+								if props.media then
+									View {
 										scope = innerScope,
 										LayoutOrder = 1,
-										Text = stepsText(props.steps.current, props.steps.total),
-										tag = "auto-xy text-label-small text-align-x-left text-truncate-end content-inverse-default",
-										sizeConstraint = textSizeConstraint
+										tag = "size-full-0 auto-y",
+										children = props.media
 									}
 									else nil,
-								if props.title ~= "" then
-									Text {
-										scope = innerScope,
-										LayoutOrder = 2,
-										Text = props.title,
-										tag = "auto-xy text-title-large text-align-x-left text-truncate-split content-inverse-emphasis",
-										sizeConstraint = textSizeConstraint
-									}
-									else nil,
-								if props.text and props.text ~= "" then
-									Text {
+								if props.actions and #props.actions > 0 then
+									View {
 										scope = innerScope,
 										LayoutOrder = 3,
-										Text = props.text,
-										tag = "size-full-0 auto-y text-body-medium text-wrap text-align-x-left content-inverse-default"
+										tag = "row gap-small size-full-0 auto-y padding-x-medium",
+										children = buttonChildren
 									}
-									else nil
+									else nil,
+								View {
+									scope = innerScope,
+									LayoutOrder = 2,
+									tag = "col gap-xsmall auto-xy padding-x-medium padding-bottom-xsmall padding-top-medium",
+									children = {
+										if props.steps then
+											Text {
+												scope = innerScope,
+												LayoutOrder = 1,
+												Text = stepsText(props.steps.current, props.steps.total),
+												tag = "auto-xy text-label-small text-align-x-left text-truncate-end content-inverse-default",
+												sizeConstraint = textSizeConstraint
+											}
+											else nil,
+										if props.title ~= "" then
+											Text {
+												scope = innerScope,
+												LayoutOrder = 2,
+												Text = props.title,
+												tag = "auto-xy text-title-large text-align-x-left text-truncate-split content-inverse-emphasis",
+												sizeConstraint = textSizeConstraint
+											}
+											else nil,
+										if props.text and props.text ~= "" then
+											Text {
+												scope = innerScope,
+												LayoutOrder = 3,
+												Text = props.text,
+												tag = "size-full-0 auto-y text-body-medium text-wrap text-align-x-left content-inverse-default"
+											}
+											else nil
+									}
+								}
 							}
 						}
 					}
-				}
+				}}
 			}
 		}
 	end)

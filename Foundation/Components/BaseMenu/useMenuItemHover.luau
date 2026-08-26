@@ -2,12 +2,12 @@ local Foundation = script.Parent.Parent.Parent
 
 local Utility = Foundation.Utility
 
-local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
+local isState = require(Utility.isState)
 local Types = require(Utility.Types)
 
-type Scope = Types.Scope
 type UsedAs<T> = Types.UsedAs<T>
+type Scope = Types.Scope
 type ItemId = Types.ItemId
 
 export type UseMenuItemHoverOptions = {
@@ -17,7 +17,7 @@ export type UseMenuItemHoverOptions = {
 	isSubmenu: boolean,
 	isDisabled: boolean?,
 	hoverOpenAtDepth: ((depth: number, id: ItemId, immediate: boolean?) -> ())?,
-	hoverCloseAtDepth: ((depth: number) -> ())?,
+	hoverCloseAtDepth: ((depth: number) -> ())?
 }
 
 return function(scope: Scope, options: UseMenuItemHoverOptions)

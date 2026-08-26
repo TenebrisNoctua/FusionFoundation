@@ -3,31 +3,32 @@ local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
 
+local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
 local Spinner = require(script.Spinner)
 local ButtonIcon = require(script.ButtonIcon)
-local View = require(script.Parent.View)
-local Text = require(script.Parent.Text)
 
 local endAlignedIcons = require(script.endAlignedIcons)
 local useButtonVariants = require(script.useButtonVariants)
 local useButtonMotionStates = require(script.useButtonMotionStates)
 
-local withDefaults = require(Utility.withDefaults)
+local View = require(Components.View)
+local Text = require(Components.Text)
+
 local unwrap = require(Utility.unwrap)
 local stripProps = require(Utility.stripProps)
+local withDefaults = require(Utility.withDefaults)
 local Types = require(Utility.Types)
 
 local InputSize = require(Enums.InputSize)
-local ButtonVariant = require(Enums.ButtonVariant)
 local FillBehavior = require(Enums.FillBehavior)
 local ControlState = require(Enums.ControlState)
+local ButtonVariant = require(Enums.ButtonVariant)
 local ColorNamespace = require(Enums.ColorNamespace)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
 local Constants = require(Foundation.Constants)
 
 local Children = Fusion.Children
@@ -35,8 +36,8 @@ local Children = Fusion.Children
 local BUTTON_VARIANT_TO_RICH_TEXT_FORMAT: { [ButtonVariant]: { format: string, controlState: { ControlState } } } = {
 	[ButtonVariant.Link] = {
 		format = "<u>%s</u>",
-		controlState = { ControlState.Hover, ControlState.Pressed },
-	},
+		controlState = { ControlState.Hover, ControlState.Pressed }
+	}
 }
 
 local COMPONENT_ONLY_PROPERTIES = {
@@ -62,7 +63,7 @@ local defaultProps = {
 	variant = ButtonVariant.Standard,
 	size = InputSize.Medium,
 	width = UDim.new(0, 0),
-	inputDelay = 0,
+	inputDelay = 0
 }
 
 local function onProgressChange(progress: number)
@@ -102,22 +103,21 @@ export type ButtonProps = {
 	-- The delay in seconds before the button is enabled.
 	-- This will only visually show on buttons whose variants use a filled background.
 	inputDelay: UsedAs<number>?,
-	
 	-- These properties are converted from contexts.
 	textSizeOffset: UsedAs<number>?,
 	isIconSize: UsedAs<boolean>?,
-	colorNamespace: UsedAs<ColorNamespace>?,
+	colorNamespace: UsedAs<ColorNamespace>?
 } & Types.SelectionProps & Types.CommonProps
 
 return function(buttonProps: ButtonProps)
-	local Scope = buttonProps.scope
-	local Theme = ThemeProvider()
-	assert(Scope, "A scope has not been provided for the Button component.")
+	local scope = buttonProps.scope
+	local theme = ThemeProvider()
+	assert(scope, "A scope has not been provided for the Button component.")
 
 	local props = withDefaults(buttonProps, defaultProps)
-	local controlState = Scope:Value(ControlState.Initialize :: ControlState)
+	local controlState = scope:Value(ControlState.Initialize :: ControlState)
 
-	local buttonState = Scope:Computed(function(use: Use)
+	local buttonState = scope:Computed(function(use: Use)
 		if unwrap(props.isDisabled, use) then return "Disabled"
 		elseif unwrap(props.isLoading, use) then return "Loading"
 		else return "Default" end
@@ -128,19 +128,22 @@ return function(buttonProps: ButtonProps)
 		controlState:set(newState)
 	end
 
-	return Scope:Computed(function(use: Use, innerScope: Scope)
+	return scope:Computed(function(use: Use, innerScope: Scope)
+		local tokens = unwrap(theme.Tokens, use)
+		local buttonSize = unwrap(props.size, use)
 		local inputDelay = unwrap(props.inputDelay, use)
+		local buttonVariant = unwrap(props.variant, use)
+		
 		local isDelaying = innerScope:Value(inputDelay > 0)
 		local progressGoal = innerScope:Value(0)
 		local progressTween = innerScope:Tween(progressGoal, TweenInfo.new(inputDelay or 0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out))
 		
-		local buttonSize = unwrap(props.size, use)
-		local buttonVariant = unwrap(props.variant, use)
-		local buttonColor = unwrap(props.colorNamespace, use)
+		local presentation = theme.Presentation
+		local buttonColor = if props.colorNamespace
+			then unwrap(props.colorNamespace, use)
+			else unwrap(presentation.colorNamespace, use)
 		
-		local tokens = unwrap(Theme.Tokens, use)
-		
-		local variantProps = useButtonVariants(buttonSize, buttonVariant, buttonColor)
+		local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, buttonSize, buttonVariant, buttonColor)
 		local defaultTransparency = variantProps.content.style.Transparency or 0
 		
 		local motion = useButtonMotionStates(innerScope, buttonState, defaultTransparency, Constants.DISABLED_TRANSPARENCY)

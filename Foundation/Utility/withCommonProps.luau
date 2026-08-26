@@ -2,7 +2,7 @@ local Types = require(script.Parent.Types)
 
 type CommonProps = Types.CommonProps
 
-local function withCommonProps<T>(props: CommonProps, baseProps: T | any)
+local function withCommonProps<T>(props: CommonProps, baseProps: T | any): T
 	if type(baseProps) == "table" then
 		baseProps.AnchorPoint = props.AnchorPoint
 		baseProps.LayoutOrder = props.LayoutOrder

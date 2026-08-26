@@ -6,19 +6,20 @@ local PackageManager = require(Foundation.PackageManager)
 local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
+local Components = Foundation.Components
 local Utility = Foundation.Utility
 
 local FontScales = require(script.FontScales)
-local Interactable = require(Foundation.Components.Interactable)
+local Interactable = require(Components.Interactable)
 
+local unwrap = require(Utility.unwrap)
 local isState = require(Utility.isState)
 local stripProps = require(Utility.stripProps)
-local unwrap = require(Utility.unwrap)
 local withDefaults = require(Utility.withDefaults)
 local useDefaultTags = require(Utility.useDefaultTags)
 local withGuiObjectProps = require(Utility.withGuiObjectProps)
-local GuiObjectChildren = require(Utility.GuiObjectChildren)
 local Types = require(Utility.Types)
+local GuiObjectChildren = require(Utility.GuiObjectChildren)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
@@ -40,7 +41,7 @@ local defaultProps = {
 	AutoLocalize = false,
 	AutoButtonColor = false,
 	BorderSizePixel = 0,
-	isDisabled = false,
+	isDisabled = false
 }
 
 local DEFAULT_TAGS = "gui-object-defaults text-defaults text-size-defaults text-color-defaults"
@@ -49,8 +50,6 @@ local DEFAULT_TAGS_WITH_BG = `{DEFAULT_TAGS} x-default-transparency`
 local Children = Fusion.Children
 
 type UsedAs<T> = Types.UsedAs<T>
-type CanBeComputed<T> = (Types.UsedAs<T> | T)
-
 type Scope = Types.Scope
 type Use = Types.Use
 
@@ -60,9 +59,8 @@ type FontStyle = Types.FontStyle
 type FontFaceTable = Types.FontFaceTable
 
 export type TextProps = {
-	textStyle: CanBeComputed<ColorStyle>?,
-	fontStyle: CanBeComputed<FontStyle>?,
-
+	textStyle: UsedAs<ColorStyle>?,
+	fontStyle: UsedAs<FontStyle>?,
 	RichText: UsedAs<boolean>?,
 	Text: UsedAs<string>?,
 	TextDirection: UsedAs<Enum.TextDirection>?,
@@ -74,9 +72,9 @@ export type TextProps = {
 } & Types.GuiObjectProps & Types.CommonProps
 
 return function(textProps: TextProps): UsedAs<TextLabel>
-	local Scope = textProps.scope
-	local Theme = ThemeProvider()
-	assert(Scope, "A scope has not been provided for the Text component.")
+	local scope = textProps.scope
+	local theme = ThemeProvider()
+	assert(scope, "A scope has not been provided for the Text component.")
 	
 	local props = withDefaults(textProps, defaultProps)
 	local isInteractable = props.onStateChanged ~= nil or props.onActivated ~= nil or props.onSecondaryActivated ~= nil
@@ -86,11 +84,11 @@ return function(textProps: TextProps): UsedAs<TextLabel>
 		defaultTags ..= " x-default-text-size"
 	end
 	
-	local tagsWithDefaults = useDefaultTags(Scope, props.tag, defaultTags)
-	local tag = useStyleTags(Scope, tagsWithDefaults, Theme.AddTags)
+	local tagsWithDefaults = useDefaultTags(scope, props.tag, defaultTags)
+	local tag = useStyleTags(scope, tagsWithDefaults, theme.AddTags)
 	props.tag = unwrap(tag)
 	
-	local fontFace = Scope:Computed(function(use: Use) 
+	local fontFace = scope:Computed(function(use: Use) 
 		local fontFaceProp = if props.fontStyle ~= nil then unwrap(props.fontStyle, use).Font else nil
 		
 		if typeof(fontFaceProp) == "table" and not isState(fontFaceProp) then
@@ -103,7 +101,7 @@ return function(textProps: TextProps): UsedAs<TextLabel>
 		end
 	end)
 	
-	local lineHeightPaddingOffsetState = Scope:Computed(function(use: Use) 
+	local lineHeightPaddingOffsetState = scope:Computed(function(use: Use) 
 		local fontStyle = unwrap(props.fontStyle, use) :: FontStyle
 		local fontFace = unwrap(fontFace, use)
 		
@@ -144,7 +142,7 @@ return function(textProps: TextProps): UsedAs<TextLabel>
 		props.padding = Vector2.new(0, lineHeightPaddingOffset)
 	end
 	
-	return Scope:Computed(function(use: Use, innerScope: Scope) 
+	return scope:Computed(function(use: Use, innerScope: Scope) 
 		local fontStyle = unwrap(props.fontStyle, use)
 		local engineComponent = if isInteractable then "TextButton" else "TextLabel"
 		local engineComponentProps = withGuiObjectProps(props, {

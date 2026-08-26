@@ -6,28 +6,29 @@ local Dash = PackageManager.getPackage("Dash")
 local FoundationImages = PackageManager.getPackage("FoundationImages")
 local FoundationCloudAssets = PackageManager.getPackage("FoundationCloudAssets")
 
+local Components = Foundation.Components
 local Utility = Foundation.Utility
-
-local Assets = FoundationCloudAssets.Assets
-local Images = FoundationImages.Images
-
-local Interactable = require(script.Parent.Interactable)
 
 local getScaledSlice = require(script.ImageSet.getScaledSlice)
 local isFoundationImage = require(script.ImageSet.isFoundationImage)
 local isCloudAsset = require(script.CloudAsset.isCloudAsset)
 
-local isState = require(Utility.isState)
-local withDefaults = require(Utility.withDefaults)
-local withGuiObjectProps = require(Utility.withGuiObjectProps)
-local useDefaultTags = require(Utility.useDefaultTags)
-local stripProps = require(Utility.stripProps)
+local Interactable = require(Components.Interactable)
+
 local unwrap = require(Utility.unwrap)
-local GuiObjectChildren = require(Utility.GuiObjectChildren)
+local isState = require(Utility.isState)
+local stripProps = require(Utility.stripProps)
+local withDefaults = require(Utility.withDefaults)
+local useDefaultTags = require(Utility.useDefaultTags)
+local withGuiObjectProps = require(Utility.withGuiObjectProps)
 local Types = require(Utility.Types)
+local GuiObjectChildren = require(Utility.GuiObjectChildren)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
+
+local Assets = FoundationCloudAssets.Assets
+local Images = FoundationImages.Images
 
 local Children = Fusion.Children
 
@@ -55,7 +56,7 @@ local defaultProps = {
 	AutoLocalize = false,
 	AutoButtonColor = false,
 	BorderSizePixel = 0,
-	isDisabled = false,
+	isDisabled = false
 }
 
 local function getAspectRatio(size: Vector2)

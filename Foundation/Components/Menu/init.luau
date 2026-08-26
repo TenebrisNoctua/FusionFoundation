@@ -4,18 +4,18 @@ local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
-local BaseMenu = require(Components.BaseMenu)
 local Popover = require(Components.Popover)
+local BaseMenu = require(Components.BaseMenu)
 
 local unwrap = require(Utility.unwrap)
-local withCommonProps = require(Utility.withCommonProps)
 local withDefaults = require(Utility.withDefaults)
+local withCommonProps = require(Utility.withCommonProps)
 local Types = require(Utility.Types)
 
-local InputSize = require(Enums.InputSize)
-local PopoverAlign = require(Enums.PopoverAlign)
-local PopoverSide = require(Enums.PopoverSide)
 local Radius = require(Enums.Radius)
+local InputSize = require(Enums.InputSize)
+local PopoverSide = require(Enums.PopoverSide)
+local PopoverAlign = require(Enums.PopoverAlign)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
@@ -53,6 +53,8 @@ export type MenuProps = {
 	size: UsedAs<InputSize>?,
 	-- Width of the component. If not specified, the menu is sized based on the content.
 	width: UsedAs<UDim>?,
+	-- Maximum height after which the menu starts scrolling
+	maxHeight: UsedAs<number>?,
 	-- The side the popover should be anchored to
 	side: UsedAs<PopoverSide>?,
 	-- The alignment of the popover relative to the anchor
@@ -77,47 +79,48 @@ return function(menuProps: MenuProps)
 	assert(scope, "A scope has not been provided for the Menu component.")
 	
 	local props = withDefaults(menuProps, defaultProps)
-	
 	return scope:Computed(function(use: Use, innerScope: Scope)
 		local tokens = unwrap(theme.Tokens, use)
 		local strokeThickness = tokens.Stroke.Standard
-		local anchorProps = withCommonProps(props, {
-			scope = innerScope, 
-			anchorInstance = props.anchorInstance,
-			children = if props.anchorInstance then nil else props.children
-		})
-		
+		local sidePosition = unwrap(props.side, use)
 		return Popover.Root {
 			scope = innerScope,
 			isOpen = props.isOpen,
-			children = {
-				Popover.Anchor(anchorProps),
-				Popover.Content {
-					scope = innerScope,
-					side = {
-						position = props.side,
-						offset = strokeThickness + tokens.Padding.Small,
-					},
-					align = props.align,
-					hasArrow = false,
-					onPressedOutside = props.onPressedOutside,
-					backgroundStyle = tokens.Color.Surface.Surface_100,
-					radius = Radius.Medium,
-					selection = props.selection,
-					selectionGroup = props.selectionGroup,
-					children = {
-						BaseMenu.Root {
-							scope = innerScope,
-							items = props.items,
-							size = props.size,
-							width = props.width,
-							onActivated = props.onActivated,
-							onNestedLeafActivated = props.onPressedOutside,
-							radius = Radius.Medium
+			children = function(popoverScope: Scope)
+				return {
+					Popover.Anchor(withCommonProps(props, {
+						scope = popoverScope, 
+						anchorInstance = props.anchorInstance,
+						children = if props.anchorInstance then nil else props.children
+					})),
+					Popover.Content {
+						scope = popoverScope,
+						side = {
+							position = sidePosition,
+							offset = strokeThickness + tokens.Padding.Small,
+						},
+						align = props.align,
+						hasArrow = false,
+						onPressedOutside = props.onPressedOutside,
+						backgroundStyle = tokens.Color.Surface.Surface_200,
+						radius = Radius.Medium,
+						selection = props.selection,
+						selectionGroup = props.selectionGroup,
+						children = {
+							BaseMenu.Root {
+								scope = popoverScope,
+								items = props.items,
+								size = props.size,
+								width = props.width,
+								maxHeight = props.maxHeight,
+								onActivated = props.onActivated,
+								onNestedLeafActivated = props.onPressedOutside,
+								radius = Radius.Medium
+							}
 						}
 					}
 				}
-			}
+			end
 		}
 	end)
 end

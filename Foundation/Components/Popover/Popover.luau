@@ -2,11 +2,17 @@ local Foundation = script.Parent.Parent.Parent
 local Utility = Foundation.Utility
 
 local PopoverAnchor = require(script.Parent.Anchor)
+local PopoverContext = require(script.Parent.PopoverContext)
 local PopoverContentProxy = require(script.Parent.PopoverContentProxy)
 
+local unwrap = require(Utility.unwrap)
 local withDefaults = require(Utility.withDefaults)
 local Types = require(Utility.Types)
 local StudioUri = require(Utility.Plugin.StudioUri)
+
+local defaultProps = {
+	isOpen = false
+}
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
@@ -19,62 +25,35 @@ type StudioUri = StudioUri.StudioUri
 export type PopoverProps = {
 	scope: Scope,
 	isOpen: UsedAs<boolean>,
-	-- Anchor props
-	anchorInstance: UsedAs<Instance?>?,
-	anchorChildren: {Child}?,
-	-- Content props  
-	side: UsedAs<any>?,
-	align: UsedAs<any>?,
-	hasArrow: UsedAs<boolean>?,
-	onPressedOutside: (() -> ())?,
-	selection: UsedAs<any>?,
-	selectionGroup: UsedAs<any>?,
-	radius: UsedAs<any>?,
-	backgroundStyle: UsedAs<any>?,
-	contentChildren: {Child}?,
+	children: UsedAs<{Child} | ((scope: Scope) -> {Child})>?,
 } & Types.CommonProps
 
-local defaultProps = {
-	isOpen = false,
-}
-
-return function(popoverProps: PopoverProps)
-	local Scope = popoverProps.scope
-	assert(Scope, "A scope has not been provided for the Popover component.")
+local function PopoverRoot(popoverProps: PopoverProps)
+	local scope = popoverProps.scope
+	assert(scope, "A scope has not been provided for the Popover component.")
 
 	local props = withDefaults(popoverProps, defaultProps)
-	local anchor = Scope:Value(nil :: PopoverAnchor?)
-	local anchorUri = Scope:Value(nil :: StudioUri?)
-	
-	return Scope:Computed(function(use: Use, innerScope: Scope)
-		local anchorProps = {
-			scope = innerScope,
-			anchor = anchor,
-			anchorUri = anchorUri,
-			isOpen = props.isOpen,
-			anchorInstance = props.anchorInstance,
-			children = props.anchorChildren
-		}
+	local anchor = scope:Value(nil :: PopoverAnchor?)
+	local anchorUri = scope:Value(nil :: StudioUri?)
+	local gui = scope:Value(nil :: Instance?)
 
-		local contentProps = {
-			scope = innerScope,
-			anchor = anchor,
-			anchorUri = anchorUri,
-			isOpen = props.isOpen,
-			side = props.side,
-			align = props.align,
-			hasArrow = props.hasArrow,
-			onPressedOutside = props.onPressedOutside,
-			selection = props.selection,
-			selectionGroup = props.selectionGroup,
-			radius = props.radius,
-			backgroundStyle = props.backgroundStyle,
-			children = props.contentChildren,
-		}
+	local contextValue = {
+		anchor = anchor,
+		anchorUri = anchorUri,
+		isOpen = props.isOpen,
+		gui = gui
+	}
 
-		return {
-			Anchor = PopoverAnchor(anchorProps),
-			Content = PopoverContentProxy(contentProps)
-		}
+	return scope:Computed(function(use: Use, innerScope: Scope)
+		local children = unwrap(props.children, use)
+
+		return PopoverContext:is(contextValue):during(function()
+			if type(children) == "function" then
+				return children(innerScope)
+			end
+			return children
+		end)
 	end)
 end
+
+return PopoverRoot

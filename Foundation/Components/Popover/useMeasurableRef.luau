@@ -5,8 +5,8 @@ local Signal = PackageManager.getPackage("Signal")
 
 local Utility = Foundation.Utility
 
-local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
+local isState = require(Utility.isState)
 local Types = require(Utility.Types)
 
 type UsedAs<T> = Types.UsedAs<T>

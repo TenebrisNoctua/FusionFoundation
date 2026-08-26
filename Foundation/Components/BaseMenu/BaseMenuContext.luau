@@ -21,6 +21,9 @@ export type BaseMenuContextType = {
 	hasLeading: UsedAs<boolean>,
 	-- Centralized submenu state
 	hoverOpenPath: UsedAs<{ ItemId }>,
+	-- PERF: depth-scoped derived state - prefer this over hoverOpenPath when an
+	-- item only cares about whether ITS OWN depth is open (see useSubmenuHover).
+	hoverOpenIdAtDepth: ((depth: number) -> UsedAs<ItemId?>)?,
 	hoverOpenAtDepth: ((depth: number, id: ItemId, immediate: boolean?) -> ())?,
 	hoverCloseAtDepth: ((depth: number) -> ())?,
 	hoverReset: (() -> ())?,

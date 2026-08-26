@@ -4,15 +4,16 @@ local PackageManager = require(Foundation.PackageManager)
 local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
+local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
-local View = require(script.Parent.View)
+local View = require(Components.View)
 
-local withDefaults = require(Utility.withDefaults)
-local useDefaultTags = require(Utility.useDefaultTags)
 local unwrap = require(Utility.unwrap)
 local isState = require(Utility.isState)
+local withDefaults = require(Utility.withDefaults)
+local useDefaultTags = require(Utility.useDefaultTags)
 local withGuiObjectProps = require(Utility.withGuiObjectProps)
 local Types = require(Utility.Types)
 
@@ -123,19 +124,18 @@ local function updateVisibility(
 end
 
 return function(scrollViewProps: ScrollViewProps)
-	local Scope = scrollViewProps.scope
-	local Theme = ThemeProvider()
-	assert(Scope, "A scope has not been provided for the ScrollView component.")
+	local scope = scrollViewProps.scope
+	local theme = ThemeProvider()
+	assert(scope, "A scope has not been provided for the ScrollView component.")
 
 	local props = withDefaults(scrollViewProps, defaultProps)
-
-	return Scope:Computed(function(use: Use, innerScope: Scope)
+	return scope:Computed(function(use: Use, innerScope: Scope)
 		local controlState = innerScope:Value(ControlState.Initialize)
 		local tagsWithDefaults = useDefaultTags(innerScope, props.tag, defaultTags)
-		local tag = useStyleTags(innerScope, tagsWithDefaults, Theme.AddTags)
+		local tag = useStyleTags(innerScope, tagsWithDefaults, theme.AddTags)
 
 		local scrollBarColorStyle = innerScope:Computed(function(use: Use)
-			local tokens = unwrap(Theme.Tokens, use)
+			local tokens = unwrap(theme.Tokens, use)
 			return tokens.Color.Shift.Shift_400
 		end)
 
@@ -147,7 +147,7 @@ return function(scrollViewProps: ScrollViewProps)
 			if scrollBarVisibility == Visibility.None then
 				return 0
 			else
-				local tokens = unwrap(Theme.Tokens, use)
+				local tokens = unwrap(theme.Tokens, use)
 				return tokens.Size.Size_150
 			end
 		end)

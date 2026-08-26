@@ -1,22 +1,21 @@
---!nonstrict
-
 local Foundation = script.Parent.Parent
 
+local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
-local Text = require(Foundation.Components.Text)
+local Text = require(Components.Text)
 
-local withCommonProps = require(Utility.withCommonProps)
-local withDefaults = require(Utility.withDefaults)
 local unwrap = require(Utility.unwrap)
 local stripProps = require(Utility.stripProps)
+local withDefaults = require(Utility.withDefaults)
+local withCommonProps = require(Utility.withCommonProps)
 local Types = require(Utility.Types)
 local Translator = require(Utility.Localization.Translator)
 
-local StateLayerAffordance = require(Enums.StateLayerAffordance)
 local ControlState = require(Enums.ControlState)
 local InputLabelSize = require(Enums.InputLabelSize)
+local StateLayerAffordance = require(Enums.StateLayerAffordance)
 
 local COMPONENT_ONLY_PROPERTIES = {
 	"stateLayer",
@@ -47,8 +46,6 @@ local function labelText(text: string, isRequired: boolean?): string
 end
 
 type UsedAs<T> = Types.UsedAs<T>
-type CanBeComputed<T> = (Types.UsedAs<T> | T)
-
 type Scope = Types.Scope
 type Use = Types.Use
 
@@ -75,16 +72,15 @@ export type InputLabelProps = {
 	-- Whether the input label should be rich text or not
 	RichText: boolean?,
 	-- Determines the string rendered by the UI element
-	Text: string,
+	Text: string
 } & Types.CommonProps
 
 return function(inputLabelProps: InputLabelProps)
-	local Scope = inputLabelProps.scope
-	assert(Scope, "A scope has not been provided for the InputLabel component.")
+	local scope = inputLabelProps.scope
+	assert(scope, "A scope has not been provided for the InputLabel component.")
 	
 	local props = withDefaults(inputLabelProps, defaultProps)
-	
-	return Scope:Computed(function(use: Use, innerScope: Scope)
+	return scope:Computed(function(use: Use, innerScope: Scope)
 		local function onStateChanged(newState: ControlState)
 			local hoverCallback = unwrap(props.onHover, use)
 			if not hoverCallback then return end

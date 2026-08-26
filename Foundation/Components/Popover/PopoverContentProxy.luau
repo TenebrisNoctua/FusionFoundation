@@ -4,10 +4,10 @@ local Utility = Foundation.Utility
 local Content = require(script.Parent.Content)
 local ContentPlugin = require(script.Parent.ContentPlugin)
 
+local isPluginSecurity = require(Utility.isPluginSecurity)
 local Types = require(Utility.Types)
 
 local PluginProvider = require(Foundation.Providers.PluginProvider)
-local isPluginSecurity = require(Utility.isPluginSecurity)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope

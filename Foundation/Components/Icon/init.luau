@@ -3,35 +3,42 @@ local PackageManager = require(Foundation.PackageManager)
 
 local BuilderIcons = PackageManager.getPackage("BuilderIcons")
 
+local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
-
-local Image = require(script.Parent.Image)
-local Text = require(script.Parent.Text)
-
-local Font = BuilderIcons.Font
-local IconVariant = BuilderIcons.IconVariant
-type IconVariant = BuilderIcons.IconVariant
-
-local IconSize = require(Enums.IconSize)
-type IconSize = IconSize.IconSize
 
 local migrateFontSize = require(script.migrateFontSize)
 local migrateIconName = require(script.migrateIconName)
 
-local isBuilderIcon = require(Utility.isBuilderIcon)
+local Image = require(Components.Image)
+local Text = require(Components.Text)
+
 local unwrap = require(Utility.unwrap)
 local useIconSize = require(Utility.useIconSize)
-local withCommonProps = require(Utility.withCommonProps)
 local withDefaults = require(Utility.withDefaults)
+local isBuilderIcon = require(Utility.isBuilderIcon)
+local withCommonProps = require(Utility.withCommonProps)
 local Types = require(Utility.Types)
 
+local IconSize = require(Enums.IconSize)
+
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+
+local Font = BuilderIcons.Font
+local IconVariant = BuilderIcons.IconVariant
+
+local defaultProps = {
+	size = IconSize.Medium,
+	variant = IconVariant.Regular
+}
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
 type Use = Types.Use
 type Child = Types.Child
+
+type IconVariant = typeof(BuilderIcons.IconVariant)
+type IconSize = IconSize.IconSize
 type ColorStyle = Types.ColorStyle
 
 export type IconProps = {
@@ -48,19 +55,14 @@ export type IconProps = {
 	children: {Child}?,
 } & Types.CommonProps
 
-local defaultProps = {
-	size = IconSize.Medium,
-	variant = IconVariant.Regular,
-}
-
 return function(iconProps: IconProps): UsedAs<ImageLabel | TextLabel>
-	local Scope = iconProps.scope
-	local Theme = ThemeProvider()
-	assert(Scope, "A scope has not been provided for the Icon component.")
+	local scope = iconProps.scope
+	local theme = ThemeProvider()
+	assert(scope, "A scope has not been provided for the Icon component.")
 	
 	local props = withDefaults(iconProps, defaultProps)
 	
-	return Scope:Computed(function(use: Use, innerScope: Scope) 
+	return scope:Computed(function(use: Use, innerScope: Scope) 
 		local name = unwrap(props.name, use)
 		local size = unwrap(props.size, use)
 		local variant = unwrap(props.variant, use)
@@ -69,7 +71,7 @@ return function(iconProps: IconProps): UsedAs<ImageLabel | TextLabel>
 		local migratedIcon = migrateIconName(name)
 		local size = useIconSize(size, isBuilderIcon(name))
 		
-		local tokens = unwrap(Theme.Tokens, use)
+		local tokens = unwrap(theme.Tokens, use)
 		local fontSize: number? = if typeof(size) == "table" then nil else size.Y.Offset
 		
 		if not isBuilderIcon(name) then

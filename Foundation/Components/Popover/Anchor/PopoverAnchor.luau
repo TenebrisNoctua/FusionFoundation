@@ -1,11 +1,15 @@
 local Foundation = script.Parent.Parent.Parent.Parent
+
+local Components = Foundation.Components
 local Utility = Foundation.Utility
 
-local View = require(Foundation.Components.View)
+local PopoverContext = require(script.Parent.Parent.PopoverContext)
 
-local withCommonProps = require(Utility.withCommonProps)
-local isState = require(Utility.isState)
+local View = require(Components.View)
+
 local unwrap = require(Utility.unwrap)
+local isState = require(Utility.isState)
+local withCommonProps = require(Utility.withCommonProps)
 local Types = require(Utility.Types)
 local StudioUri = require(Utility.Plugin.StudioUri)
 
@@ -18,13 +22,8 @@ type StudioUri = StudioUri.StudioUri
 
 export type PopoverAnchorProps = {
 	scope: Scope,
-	-- From PopoverContext:
-	anchor: UsedAs<Instance?>?,
-	anchorUri: UsedAs<StudioUri?>?,
-	isOpen: UsedAs<boolean>?,
 	-- The target state or instance to anchor the popover to. If provided, children will not be rendered.
 	anchorInstance: UsedAs<Instance?>?,
-	gui: UsedAs<Instance?>?,
 	children: {Child}?,
 } & Types.CommonProps
 
@@ -33,10 +32,15 @@ export type PopoverAnchorProps = {
 return function(props: PopoverAnchorProps)
 	local scope = props.scope
 	assert(scope, "A scope has not been provided for the PopoverAnchor component.")
-	
-	local anchorIsState = isState(props.anchor)
-	local anchorUriIsState = isState(props.anchorUri)
-	local guiIsState = isState(props.gui)
+
+	local context = PopoverContext:now()
+	local anchorState = context.anchor
+	local anchorUriState = context.anchorUri
+	local guiState = context.gui
+
+	local anchorIsState = isState(anchorState)
+	local anchorUriIsState = isState(anchorUriState)
+	local guiIsState = isState(guiState)
 
 	local viewInstance = scope:Value(nil :: Instance?)
 
@@ -52,18 +56,18 @@ return function(props: PopoverAnchorProps)
 		local externalAnchor = unwrap(props.anchorInstance)
 		if StudioUri.isStudioUri(externalAnchor) then
 			if anchorUriIsState then
-				props.anchorUri:set(externalAnchor)
+				anchorUriState:set(externalAnchor)
 			end
 			if anchorIsState then
-				props.anchor:set(nil)
+				anchorState:set(nil)
 			end
 		else
 			local anchor = unwrap(activeAnchor)
 			if anchorIsState then
-				props.anchor:set(anchor)
+				anchorState:set(anchor)
 			end
 			if anchorUriIsState then
-				props.anchorUri:set(nil)
+				anchorUriState:set(nil)
 			end
 		end
 	end
@@ -74,16 +78,16 @@ return function(props: PopoverAnchorProps)
 	if guiIsState then
 		scope:Observer(viewInstance):onChange(function()
 			local currentView = unwrap(viewInstance)
-			props.gui:set(currentView)
+			guiState:set(currentView)
 		end)
 	end
 
 	table.insert(scope, function()
 		if anchorIsState then
-			props.anchor:set(nil)
+			anchorState:set(nil)
 		end
 		if anchorUriIsState then
-			props.anchorUri:set(nil)
+			anchorUriState:set(nil)
 		end
 	end)
 

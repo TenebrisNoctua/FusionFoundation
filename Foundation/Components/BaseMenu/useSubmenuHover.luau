@@ -20,6 +20,7 @@ local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
+type Use = Types.Use
 type ItemId = Types.ItemId
 
 local EMPTY_PATH: { ItemId } = {}
@@ -43,6 +44,16 @@ end
 export type SubmenuHoverState = {
 	-- The full path of currently open submenu IDs, wrapped in a Fusion Value state
 	openPath: UsedAs<{ ItemId }>,
+	-- Returns a memoized, depth-scoped Computed<ItemId?> for the given depth.
+	-- PERF: Items should prefer this over reading `openPath` directly. `openPath`
+	-- is a single Value holding the whole array, so ANY change at ANY depth
+	-- invalidates every consumer of it, regardless of which depth they care about.
+	-- The Computed returned here only propagates to ITS dependents when the id at
+	-- that specific depth actually changes; Fusion only notifies a Computed's
+	-- dependents when its output value differs from before, so items at
+	-- unaffected depths never re-run just because a sibling/other-depth hover
+	-- changed.
+	openIdAtDepth: (depth: number) -> UsedAs<ItemId?>,
 	-- Open a submenu at the given depth. Truncates deeper items.
 	-- When immediate is true, opens synchronously (used for click/tap).
 	openAtDepth: (depth: number, id: ItemId, immediate: boolean?) -> (),
@@ -60,6 +71,26 @@ local function useSubmenuHover(scope: Scope): SubmenuHoverState
 	local openPath = scope:Value(EMPTY_PATH)
 	local openTimer: thread? = nil
 	local closeTimer: thread? = nil
+
+	-- Memoized per-depth derived Computeds. Created lazily (most menus never go
+	-- more than a few levels deep) and cached for the lifetime of the menu so
+	-- repeated calls from re-rendering items reuse the same Computed instead of
+	-- creating a new one (and a new dependency edge) every time.
+	local depthComputedCache: { [number]: any } = {}
+
+	local function openIdAtDepth(depth: number): UsedAs<ItemId?>
+		local cached = depthComputedCache[depth]
+		if cached then
+			return cached
+		end
+
+		local computed = scope:Computed(function(use: Use): ItemId?
+			local path = unwrap(openPath, use)
+			return path[depth]
+		end)
+		depthComputedCache[depth] = computed
+		return computed
+	end
 
 	local function cancelTimers()
 		if openTimer then
@@ -125,6 +156,7 @@ local function useSubmenuHover(scope: Scope): SubmenuHoverState
 
 	return {
 		openPath = openPath,
+		openIdAtDepth = openIdAtDepth,
 		openAtDepth = openAtDepth,
 		closeAtDepth = closeAtDepth,
 		reset = reset,

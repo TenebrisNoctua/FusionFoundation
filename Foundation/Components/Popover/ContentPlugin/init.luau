@@ -1,36 +1,40 @@
 local Foundation = script.Parent.Parent.Parent
 
-local Providers = Foundation.Providers
+local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
+local Providers = Foundation.Providers
 
-local PopoverArrow = require(script.Parent.PopoverArrow)
 local PopoverContent = require(script.Parent.Content)
+local PopoverArrow = require(script.Parent.PopoverArrow)
 local PopoverShadow = require(script.Parent.PopoverShadow)
-local getPanelPosition = require(script.getPanelPosition)
-local useArrowPosition = require(script.useArrowPosition)
+local PopoverContext = require(script.Parent.PopoverContext)
+
 local usePanelSizing = require(script.usePanelSizing)
 local usePluginAnchor = require(script.usePluginAnchor)
+local getPanelPosition = require(script.getPanelPosition)
+local useArrowPosition = require(script.useArrowPosition)
 
-local View = require(Foundation.Components.View)
-
-local ElevationLayer = require(Enums.ElevationLayer)
-local PopoverAlign = require(Enums.PopoverAlign)
-local PopoverSide = require(Enums.PopoverSide)
-local Radius = require(Enums.Radius)
-
-local ThemeProvider = require(Providers.ThemeProvider)
-local ElevationProvider = require(Providers.ElevationProvider)
-local useElevation = require(Providers.ElevationProvider.useElevation)
-local PanelsProvider = require(Providers.PanelsProvider)
-local usePanel = require(Providers.PanelsProvider.usePanel)
+local View = require(Components.View)
 
 local unwrap = require(Utility.unwrap)
 local isState = require(Utility.isState)
 local withDefaults = require(Utility.withDefaults)
 local withCommonProps = require(Utility.withCommonProps)
-local StudioUri = require(Utility.Plugin.StudioUri)
 local Types = require(Utility.Types)
+local StudioUri = require(Utility.Plugin.StudioUri)
+
+local Radius = require(Enums.Radius)
+local PopoverSide = require(Enums.PopoverSide)
+local PopoverAlign = require(Enums.PopoverAlign)
+local ElevationLayer = require(Enums.ElevationLayer)
+
+local ThemeProvider = require(Providers.ThemeProvider)
+local PanelsProvider = require(Providers.PanelsProvider)
+local ElevationProvider = require(Providers.ElevationProvider)
+
+local useElevation = require(Providers.ElevationProvider.useElevation)
+local usePanel = require(Providers.PanelsProvider.usePanel)
 
 local Constants = require(Foundation.Constants)
 local ProviderTypes = require(Foundation.Providers.PanelsProvider.Types)
@@ -42,7 +46,7 @@ local defaultProps = {
 	side = PopoverSide.Bottom,
 	align = PopoverAlign.Center,
 	hasArrow = true,
-	radius = Radius.Medium,
+	radius = Radius.Medium
 }
 
 local radiusToTag: { [Radius]: string } = {
@@ -67,30 +71,31 @@ type PanelPosition = ProviderTypes.PanelPosition
 type PanelHandle = ProviderTypes.PanelHandle
 type PopoverContentProps = PopoverContent.PopoverContentProps
 
-type ContentPluginProps = PopoverContentProps & {
-	anchorUri: UsedAs<StudioUri?>?,
-}
+type ContentPluginProps = PopoverContentProps
 
 return function(contentProps: ContentPluginProps)
 	local scope = contentProps.scope
 	assert(scope, "A scope has not been provided for the ContentPlugin component.")
-	
+
+	local context = PopoverContext:now()
+	assert(context, "ContentPlugin must be used within a Popover.Root")
+
 	local props = withDefaults(contentProps, defaultProps)
 	
+	local themeProvider = ThemeProvider()
 	local panelsProvider = PanelsProvider()
 	local elevationProvider = ElevationProvider()
-	local themeProvider = ThemeProvider()
 	
 	local tokens = unwrap(themeProvider.Tokens)
 	local elevationToken = useElevation(scope, ElevationLayer.Popover, { stackAboveOwner = true })
 	local depth = elevationProvider.getRelativeIndex(unwrap(elevationToken))
 	
 	local contentInstance = scope:Value(nil :: GuiObject?)
-	
-	if isState(props.gui) then
+
+	if isState(context.gui) then
 		scope:Observer(contentInstance):onChange(function()
 			local currentView = unwrap(contentInstance)
-			props.gui:set(currentView)
+			context.gui:set(currentView)
 		end)
 	end
 	
@@ -118,7 +123,7 @@ return function(contentProps: ContentPluginProps)
 		return 0
 	end)
 	
-	local pluginAnchor = usePluginAnchor(scope, props.anchor, props.anchorUri)
+	local pluginAnchor = usePluginAnchor(scope, context.anchor, context.anchorUri)
 	
 	local hasArrow = scope:Computed(function(use: Use)
 		local isVirtual = unwrap(pluginAnchor.isVirtual, use)
@@ -129,7 +134,7 @@ return function(contentProps: ContentPluginProps)
 	local anchorInstance = scope:Computed(function(use: Use)
 		local isVirtual = unwrap(pluginAnchor.isVirtual, use)
 		if isVirtual then return nil end
-		local a = props.anchor and unwrap(props.anchor, use) or nil
+		local a = context.anchor and unwrap(context.anchor, use) or nil
 		if typeof(a) ~= "Instance" then return nil end
 		return a :: GuiBase2d?
 	end)
@@ -176,7 +181,7 @@ return function(contentProps: ContentPluginProps)
 	local panel = usePanel({
 		scope = scope,
 		isOpen = scope:Computed(function(use: Use)
-			local isOpen = unwrap(props.isOpen, use)
+			local isOpen = unwrap(context.isOpen, use)
 			local isReady = unwrap(pluginAnchor.isReady, use)
 			return isOpen and isReady
 		end),
@@ -225,12 +230,12 @@ return function(contentProps: ContentPluginProps)
 		sidePosition,
 		props.radius,
 		alignValue,
+		anchorInstance,
 		arrowHeight,
-		anchorInstance
+		tokens
 	)
 	
 	local children = props.children
-
 	table.insert(children, scope:New "StyleLink" {
 		StyleSheet = themeProvider.RegistryStyleSheet
 	})
@@ -273,8 +278,8 @@ return function(contentProps: ContentPluginProps)
 				Visible = hasArrow,
 			},
 			scope:New "StyleLink" {
-				StyleSheet = themeProvider.RegistryStyleSheet,
-			},
+				StyleSheet = themeProvider.RegistryStyleSheet
+			}
 		}
 	})
 	

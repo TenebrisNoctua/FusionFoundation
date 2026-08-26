@@ -6,15 +6,13 @@ local Utility = Foundation.Utility
 local InputSize = require(Enums.InputSize)
 local IconSize = require(Enums.IconSize)
 
-local composeStyleVariant = require(Utility.composeStyleVariant)
-local useVariants = require(Utility.useVariants)
 local unwrap = require(Utility.unwrap)
+local useVariants = require(Utility.useVariants)
+local composeStyleVariant = require(Utility.composeStyleVariant)
 local Types = require(Utility.Types)
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
-type Scope = Types.Scope
 type UsedAs<T> = Types.UsedAs<T>
+type Scope = Types.Scope
 type Use = Types.Use
 
 type InputSize = InputSize.InputSize
@@ -44,10 +42,7 @@ export type BaseMenuItemVariantProps = {
 	submenuContent: { tag: string }
 }
 
-local function variantsMap()
-	local themeProvider = ThemeProvider()
-	local tokens = unwrap(themeProvider.Tokens)
-
+local function variantsMap(tokens: {[string]: any})
 	local common = {
 		container = { tag = "" },
 		icon = {
@@ -62,7 +57,7 @@ local function variantsMap()
 		},
 		check = { tag = "content-emphasis", style = tokens.Color.Content.Emphasis },
 		slotAlign = { tag = "align-x-center align-y-center" },
-		submenuContent = { tag = "stroke-standard stroke-default radius-medium" },
+		submenuContent = { tag = "stroke-standard stroke-default radius-medium" }
 	}
 
 	local sizes: { [InputSize]: VariantProps } = {
@@ -79,7 +74,7 @@ local function variantsMap()
 			title = { tag = "text-caption-small", checkColumnWidth = tokens.Size.Size_500 },
 			check = { tag = "size-500-400", size = tokens.Size.Size_400 },
 			chevron = { size = IconSize.Small :: IconSize },
-			groupPadding = { size = tokens.Padding.XSmall },
+			groupPadding = { size = tokens.Padding.XSmall }
 		},
 		[InputSize.Small] = {
 			container = {
@@ -94,7 +89,7 @@ local function variantsMap()
 			title = { tag = "text-caption-small", checkColumnWidth = tokens.Size.Size_600 },
 			check = { tag = "size-600-400", size = tokens.Size.Size_400 },
 			chevron = { size = IconSize.Small :: IconSize },
-			groupPadding = { size = tokens.Padding.Small },
+			groupPadding = { size = tokens.Padding.Small }
 		},
 		[InputSize.Medium] = {
 			container = {
@@ -109,7 +104,7 @@ local function variantsMap()
 			title = { tag = "text-caption-medium", checkColumnWidth = tokens.Size.Size_700 },
 			check = { tag = "size-700-500", size = tokens.Size.Size_500 },
 			chevron = { size = IconSize.Medium :: IconSize },
-			groupPadding = { size = tokens.Padding.Small },
+			groupPadding = { size = tokens.Padding.Small }
 		},
 		[InputSize.Large] = {
 			container = {
@@ -124,13 +119,13 @@ local function variantsMap()
 			title = { tag = "text-caption-large", checkColumnWidth = tokens.Size.Size_800 },
 			check = { tag = "size-800-600", size = tokens.Size.Size_600 },
 			chevron = { size = IconSize.Large :: IconSize },
-			groupPadding = { size = tokens.Padding.Small },
-		},
+			groupPadding = { size = tokens.Padding.Small }
+		}
 	}
 	
 	local isScrollable = {
 		[false] = { submenuContent = { tag = "col auto-xy" } },
-		[true] = { submenuContent = { tag = "" } },
+		[true] = { submenuContent = { tag = "" } }
 	}
 
 	local defaultSize = { container = { tag = "auto-x" } }
@@ -144,10 +139,12 @@ local function variantsMap()
 end
 
 local function useBaseMenuItemVariants(
+	theme: string,
+	tokens: {[string]: any},
 	size: InputSize,
 	isScrollable: boolean
 ): BaseMenuItemVariantProps
-	local variants = useVariants("BaseMenuItem", variantsMap)
+	local variants = useVariants(theme, tokens, "BaseMenuItem", variantsMap)
 	return composeStyleVariant(
 		variants.common,
 		variants.sizes[size],

@@ -13,8 +13,8 @@ local Icon = require(Components.Icon)
 local View = require(Components.View)
 
 local unwrap = require(Utility.unwrap)
-local withCommonProps = require(Utility.withCommonProps)
 local withDefaults = require(Utility.withDefaults)
+local withCommonProps = require(Utility.withCommonProps)
 local Types = require(Utility.Types)
 
 local Radius = require(Enums.Radius)
@@ -43,7 +43,7 @@ type Use = Types.Use
 type InputSize = InputSize.InputSize
 type IconSize = IconSize.IconSize
 
-type IconVariant = BuilderIcons.IconVariant
+type IconVariant = typeof(BuilderIcons.IconVariant)
 type CloseAffordanceVariant = CloseAffordanceVariant.CloseAffordanceVariant
 type ColorNamespace = ColorNamespace.ColorNamespace
 
@@ -57,7 +57,7 @@ type CloseAffordanceProps = {
 	variant: UsedAs<CloseAffordanceVariant>?,
 	isCircular: UsedAs<boolean>?,
 	hasPadding: UsedAs<boolean>?,
-	colorNamespace: UsedAs<ColorNamespace>?,
+	colorNamespace: UsedAs<ColorNamespace>?
 } & Types.SelectionProps & Types.CommonProps
 
 return function(closeAffordanceProps: CloseAffordanceProps)
@@ -75,7 +75,7 @@ return function(closeAffordanceProps: CloseAffordanceProps)
 		local tokens = unwrap(theme.Tokens, use)
 		local size = unwrap(props.size, use)
 		
-		local variantProps = useCloseAffordanceVariants(size, variant, colorNamespace, hasPadding, isCircular)
+		local variantProps = useCloseAffordanceVariants(unwrap(theme.Tokens), tokens, size, variant, colorNamespace, hasPadding, isCircular)
 		local componentRadius = UDim.new(0, variantProps.container.radius)
 		
 		local cursor = {

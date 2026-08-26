@@ -3,15 +3,16 @@ local PackageManager = require(Foundation.PackageManager)
 
 local Fusion = PackageManager.getPackage("Fusion")
 
-local Image = require(Foundation.Components.Image)
-local View = require(Foundation.Components.View)
-
+local Components = Foundation.Components
 local Utility = Foundation.Utility
 
-local isPluginSecurity = require(Utility.isPluginSecurity)
+local Image = require(Components.Image)
+local View = require(Components.View)
+
+local unwrap = require(Utility.unwrap)
 local useRotation = require(Utility.useRotation)
 local withDefaults = require(Utility.withDefaults)
-local unwrap = require(Utility.unwrap)
+local isPluginSecurity = require(Utility.isPluginSecurity)
 local Types = require(Utility.Types)
 
 type UsedAs<T> = Types.UsedAs<T>
@@ -34,7 +35,7 @@ type SpinnerProps = {
 local FoundationUsePath2DSpinner = false
 
 local defaultProps = {
-	style = {},
+	style = {}
 }
 
 -- Right, Top, Left, Bottom

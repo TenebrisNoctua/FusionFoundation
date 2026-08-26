@@ -4,42 +4,39 @@ local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 local Components = Foundation.Components
 
-local DeclarativeBaseMenuContent = require(script.Parent.DeclarativeBaseMenuContent)
 local useSubmenuHover = require(script.Parent.useSubmenuHover)
 local computeAutomaticSize = require(script.Parent.computeAutomaticSize)
-local BaseMenuContext = require(script.Parent.BaseMenuContext)
 
-local ScrollView = require(Components.ScrollView)
+local BaseMenuContext = require(script.Parent.BaseMenuContext)
+local DeclarativeBaseMenuContent = require(script.Parent.DeclarativeBaseMenuContent)
+
 local View = require(Components.View)
+local ScrollView = require(Components.ScrollView)
 
 local unwrap = require(Utility.unwrap)
-local useScaledValue = require(Utility.useScaledValue)
-local withCommonProps = require(Utility.withCommonProps)
 local withDefaults = require(Utility.withDefaults)
+local withCommonProps = require(Utility.withCommonProps)
 local Types = require(Utility.Types)
 
-local ControlState = require(Enums.ControlState)
 local Radius = require(Enums.Radius)
 local InputSize = require(Enums.InputSize)
+local ControlState = require(Enums.ControlState)
 
 local defaultProps = {
-	size = InputSize.Medium,
+	size = InputSize.Medium
 }
 
 local radiusToTag: { [Radius]: string } = {
 	[Radius.Small] = "radius-small",
-	[Radius.Medium] = "radius-medium",
+	[Radius.Medium] = "radius-medium"
 }
-
-local MIN_WIDTH = 260
-local MAX_WIDTH = 320
 
 local function computeSize(values: {
 	autoSize: boolean,
 	isOverMaxHeight: boolean,
 	maxHeight: number?,
 	width: UDim?,
-	}): UDim2?
+}): UDim2?
 	local y = if values.isOverMaxHeight and values.maxHeight then UDim.new(0, values.maxHeight) else UDim.new()
 	return if values.autoSize then UDim2.new(UDim.new(), y) else UDim2.new(values.width or UDim.new(), y)
 end
@@ -102,6 +99,7 @@ local function BaseMenu(baseMenuProps: BaseMenuProps)
 		size = props.size,
 		hasLeading = hasLeading,
 		hoverOpenPath = submenuHover.openPath,
+		hoverOpenIdAtDepth = submenuHover.openIdAtDepth,
 		hoverOpenAtDepth = submenuHover.openAtDepth,
 		hoverCloseAtDepth = submenuHover.closeAtDepth,
 		hoverReset = submenuHover.reset,
@@ -120,20 +118,17 @@ local function BaseMenu(baseMenuProps: BaseMenuProps)
 	local autoSizeValue = scope:Computed(function(use)
 		local currentWidth = unwrap(props.width, use)
 		local currentCouldGrow = unwrap(props.couldGrow, use)
-		local scaledMaxWidth = useScaledValue(MAX_WIDTH, use)
-		return not currentWidth or (currentCouldGrow and currentWidth.Offset < scaledMaxWidth)
+		return not currentWidth or (currentCouldGrow == true)
 	end)
 
 	local sizeConstraint = scope:Computed(function(use)
 		local currentWidth = unwrap(props.width, use)
-		local scaledMinWidth = useScaledValue(MIN_WIDTH, use)
-		local scaledMaxWidth = useScaledValue(MAX_WIDTH, use)
 		local autoSize = unwrap(autoSizeValue, use)
 		if not autoSize then return nil end
-		local minWidthValue = if currentWidth then currentWidth.Offset else scaledMinWidth
+		local minWidthValue = if currentWidth then currentWidth.Offset else 0
+		if minWidthValue == 0 then return nil end
 		return {
 			MinSize = Vector2.new(minWidthValue, 0),
-			MaxSize = Vector2.new(scaledMaxWidth, math.huge),
 		}
 	end)
 

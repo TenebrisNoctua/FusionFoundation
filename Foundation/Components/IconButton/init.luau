@@ -9,17 +9,17 @@ local Enums = Foundation.Enums
 
 local useIconButtonVariants = require(script.useIconButtonVariants)
 
-local Image = require(Components.Image)
 local Text = require(Components.Text)
 local View = require(Components.View)
+local Image = require(Components.Image)
 
-local getIconScale = require(Utility.getIconScale)
-local iconMigrationUtils = require(Utility.iconMigrationUtils)
-local isBuilderIcon = require(Utility.isBuilderIcon)
-local useIconSize = require(Utility.useIconSize)
 local unwrap = require(Utility.unwrap)
-local withCommonProps = require(Utility.withCommonProps)
+local useIconSize = require(Utility.useIconSize)
 local withDefaults = require(Utility.withDefaults)
+local getIconScale = require(Utility.getIconScale)
+local isBuilderIcon = require(Utility.isBuilderIcon)
+local withCommonProps = require(Utility.withCommonProps)
+local iconMigrationUtils = require(Utility.iconMigrationUtils)
 local Types = require(Utility.Types)
 
 local InputSize = require(Enums.InputSize)
@@ -28,12 +28,19 @@ local ButtonVariant = require(Enums.ButtonVariant)
 local ColorNamespace = require(Enums.ColorNamespace)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
 local Constants = require(Foundation.Constants)
 
 local migrationLookup = BuilderIcons.Migration["uiblox"]
 local isMigrated = iconMigrationUtils.isMigrated
 local isBuilderOrMigratedIcon = iconMigrationUtils.isBuilderOrMigratedIcon
+
+local defaultProps = {
+	isDisabled = false,
+	size = InputSize.Medium,
+	width = UDim.new(0, 0),
+	isCircular = false,
+	variant = ButtonVariant.Utility
+}
 
 -- IconButton and Button variants are not currently aligned, but eventually it should be.
 -- For now we don't want to create a new variant enum for IconButton, so we'll use the Button variant enum
@@ -53,6 +60,8 @@ type InputSize = InputSize.InputSize
 type FillBehavior = FillBehavior.FillBehavior
 type ColorNamespace = ColorNamespace.ColorNamespace
 
+type IconVariant = typeof(BuilderIcons.IconVariant)
+
 export type IconButtonProps = {
 	-- The scope in which the component will be created.
 	scope: Scope,
@@ -67,35 +76,26 @@ export type IconButtonProps = {
 	-- Controls how the IconButton fills space in a layout.
 	fillBehavior: UsedAs<FillBehavior>?,
 	variant: UsedAs<SupportedIconButtonVariant>?,
-	icon: UsedAs<string | { name: string, variant: BuilderIcons.IconVariant? }>?,
+	icon: UsedAs<string | { name: string, variant: IconVariant? }>?,
 	-- These properties are converted from contexts.
 	colorNamespace: UsedAs<ColorNamespace>?,
 } & Types.SelectionProps & Types.CommonProps
 
-local defaultProps = {
-	isDisabled = false,
-	size = InputSize.Medium,
-	width = UDim.new(0, 0),
-	isCircular = false,
-	variant = ButtonVariant.Utility,
-}
-
 return function(iconButtonProps: IconButtonProps)
-	local Scope = iconButtonProps.scope
-	local Theme = ThemeProvider()
-	assert(Scope, "A scope has not been provided for the IconButton component.")
+	local scope = iconButtonProps.scope
+	local theme = ThemeProvider()
+	assert(scope, "A scope has not been provided for the IconButton component.")
 
 	local props = withDefaults(iconButtonProps, defaultProps)
 
-	return Scope:Computed(function(use: Use, innerScope: Scope)
-		local tokens = unwrap(Theme.Tokens, use)
-		local presentation = Theme.Presentation
-
+	return scope:Computed(function(use: Use, innerScope: Scope)
+		local tokens = unwrap(theme.Tokens, use)
 		local currentIcon = unwrap(props.icon, use)
-		local iconName = if typeof(currentIcon) == "table" then currentIcon.name else currentIcon
-		local iconVariant: BuilderIcons.IconVariant? = if typeof(currentIcon) == "table" then currentIcon.variant else nil
-
 		local currentSize = unwrap(props.size, use)
+		
+		local presentation = theme.Presentation
+		local iconName = if typeof(currentIcon) == "table" then currentIcon.name else currentIcon
+		local iconVariant: IconVariant? = if typeof(currentIcon) == "table" then currentIcon.variant else nil
 
 		local intrinsicIconSize: Vector2?, scale
 		if isBuilderOrMigratedIcon(iconName) then
@@ -106,7 +106,7 @@ return function(iconButtonProps: IconButtonProps)
 
 		local currentVariant = unwrap(props.variant, use)
 		local colorNamespace = if props.colorNamespace then unwrap(props.colorNamespace, use) else unwrap(presentation.colorNamespace, use)
-		local variantProps = useIconButtonVariants(currentSize, currentVariant, colorNamespace)
+		local variantProps = useIconButtonVariants(unwrap(theme.Theme), tokens, currentSize, currentVariant, colorNamespace)
 
 		local containerSize = variantProps.container.size
 

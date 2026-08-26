@@ -1,30 +1,33 @@
 local Foundation = script.Parent.Parent.Parent.Parent
 
+local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
-
-local Image = require(Foundation.Components.Image)
-local View = require(Foundation.Components.View)
+local Providers = Foundation.Providers
 
 local useFloating = require(script.Parent.Parent.useFloating)
+local PopoverContext = require(script.Parent.Parent.PopoverContext)
 
-local isPointInGuiObjectBounds = require(Utility.isPointInGuiObjectBounds)
-local usePointerPosition = require(Utility.usePointerPosition)
-local withDefaults = require(Utility.withDefaults)
-local isState = require(Utility.isState)
+local Image = require(Components.Image)
+local View = require(Components.View)
+
 local unwrap = require(Utility.unwrap)
+local isState = require(Utility.isState)
+local withDefaults = require(Utility.withDefaults)
+local usePointerPosition = require(Utility.usePointerPosition)
+local isPointInGuiObjectBounds = require(Utility.isPointInGuiObjectBounds)
 local Types = require(Utility.Types)
 
-local PopoverAlign = require(Enums.PopoverAlign)
-local PopoverSide = require(Enums.PopoverSide)
 local Radius = require(Enums.Radius)
-local StateLayerAffordance = require(Enums.StateLayerAffordance)
-local ElevationLayer = require(Enums.ElevationLayer)
+local PopoverSide = require(Enums.PopoverSide)
+local PopoverAlign = require(Enums.PopoverAlign)
 local ControlState = require(Enums.ControlState)
+local ElevationLayer = require(Enums.ElevationLayer)
+local StateLayerAffordance = require(Enums.StateLayerAffordance)
 
-local useElevation = require(Foundation.Providers.ElevationProvider.useElevation)
-local OverlayProvider = require(Foundation.Providers.OverlayProvider)
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local useElevation = require(Providers.ElevationProvider.useElevation)
+local OverlayProvider = require(Providers.OverlayProvider)
+local ThemeProvider = require(Providers.ThemeProvider)
 
 local Constants = require(Foundation.Constants)
 
@@ -34,7 +37,7 @@ local defaultProps = {
 	hasArrow = true,
 	selection = Constants.MODAL.DISABLE_SELECTION,
 	selectionGroup = Constants.MODAL.TRAP_FOCUS,
-	radius = Radius.Medium,
+	radius = Radius.Medium
 }
 
 local radiusToTag = {
@@ -78,10 +81,6 @@ export type PopoverContentProps = {
 	selection: UsedAs<Selection>?,
 	selectionGroup: UsedAs<boolean> | UsedAs<Types.SelectionGroup>?,
 	radius: UsedAs<(typeof(Radius.Small) | typeof(Radius.Medium) | typeof(Radius.Circle))>?,
-	-- Context properties that were flattened into standard props
-	isOpen: UsedAs<boolean>?,
-	anchor: UsedAs<Instance?>?,
-	gui: UsedAs<Instance?>?,
 	children: {Child}?,
 } & Types.CommonProps
 
@@ -90,10 +89,17 @@ export type PopoverContentProps = {
 return function(contentProps: PopoverContentProps)
 	local scope = contentProps.scope
 	assert(scope, "A scope has not been provided for the PopoverContent component.")
-	
+
+	local context = PopoverContext:now()
+	assert(context, "PopoverContent must be used within a Popover.Root")
+
 	local props = withDefaults(contentProps, defaultProps)
 	local theme = ThemeProvider()
 	local overlay = OverlayProvider()
+
+	local anchorState = context.anchor
+	local guiState = context.gui
+	local isOpenState = context.isOpen
 
 	local contentInstance = scope:Value(nil :: GuiObject?)
 	local backdropInstance = scope:Value(nil :: GuiObject?)
@@ -103,7 +109,7 @@ return function(contentProps: PopoverContentProps)
 	local elevation = useElevation(scope, ElevationLayer.Popover, { stackAboveOwner = true })
 
 	local hasArrowActive = scope:Computed(function(use: Use)
-		local currentAnchor = unwrap(props.anchor, use)
+		local currentAnchor = unwrap(anchorState, use)
 		local hasGuiObjectAnchor = typeof(currentAnchor) == "Instance"
 		return if hasGuiObjectAnchor then unwrap(props.hasArrow, use) else false
 	end)
@@ -118,8 +124,8 @@ return function(contentProps: PopoverContentProps)
 	
 	local position, isVisible, contentSize, arrowPosition, screenSize, anchorPoint = useFloating(
 		scope,
-		props.isOpen,
-		props.anchor,
+		isOpenState,
+		anchorState,
 		contentInstance,
 		overlay.instance,
 		props.side,
@@ -195,21 +201,21 @@ return function(contentProps: PopoverContentProps)
 
 	contentInstance:set(unwrap(contentView))
 
-	if isState(props.gui) then
+	if isState(guiState) then
 		scope:Observer(contentInstance):onChange(function()
 			local currentView = unwrap(contentInstance)
-			props.gui:set(currentView)
+			guiState:set(currentView)
 		end)
 	end
 
 	return scope:Computed(function(use: Use, innerScope: Scope)
-		local shouldRenderPopover = unwrap(props.isOpen, use)
+		local shouldRenderPopover = unwrap(isOpenState, use)
 		if not shouldRenderPopover then return end
 		
 		local tokens = unwrap(theme.Tokens, use)
 		local arrowSide = tokens.Size.Size_200
 
-		local currentAnchor = unwrap(props.anchor, use)
+		local currentAnchor = unwrap(anchorState, use)
 		local bgStyle = unwrap(backgroundStyleComputed, use)
 
 		local shadowSizeMap = innerScope:Computed(function(use: Use)
@@ -238,7 +244,7 @@ return function(contentProps: PopoverContentProps)
 				Visible = isVisible,
 				Parent = parentValue,
 				children = {
-					Backdrop = if props.onPressedOutside and unwrap(props.isOpen, use) then 
+					Backdrop = if props.onPressedOutside and unwrap(isOpenState, use) then
 					backdropInstance:set(View {
 						Name = "Backdrop",
 						scope = innerScope,

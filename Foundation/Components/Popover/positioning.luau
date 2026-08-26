@@ -1,7 +1,8 @@
 local Foundation = script.Parent.Parent.Parent
+local Enums = Foundation.Enums
 
-local PopoverAlign = require(Foundation.Enums.PopoverAlign)
-local PopoverSide = require(Foundation.Enums.PopoverSide)
+local PopoverAlign = require(Enums.PopoverAlign)
+local PopoverSide = require(Enums.PopoverSide)
 
 type PopoverSide = PopoverSide.PopoverSide
 type PopoverAlign = PopoverAlign.PopoverAlign

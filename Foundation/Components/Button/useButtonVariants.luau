@@ -5,19 +5,17 @@ local Utility = Foundation.Utility
 
 local getSharedVariants = require(script.Parent.getSharedVariants)
 
-local composeStyleVariant = require(Utility.composeStyleVariant)
-local useVariants = require(Utility.useVariants)
 local unwrap = require(Utility.unwrap)
+local useVariants = require(Utility.useVariants)
+local composeStyleVariant = require(Utility.composeStyleVariant)
 local Types = require(Utility.Types)
 
 local InputSize = require(Enums.InputSize)
 local ButtonVariant = require(Enums.ButtonVariant)
 local ColorNamespace = require(Enums.ColorNamespace)
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
-
-type Scope = Types.Scope
 type UsedAs<T> = Types.UsedAs<T>
+type Scope = Types.Scope
 type Use = Types.Use
 
 type InputSize = InputSize.InputSize
@@ -51,10 +49,8 @@ type ButtonVariantProps = {
 	},
 }
 
-local function variantsMap()
-	local sharedVariants = getSharedVariants()
-	local themeProvider = ThemeProvider()
-	local tokens = unwrap(themeProvider.Tokens)
+local function variantsMap(tokens: {[string]: any})
+	local sharedVariants = getSharedVariants(tokens)
 
 	local common = {
 		container = {
@@ -62,7 +58,7 @@ local function variantsMap()
 		},
 		text = {
 			tag = "shrink size-0-full auto-x text-truncate-end",
-		},
+		}
 	}
 
 	local size300 = tokens.Size.Size_300
@@ -82,7 +78,7 @@ local function variantsMap()
 			},
 			text = {
 				tag = "text-label-small",
-			},
+			}
 		},
 		[InputSize.Small] = {
 			container = {
@@ -95,7 +91,7 @@ local function variantsMap()
 			},
 			text = {
 				tag = "text-title-small",
-			},
+			}
 		},
 		[InputSize.Medium] = {
 			container = {
@@ -108,7 +104,7 @@ local function variantsMap()
 			},
 			text = {
 				tag = "text-label-medium",
-			},
+			}
 		},
 		[InputSize.Large] = {
 			container = {
@@ -121,15 +117,21 @@ local function variantsMap()
 			},
 			text = {
 				tag = "text-label-large",
-			},
-		},
+			}
+		}
 	}
 
 	return { common = common, sizes = sizes, types = sharedVariants.types }
 end
 
-local function useButtonVariants(size: InputSize, variant: ButtonVariant, colorNamespace: ColorNamespace?): ButtonVariantProps
-	local variants = useVariants("Button", variantsMap)
+local function useButtonVariants(
+	theme: string, 
+	tokens: {[string]: any}, 
+	size: InputSize, 
+	variant: ButtonVariant, 
+	colorNamespace: ColorNamespace?
+): ButtonVariantProps
+	local variants = useVariants(theme, tokens, "Button", variantsMap)
 	local resolvedColorMode = colorNamespace or ColorNamespace.Color
 	return composeStyleVariant(
 		variants.common,

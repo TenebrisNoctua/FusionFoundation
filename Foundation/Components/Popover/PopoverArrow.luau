@@ -3,28 +3,30 @@ local PackageManager = require(Foundation.PackageManager)
 
 local Dash = PackageManager.getPackage("Dash")
 
+local Components = Foundation.Components
 local Utility = Foundation.Utility
 
-local View = require(Foundation.Components.View)
+local View = require(Components.View)
 
-local withCommonProps = require(Utility.withCommonProps)
-local withDefaults = require(Utility.withDefaults)
 local unwrap = require(Utility.unwrap)
 local stripProps = require(Utility.stripProps)
+local withDefaults = require(Utility.withDefaults)
+local withCommonProps = require(Utility.withCommonProps)
 local Types = require(Utility.Types)
 
 local COMPONENT_ONLY_PROPERTIES = {
 	"size",
 	"position",
 	"backgroundStyle",
-	"ZIndex",
+	"ZIndex"
 }
 
 local defaultProps = {}
 
-type Scope = Types.Scope
 type UsedAs<T> = Types.UsedAs<T>
+type Scope = Types.Scope
 type Use = Types.Use
+
 type ColorStyleValue = Types.ColorStyleValue
 
 export type PopoverArrowProps = {
@@ -36,12 +38,11 @@ export type PopoverArrowProps = {
 } & Types.CommonProps
 
 return function(arrowProps: PopoverArrowProps)
-	local Scope = arrowProps.scope
-	assert(Scope, "A scope has not been provided for the PopoverArrow component.")
+	local scope = arrowProps.scope
+	assert(scope, "A scope has not been provided for the PopoverArrow component.")
 
 	local props = withDefaults(arrowProps, defaultProps)
-
-	return Scope:Computed(function(use: Use, innerScope: Scope)
+	return scope:Computed(function(use: Use, innerScope: Scope)
 		local currentSize = unwrap(props.size, use)
 		local currentPosition = unwrap(props.position, use)
 		local currentZIndex = unwrap(props.ZIndex, use)

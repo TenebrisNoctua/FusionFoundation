@@ -1,17 +1,19 @@
 local Foundation = script.Parent.Parent.Parent
+
 local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
 local positioning = require(script.Parent.positioning)
 
-local isState = require(Utility.isState)
 local unwrap = require(Utility.unwrap)
+local isState = require(Utility.isState)
 local Types = require(Utility.Types)
 
-local PopoverAlign = require(Foundation.Enums.PopoverAlign)
-local PopoverSide = require(Foundation.Enums.PopoverSide)
+local PopoverAlign = require(Enums.PopoverAlign)
+local PopoverSide = require(Enums.PopoverSide)
 
-type Scope = Types.Scope
 type UsedAs<T> = Types.UsedAs<T>
+type Scope = Types.Scope
 type Use = Types.Use
 
 type PopoverSide = PopoverSide.PopoverSide

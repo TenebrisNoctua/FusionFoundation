@@ -1,8 +1,8 @@
 local Foundation = script.Parent.Parent.Parent
 local Utility = Foundation.Utility
 
-local Types = require(Utility.Types)
 local unwrap = require(Utility.unwrap)
+local Types = require(Utility.Types)
 
 type UsedAs<T> = Types.UsedAs<T>
 type ColorStyle = Types.ColorStyle

@@ -43,13 +43,13 @@ function stateLayerModeToTokenNamespace(mode: StateLayerMode?)
 end
 
 local function getStateLayerStyle(
+	tokens: {[string]: any},
 	mode: StateLayerMode?,
 	guiState: ControlState
 ): { Color3: Color3, Transparency: number }
-	local theme = ThemeProvider()
 	local colorNamespace = stateLayerModeToTokenNamespace(mode)
 	local stateLayerState = guiStateToStateLayer(guiState)
-	local stateLayerStyle = unwrap(theme.Tokens)[colorNamespace].State[stateLayerState]
+	local stateLayerStyle = tokens[colorNamespace].State[stateLayerState]
 	return stateLayerStyle
 end
 

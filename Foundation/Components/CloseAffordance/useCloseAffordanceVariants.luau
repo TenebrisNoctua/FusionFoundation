@@ -9,22 +9,21 @@ local Enums = Foundation.Enums
 
 local getSharedVariants = require(Components.Button.getSharedVariants)
 
-local composeStyleVariant = require(Utility.composeStyleVariant)
-local useVariants = require(Utility.useVariants)
 local unwrap = require(Utility.unwrap)
+local useVariants = require(Utility.useVariants)
+local composeStyleVariant = require(Utility.composeStyleVariant)
 local Types = require(Utility.Types)
 
+local IconSize = require(Enums.IconSize)
 local InputSize = require(Enums.InputSize)
 local ButtonVariant = require(Enums.ButtonVariant)
 local ColorNamespace = require(Enums.ColorNamespace)
-local IconSize = require(Enums.IconSize)
 local CloseAffordanceVariant = require(Enums.CloseAffordanceVariant)
 
-local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 local Constants = require(Foundation.Constants)
 
-type Scope = Types.Scope
 type UsedAs<T> = Types.UsedAs<T>
+type Scope = Types.Scope
 type Use = Types.Use
 
 type IconSize = IconSize.IconSize
@@ -44,22 +43,20 @@ type CloseAffordanceVariantProps = {
 		size: UDim2,
 		radius: number,
 		padding: UDim,
-		stateLayer: StateLayer?,
+		stateLayer: StateLayer?
 	},
 	content: {
 		style: ColorStyleValue,
-		iconSize: IconSize,
+		iconSize: IconSize
 	}
 }
 
-local function variantsMap()
-	local sharedVariants = getSharedVariants()
-	local themeProvider = ThemeProvider()
-	local tokens = unwrap(themeProvider.Tokens)
+local function variantsMap(tokens: {[string]: any})
+	local sharedVariants = getSharedVariants(tokens)
 	
 	local common = {
 		container = {
-			tag = "row align-x-center align-y-center auto-xy clip",
+			tag = "row align-x-center align-y-center auto-xy clip"
 		}
 	}
 	
@@ -147,10 +144,9 @@ local function variantsMap()
 	}
 end
 
-return function(size: InputSize, variant: CloseAffordanceVariant, colorNamespace: ColorNamespace?, hasPadding: boolean, isCircular: boolean): CloseAffordanceVariantProps
-	local variants = useVariants("CloseAffordance", variantsMap)
+return function(theme: string, tokens: {[string]: any}, size: InputSize, variant: CloseAffordanceVariant, colorNamespace: ColorNamespace?, hasPadding: boolean, isCircular: boolean): CloseAffordanceVariantProps
+	local variants = useVariants(theme, tokens, "CloseAffordance", variantsMap)
 	local isShapeCircular = variant == CloseAffordanceVariant.OverMedia or isCircular
-		 
 	return composeStyleVariant(
 		variants.common,
 		variants.types[variant][colorNamespace or ColorNamespace.Color],

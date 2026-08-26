@@ -155,10 +155,20 @@ local function DeclarativeBaseMenuContent(props: DeclarativeBaseMenuContentProps
 						return Dash.map(group.items, function(item, index)
 							local isOpenComputed
 							if item.items ~= nil then
+								-- PERF: depend on the depth-scoped derived signal instead of the
+								-- raw hoverOpenPath array. hoverOpenPath is a single Value holding
+								-- the whole open-submenu chain, so subscribing to it directly means
+								-- EVERY item-with-a-submenu at EVERY depth re-evaluates whenever the
+								-- hover chain changes at ANY depth (e.g. hovering a sibling three
+								-- levels down). openIdAtDepth(currentDepth) only changes value -
+								-- and only then propagates here - when the open id at THIS item's
+								-- own depth actually changes.
 								isOpenComputed = groupInnerScope:Computed(function(use: Use)
-									local hoverPath = unwrap(parentContext.hoverOpenPath, use) or {}
+									local currentDepthOpenId = if parentContext.hoverOpenIdAtDepth
+										then unwrap(parentContext.hoverOpenIdAtDepth(currentDepth), use)
+										else (unwrap(parentContext.hoverOpenPath, use) or {})[currentDepth]
 									local itemId = unwrap(item.id, use)
-									return hoverPath[currentDepth] == itemId
+									return currentDepthOpenId == itemId
 								end)
 							else
 								isOpenComputed = false

@@ -7,35 +7,33 @@ local BuilderIcons = PackageManager.getPackage("BuilderIcons")
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
-local useBaseMenuItemVariants = require(script.Parent.useBaseMenuItemVariants)
 local useMenuItemHover = require(script.Parent.useMenuItemHover)
+local useBaseMenuItemVariants = require(script.Parent.useBaseMenuItemVariants)
 
 local Accessory = require(script.Parent.BaseMenuItemAccessory)
 local BaseMenuContext = require(script.Parent.BaseMenuContext)
 local BaseMenuScrollContainer = require(script.Parent.BaseMenuScrollContainer)
 
 local Icon = require(Foundation.Components.Icon)
-local Popover = require(Foundation.Components.Popover)
 local Text = require(Foundation.Components.Text)
 local View = require(Foundation.Components.View)
+local Popover = require(Foundation.Components.Popover)
 
-local iconMigrationUtils = require(Utility.iconMigrationUtils)
-local withCommonProps = require(Utility.withCommonProps)
-local withDefaults = require(Utility.withDefaults)
 local unwrap = require(Utility.unwrap)
 local stripProps = require(Utility.stripProps)
+local withDefaults = require(Utility.withDefaults)
+local withCommonProps = require(Utility.withCommonProps)
+local iconMigrationUtils = require(Utility.iconMigrationUtils)
 local Types = require(Utility.Types)
 
-local InputSize = require(Enums.InputSize)
-local PopoverAlign = require(Enums.PopoverAlign)
-local PopoverSide = require(Enums.PopoverSide)
 local Radius = require(Enums.Radius)
+local InputSize = require(Enums.InputSize)
+local PopoverSide = require(Enums.PopoverSide)
+local PopoverAlign = require(Enums.PopoverAlign)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 local Constants = require(Foundation.Constants)
-
---// Component Related Variables
 
 local Children = Fusion.Children
 
@@ -48,12 +46,12 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"isDisabled",
 	"text",
 	"onActivated",
-	"isOpen",
+	"isOpen"
 }
 
 local defaultProps = {
 	isChecked = false,
-	isDisabled = false,
+	isDisabled = false
 }
 
 local function getInputSinkAll()
@@ -87,7 +85,7 @@ local function getContainerPadding(container: any, menuHasCheck: boolean): Types
 	local left = if menuHasCheck then container.paddingLeftWithCheck else container.paddingLeftWithoutCheck
 	return {
 		left = UDim.new(0, left or 0),
-		right = UDim.new(0, container.paddingRight or 0),
+		right = UDim.new(0, container.paddingRight or 0)
 	}
 end
 
@@ -127,7 +125,7 @@ export type BaseMenuItemProps = {
 
 return function(menuItemProps: BaseMenuItemProps)
 	local scope = menuItemProps.scope
-	local Theme = ThemeProvider()
+	local theme = ThemeProvider()
 	assert(scope, "A scope has not been provided for the BaseMenuItem component.")
 
 	local props = withDefaults(menuItemProps, defaultProps)
@@ -135,7 +133,7 @@ return function(menuItemProps: BaseMenuItemProps)
 	local itemRef = scope:Value(nil :: GuiObject?)
 
 	return scope:Computed(function(use: Use, innerScope: Scope)
-		local tokens = unwrap(Theme.Tokens, use)
+		local tokens = unwrap(theme.Tokens, use)
 		local currentId = unwrap(props.id, use)
 		local currentSize = unwrap(context.size, use)
 		local currentDepth = context.depth
@@ -164,7 +162,7 @@ return function(menuItemProps: BaseMenuItemProps)
 		local checkMenuHasCheck = if menuHasCheck ~= nil then menuHasCheck else currentIsChecked == true
 
 		local isSubmenuScrollable = currentMaxHeight ~= nil
-		local variantProps = useBaseMenuItemVariants(currentSize, isSubmenuScrollable)
+		local variantProps = useBaseMenuItemVariants(unwrap(theme.Theme), tokens, currentSize, isSubmenuScrollable)
 
 		useMenuItemHover(innerScope, {
 			itemRef = itemRef,
@@ -210,7 +208,7 @@ return function(menuItemProps: BaseMenuItemProps)
 		local cursor = {
 			radius = UDim.new(0, tokens.Radius.Small),
 			offset = tokens.Size.Size_200,
-			borderWidth = tokens.Stroke.Thicker,
+			borderWidth = tokens.Stroke.Thicker
 		}
 
 		local containerPadding = getContainerPadding(variantProps.container, checkMenuHasCheck)
@@ -305,7 +303,7 @@ return function(menuItemProps: BaseMenuItemProps)
 				Padding = UDim.new(0, wrapperGap),
 				SortOrder = Enum.SortOrder.LayoutOrder,
 			},
-			children = wrapperChildren,
+			children = wrapperChildren
 		}
 
 		local viewProps = withCommonProps(props, {
@@ -318,7 +316,7 @@ return function(menuItemProps: BaseMenuItemProps)
 			tag = variantProps.container.tag,
 			padding = containerPadding,
 			layout = containerLayout,
-			children = viewChildren,
+			children = viewChildren
 		})
 
 		local itemElement = unwrap(View(viewProps))
@@ -331,64 +329,72 @@ return function(menuItemProps: BaseMenuItemProps)
 		local strokeThickness = tokens.Stroke.Standard
 		local groupPadding = variantProps.groupPadding.size
 
-		local submenuContent
-		if isSubmenuScrollable then
-			submenuContent = BaseMenuScrollContainer {
-				scope = innerScope,
-				maxHeight = currentMaxHeight,
-				scrollViewProps = {
-					tag = variantProps.submenuContent.tag,
-					InputSink = InputSinkAll,
-				},
-				children = rawChildren,
-			}
-		else
-			local submenuChildren = rawChildren
-			if type(submenuChildren) == "function" then
-				submenuChildren = submenuChildren(innerScope)
-			end
-			submenuContent = View {
-				scope = innerScope,
-				tag = variantProps.submenuContent.tag,
-				InputSink = InputSinkAll,
-				children = submenuChildren,
-			}
-		end
+		-- We lazily construct the submenu here, and only when the submenu is actually open.
+		local submenuPopover = innerScope:Computed(function(use: Use, submenuScope: Scope)
+			if not unwrap(props.isOpen, use) then return end
 
-		local fragmentChildren = {
-			Item = innerScope:Hydrate(itemElement)(stripProps(props, COMPONENT_ONLY_PROPERTIES)),
-			Submenu = Popover.Root {
-				scope = innerScope,
+			return Popover.Root {
+				scope = submenuScope,
 				isOpen = props.isOpen,
-				children = {
-					Anchor = Popover.Anchor {
-						scope = innerScope,
-						anchorInstance = itemRef,
-					},
-					Content = Popover.Content {
-						scope = innerScope,
-						side = {
-							position = PopoverSide.Right,
-							offset = groupPadding / 2 + strokeThickness,
-						},
-						align = {
-							position = PopoverAlign.Start,
-							offset = -groupPadding,
-						},
-						hasArrow = false,
-						onPressedOutside = onSubmenuPressedOutside,
-						backgroundStyle = tokens.Color.Surface.Surface_200,
-						radius = Radius.Medium,
-						children = {
-							MenuContainer = submenuContent
+				-- We have to provide children as a function, because doing otherwise in a table
+				-- would evaluate the children first automatically by Luau.
+				-- We also need to have the children constructed on the same scope as the Root.
+				children = function(popoverScope: Scope)
+					local submenuContent
+					if isSubmenuScrollable then
+						submenuContent = BaseMenuScrollContainer {
+							scope = popoverScope,
+							maxHeight = currentMaxHeight,
+							scrollViewProps = {
+								tag = variantProps.submenuContent.tag,
+								InputSink = InputSinkAll,
+							},
+							children = rawChildren
 						}
-					},
-				},
-			}
-		}
+					else
+						local submenuChildren = rawChildren
+						if type(submenuChildren) == "function" then
+							submenuChildren = submenuChildren(popoverScope)
+						end
+						submenuContent = View {
+							scope = popoverScope,
+							tag = variantProps.submenuContent.tag,
+							InputSink = InputSinkAll,
+							children = submenuChildren,
+						}
+					end
 
-		return innerScope:New "Folder" {
-			[Children] = fragmentChildren
+					return {
+						Anchor = Popover.Anchor {
+							scope = popoverScope,
+							anchorInstance = itemRef,
+						},
+						Content = Popover.Content {
+							scope = popoverScope,
+							side = {
+								position = PopoverSide.Right,
+								offset = groupPadding / 2 + strokeThickness,
+							},
+							align = {
+								position = PopoverAlign.Start,
+								offset = -groupPadding,
+							},
+							hasArrow = false,
+							onPressedOutside = onSubmenuPressedOutside,
+							backgroundStyle = tokens.Color.Surface.Surface_200,
+							radius = Radius.Medium,
+							children = {
+								MenuContainer = submenuContent
+							}
+						}
+					}
+				end
+			}
+		end)
+		
+		return {
+			Item = innerScope:Hydrate(itemElement)(stripProps(props, COMPONENT_ONLY_PROPERTIES)),
+			Submenu = submenuPopover
 		}
 	end)
 end

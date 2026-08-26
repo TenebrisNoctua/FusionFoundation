@@ -2,9 +2,9 @@
 
 local Foundation = script.Parent.Parent
 
-local Types = require(Foundation.Utility.Types)
 local unwrap = require(Foundation.Utility.unwrap)
 local stripProps = require(Foundation.Utility.stripProps)
+local Types = require(Foundation.Utility.Types)
 
 local COMPONENT_ONLY_PROPERTIES = {
 	"fillDirection",
@@ -17,14 +17,13 @@ type Use = Types.Use
 export type GradientProps = {
 	scope: Scope,
 	fillDirection: Enum.FillDirection,
-	top: boolean,
+	top: boolean
 }
 
 return function(props: GradientProps)
-	local Scope = props.scope
-	assert(Scope, "A scope has not been provided for the Gradient component.")
-	
-	return Scope:Computed(function(use: Use, innerScope: Scope)
+	local scope = props.scope
+	assert(scope, "A scope has not been provided for the Gradient component.")
+	return scope:Computed(function(use: Use, innerScope: Scope)
 		local top = unwrap(props.top, use)
 		return innerScope:Hydrate(innerScope:New "UIGradient" {
 			Rotation = if unwrap(props.fillDirection, use) == Enum.FillDirection.Vertical then 90 else 0,

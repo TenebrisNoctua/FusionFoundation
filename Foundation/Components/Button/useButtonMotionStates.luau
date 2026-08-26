@@ -80,7 +80,7 @@ local function useButtonMotionStates(
 		transparency = scope:Tween(targetTransparency, generalTweenInfo),
 		textTransparency = scope:Tween(targetTextTransparency, generalTweenInfo),
 		iconTransparency = scope:Tween(targetIconTransparency, iconTweenInfo),
-		iconScale = scope:Tween(targetIconScale, generalTweenInfo), 
+		iconScale = scope:Tween(targetIconScale, generalTweenInfo)
 	}
 end
 

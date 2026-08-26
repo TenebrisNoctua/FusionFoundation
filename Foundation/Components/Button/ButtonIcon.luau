@@ -11,9 +11,9 @@ local useButtonVariants = require(script.Parent.useButtonVariants)
 local Image = require(Foundation.Components.Image)
 local Text = require(Foundation.Components.Text)
 
+local unwrap = require(Utility.unwrap)
 local getIconScale = require(Utility.getIconScale)
 local iconMigrationUtils = require(Utility.iconMigrationUtils)
-local unwrap = require(Utility.unwrap)
 local Types = require(Utility.Types)
 
 local InputSize = require(Enums.InputSize)
@@ -22,6 +22,8 @@ local ButtonVariant = require(Enums.ButtonVariant)
 local migrationLookup = BuilderIcons.Migration["uiblox"]
 local isMigrated = iconMigrationUtils.isMigrated
 local isBuilderOrMigratedIcon = iconMigrationUtils.isBuilderOrMigratedIcon
+
+local ThemeProvider = require(Foundation.Providers.ThemeProvider)
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
@@ -38,11 +40,12 @@ export type ButtonIconProps = {
 	size: UsedAs<InputSize>,
 	disabledTransparencyBinding: UsedAs<number>,
 	textTransparencyBinding: UsedAs<number>,
-	textSizeOffset: UsedAs<number>?,
+	textSizeOffset: UsedAs<number>?
 }
 
 return function(props: ButtonIconProps)
 	local scope = props.scope
+	local theme = ThemeProvider()
 
 	local currentIcon = unwrap(props.icon)
 	if not currentIcon or currentIcon == "" then
@@ -54,9 +57,10 @@ return function(props: ButtonIconProps)
 	local textOffset = unwrap(props.textSizeOffset) or 0
 	
 	local mixedIconStyle = scope:Computed(function(use: Use)
+		local tokens = unwrap(theme.Tokens, use)
 		local disabledValue = unwrap(props.disabledTransparencyBinding, use) or 0
 		local progressValue = unwrap(props.textTransparencyBinding, use) or 0
-		local variantProps = useButtonVariants(currentSize, unwrap(props.variant), nil)
+		local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant), nil)
 		
 		return {
 			Color3 = variantProps.content.style.Color3,
@@ -69,7 +73,8 @@ return function(props: ButtonIconProps)
 			scope = scope,
 			Text = if isMigrated(currentIcon) then migrationLookup[currentIcon].name else currentIcon,
 			fontStyle = scope:Computed(function(use: Use)
-				local variantProps = useButtonVariants(currentSize, unwrap(props.variant, use), nil)
+				local tokens = unwrap(theme.Tokens, use)
+				local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant, use), nil)
 				return {
 					Font = BuilderIcons.Font[if isMigrated(currentIcon)
 						then migrationLookup[currentIcon].variant
@@ -79,7 +84,8 @@ return function(props: ButtonIconProps)
 			end),
 			tag = "position-center-center anchor-center-center",
 			Size = scope:Computed(function(use: Use)
-				local variantProps = useButtonVariants(currentSize, unwrap(props.variant, use), nil)
+				local tokens = unwrap(theme.Tokens, use)
+				local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant, use), nil)
 				return variantProps.icon.size
 			end),
 			textStyle = mixedIconStyle,
@@ -87,7 +93,8 @@ return function(props: ButtonIconProps)
 				then {
 					scope:New "UITextSizeConstraint" {
 						MaxTextSize = scope:Computed(function(use: Use)
-							local variantProps = useButtonVariants(currentSize, unwrap(props.variant, use), nil)
+							local tokens = unwrap(theme.Tokens, use)
+							local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant, use), nil)
 							return variantProps.icon.size.Y.Offset
 						end)
 					}
@@ -102,11 +109,12 @@ return function(props: ButtonIconProps)
 			Size = if intrinsicIconSize
 				then UDim2.fromOffset(intrinsicIconSize.X, intrinsicIconSize.Y)
 				else scope:Computed(function(use: Use)
-					local variantProps = useButtonVariants(currentSize, unwrap(props.variant, use), nil)
+					local tokens = unwrap(theme.Tokens, use)
+					local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant, use), nil)
 					return variantProps.icon.size
 				end),
 			imageStyle = mixedIconStyle,
-			scale = scale,
+			scale = scale
 		}
 	end
 end
