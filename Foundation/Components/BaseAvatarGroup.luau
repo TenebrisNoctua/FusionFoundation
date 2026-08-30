@@ -1,7 +1,6 @@
 local Foundation = script.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
-local Fusion = PackageManager.getPackage("Fusion")
 local Dash = PackageManager.getPackage("Dash")
 
 local Components = Foundation.Components
@@ -46,7 +45,7 @@ export type AvatarLayoutProps = {
 
 export type AvatarGroupRender = (avatarData: AvatarData, layoutProps: AvatarLayoutProps) -> any
 
-export type InternalAvatarGroupProps = {
+export type baseAvatarGroupProps = {
 	type: UsedAs<AvatarGroupType>?,
 	max: UsedAs<number>?,
 	resolvedSize: UsedAs<number>,
@@ -120,19 +119,18 @@ local function AvatarOverflow(props: {
 	})))(stripProps(props, { "count", "size", "isEllipsed", "backgroundStyle", "backplateStyle" }))
 end
 
-return function(internalAvatarGroupProps: InternalAvatarGroupProps)
-	local Scope = internalAvatarGroupProps.scope
-	local Theme = ThemeProvider()
-	assert(Scope, "A scope has not been provided for the InternalAvatarGroup component.")
+return function(baseAvatarGroupProps: baseAvatarGroupProps)
+	local scope = baseAvatarGroupProps.scope
+	local theme = ThemeProvider()
+	assert(scope, "A scope has not been provided for the BaseAvatarGroup component.")
 
-	local props = withDefaults(internalAvatarGroupProps, defaultProps)
-
-	return Scope:Computed(function(use: Use, innerScope: Scope)
-		local tokens = unwrap(Theme.Tokens, use)
+	local props = withDefaults(baseAvatarGroupProps, defaultProps)
+	return scope:Computed(function(use: Use, innerScope: Scope)
+		local tokens = unwrap(theme.Tokens, use)
 		local avatars = unwrap(props.avatars, use)
 		local max = unwrap(props.max, use)
 		
-		local presentation = Theme.Presentation
+		local presentation = theme.Presentation
 		local backgroundStyle = tokens[presentation.colorNamespace or ColorNamespace.Color].Shift.Shift_300
 		local backplateStyle = unwrap(props.backplateStyle, use) or tokens.Color.Surface.Surface_0
 

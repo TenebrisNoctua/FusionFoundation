@@ -1,11 +1,10 @@
 local Foundation = script.Parent.Parent.Parent
 
-local Enums = Foundation.Enums
 local Utility = Foundation.Utility
+local Enums = Foundation.Enums
 
 local getSharedVariants = require(script.Parent.getSharedVariants)
 
-local unwrap = require(Utility.unwrap)
 local useVariants = require(Utility.useVariants)
 local composeStyleVariant = require(Utility.composeStyleVariant)
 local Types = require(Utility.Types)

@@ -4,7 +4,7 @@
 local task = nil -- Disable usage of Roblox's task scheduler
 --[[
 	The entry point for the Fusion library.
-	WARNING: This is a modified version of 0.3 to include the new Tags SpecialKey from 0.4.
+	WARNING: This is a modified version of 0.3 that may behave slightly different from upstream.
 ]]
 
 local Types = require(script.Types)
@@ -74,7 +74,7 @@ local Fusion: Fusion = table.freeze {
 	OnChange = require(script.Instances.OnChange),
 	OnEvent = require(script.Instances.OnEvent),
 	Out = require(script.Instances.Out),
-	Tag = require(script.Instances.Tag),
+	Tags = require(script.Instances.Tags),
 
 	-- Animation
 	Tween = require(script.Animation.Tween),

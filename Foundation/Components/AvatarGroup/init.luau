@@ -1,16 +1,12 @@
 local Foundation = script.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
-local View = require(Components.View)
 local Avatar = require(Components.Avatar)
 local getAvatarSize = require(Components.Avatar.getAvatarSize)
-local InternalAvatarGroup = require(Components.InternalAvatarGroup)
+local BaseAvatarGroup = require(Components.BaseAvatarGroup)
 
 local unwrap = require(Utility.unwrap)
 local stripProps = require(Utility.stripProps)
@@ -18,7 +14,6 @@ local withDefaults = require(Utility.withDefaults)
 local withCommonProps = require(Utility.withCommonProps)
 local Types = require(Utility.Types)
 
-local IconSize = require(Enums.IconSize)
 local InputSize = require(Enums.InputSize)
 local UserPresence = require(Enums.UserPresence)
 local ColorNamespace = require(Enums.ColorNamespace)
@@ -86,14 +81,13 @@ return function(avatarGroupProps: AvatarGroupProps)
 			end
 		end
 
-		local backgroundStyle = tokens[presentation.colorNamespace or ColorNamespace.Color].Shift.Shift_300
 		local resolvedSize = getAvatarSize(tokens, size, presentation.isIconSize)
 		local backplateStyle = unwrap(props.backplateStyle, use) or tokens.Color.Surface.Surface_0
 
 		local function renderAvatarGroupItem(
 			scope: Scope,
-			avatarData: InternalAvatarGroup.AvatarData,
-			layoutProps: InternalAvatarGroup.AvatarLayoutProps
+			avatarData: BaseAvatarGroup.AvatarData,
+			layoutProps: BaseAvatarGroup.AvatarLayoutProps
 		)
 			local userPresence: UserPresence? = nil
 			local userId: UsedAs<number>
@@ -117,7 +111,7 @@ return function(avatarGroupProps: AvatarGroupProps)
 			}
 		end
 
-		return innerScope:Hydrate(InternalAvatarGroup(withCommonProps(props, {
+		return innerScope:Hydrate(BaseAvatarGroup(withCommonProps(props, {
 			scope = innerScope,
 			type = type,
 			max = props.max,

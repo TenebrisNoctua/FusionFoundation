@@ -72,8 +72,8 @@ return function(viewProps: ViewProps): UsedAs<Frame | CanvasGroup>
 	return scope:Computed(function(use: Use, innerScope: Scope)
 		local tagsWithDefaults = useDefaultTags(innerScope, props.tag, defaultTags)
 		local tag = useStyleTags(innerScope, tagsWithDefaults, theme.AddTags)
-		props.tag = unwrap(tag)
-
+		props.tag = tag
+		
 		local isInteractable = props.onStateChanged ~= nil or props.onActivated ~= nil or props.onSecondaryActivated ~= nil
 		
 		local usesCanvasGroup = innerScope:Computed(function(use: Use) 
@@ -102,7 +102,7 @@ return function(viewProps: ViewProps): UsedAs<Frame | CanvasGroup>
 		local engineComponentProps = withGuiObjectProps(props, {
 			-- When CanvasGroup and Frame support all states, we can remove this.
 			AutoButtonColor = if engineComponent == "ImageButton" then false else nil,
-			GroupTransparency = if unwrap(usesCanvasGroup, use) then props.GroupTransparency else nil,
+			GroupTransparency = if unwrap(usesCanvasGroup, use) then props.GroupTransparency else nil
 		})
 		
 		engineComponentProps.Name = props.Name

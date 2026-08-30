@@ -37,7 +37,7 @@ local function OnChange(
 				else
 					local callback = callback :: (...unknown) -> (...unknown)
 					table.insert(scope, event:Connect(function()
-						callback((applyTo :: any)[propertyName])
+						callback((applyTo :: any)[propertyName], applyTo)
 					end))
 				end
 			end

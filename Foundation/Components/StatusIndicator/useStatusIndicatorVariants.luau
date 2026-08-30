@@ -3,7 +3,6 @@ local Foundation = script.Parent.Parent.Parent
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
-local unwrap = require(Utility.unwrap)
 local useVariants = require(Utility.useVariants)
 local composeStyleVariant = require(Utility.composeStyleVariant)
 local Types = require(Utility.Types)
@@ -13,7 +12,6 @@ local StatusIndicatorShape = require(Enums.StatusIndicatorShape)
 local StatusIndicatorVariant = require(Enums.StatusIndicatorVariant)
 
 local Constants = require(Foundation.Constants)
-
 
 local BuilderSansSemiBold = Font.new(Constants.BUILDER_SANS_FONT_ASSET, Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 

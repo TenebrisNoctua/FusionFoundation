@@ -1,7 +1,4 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
@@ -18,8 +15,6 @@ local guiStateMapper: { [Enum.GuiState]: ControlState } = {
 	[Enum.GuiState.Press] = ControlState.Pressed,
 	[Enum.GuiState.NonInteractable] = ControlState.Disabled
 }
-
-local OnEvent = Fusion.OnEvent
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
@@ -44,10 +39,7 @@ local function useGuiControlState(scope: Scope, guiObjectRef: UsedAs<GuiObject?>
 			end
 		end
 
-		if oldState == newState then
-			return
-		end
-
+		if oldState == newState then return end
 		currentControlState:set(newState)
 
 		if onStateChanged ~= nil then

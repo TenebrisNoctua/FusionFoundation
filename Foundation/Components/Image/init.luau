@@ -118,7 +118,7 @@ return function(imageProps: ImageProps): UsedAs<ImageButton | ImageLabel>
 	
 	local tagsWithDefaults = useDefaultTags(Scope, props.tag, defaultTags)
 	local tag = useStyleTags(Scope, tagsWithDefaults, Theme.AddTags)
-	props.tag = unwrap(tag)
+	props.tag = tag
 	
 	local function setImageData()
 		local imageData = unwrap(props.Image)

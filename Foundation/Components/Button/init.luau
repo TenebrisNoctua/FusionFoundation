@@ -301,7 +301,7 @@ return function(buttonProps: ButtonProps)
 			onStateChanged = setControlState,
 
 			isDisabled = innerScope:Computed(function(use: Use)
-				return not (unwrap(props.isDisabled, use) or currentLoading or unwrap(isDelaying, use))
+				return (unwrap(props.isDisabled, use) or currentLoading or unwrap(isDelaying, use))
 			end),
 
 			stateLayer = variantProps.container.stateLayer,

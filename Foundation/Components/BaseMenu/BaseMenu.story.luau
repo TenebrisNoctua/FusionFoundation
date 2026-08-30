@@ -464,13 +464,11 @@ return {
 				backgroundStyle = {
 					Transparency = 1
 				},
-				tag = "auto-xy padding-x-large padding-top-large",
+				scroll = {
+					AutomaticCanvasSize = Enum.AutomaticSize.XY	
+				},
+				tag = "auto-x padding-x-large padding-top-large col",
 				children = {
-					innerScope:New "UIListLayout" {
-						Padding = UDim.new(0, 16),
-						SortOrder = Enum.SortOrder.LayoutOrder,
-					},
-					
 					StorySection {
 						scope = innerScope,
 						title = "Playground",

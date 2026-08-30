@@ -15,13 +15,15 @@ local Types = require(Utility.Types)
 type Scope = Types.Scope
 type Child = Types.Child
 
-return function(props: {{(...any) -> (any) | {[string]: any}}}): (scope: Scope) -> Child
+return function(props: {{(...any) -> (any) | {[string]: any}}}, setAsKey: boolean?): (scope: Scope) -> Child
 	return function(scope: Scope): Child
 		local children = {}
-		for _, data in props do
+		for i, data in props do
 			local component: (...any) -> (any) = data[1]
 			local componentProps: {[string]: any} = data[2]
 			componentProps = Dash.union(componentProps, { scope = scope })
+			
+			if setAsKey then children[i] = component(componentProps); continue end
 			table.insert(children, component(componentProps))
 		end
 		return children

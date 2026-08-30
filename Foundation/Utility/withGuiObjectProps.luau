@@ -5,16 +5,19 @@ local Fusion = PackageManager.getPackage("Fusion")
 
 local Utility = Foundation.Utility
 
-local withCommonProps = require(Utility.withCommonProps)
 local unwrap = require(Utility.unwrap)
+local isState = require(Utility.isState)
+local getFormattedTags = require(Utility.getFormattedTags)
+local withCommonProps = require(Utility.withCommonProps)
 local Types = require(Utility.Types)
 
 local OnChange = Fusion.OnChange
-local Tag = Fusion.Tag
+local Tags = Fusion.Tags
 
-type Value<T> = Types.Value<T>
-type CanBeValue<T> = (Value<T> | T)
-type Computed<T> = Types.Computed<T>
+local DEFAULT_COLOR = Color3.fromRGB(163, 165, 162)
+local DEFAULT_TRANSPARENCY = 1
+
+type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
 type Use = Types.Use
 
@@ -25,34 +28,36 @@ type SelectionGroup = Types.SelectionGroup
 
 -- Since GuiObjectProps is in a different form than what's actually applied, we need to manually define the applied props
 type AppliedGuiObjectProps = {
-	AnchorPoint: CanBeValue<Vector2>?,
-	AutoLocalize: CanBeValue<boolean>?,
-	AutomaticSize: CanBeValue<Enum.AutomaticSize>?,
-	BackgroundColor3: CanBeValue<Color3>?,
-	BackgroundTransparency: CanBeValue<number>?,
-	BorderSizePixel: CanBeValue<number>?,
-	BorderColor3: CanBeValue<Color3>?,
-	BorderMode: CanBeValue<Enum.BorderMode>?,
-	ClipsDescendants: CanBeValue<boolean>?,
-	Rotation: CanBeValue<number>?,
-	Selectable: CanBeValue<boolean>?,
-	SelectionImageObject: CanBeValue<GuiObject>?,
-	SelectionOrder: CanBeValue<number>?,
-	SizeConstraint: CanBeValue<Enum.SizeConstraint>?,
-	NextSelectionDown: CanBeValue<GuiObject>?,
-	NextSelectionLeft: CanBeValue<GuiObject>?,
-	NextSelectionRight: CanBeValue<GuiObject>?,
-	NextSelectionUp: CanBeValue<GuiObject>?,
-	Size: CanBeValue<UDim2>?,
+	AnchorPoint: UsedAs<Vector2>?,
+	AutoLocalize: UsedAs<boolean>?,
+	AutomaticSize: UsedAs<Enum.AutomaticSize>?,
+	BackgroundColor3: UsedAs<Color3>?,
+	BackgroundTransparency: UsedAs<number>?,
+	BorderSizePixel: UsedAs<number>?,
+	BorderColor3: UsedAs<Color3>?,
+	BorderMode: UsedAs<Enum.BorderMode>?,
+	ClipsDescendants: UsedAs<boolean>?,
+	Rotation: UsedAs<number>?,
+	Selectable: UsedAs<boolean>?,
+	SelectionImageObject: UsedAs<GuiObject>?,
+	SelectionOrder: UsedAs<number>?,
+	SizeConstraint: UsedAs<Enum.SizeConstraint>?,
+	NextSelectionDown: UsedAs<GuiObject>?,
+	NextSelectionLeft: UsedAs<GuiObject>?,
+	NextSelectionRight: UsedAs<GuiObject>?,
+	NextSelectionUp: UsedAs<GuiObject>?,
+	Size: UsedAs<UDim2>?,
 } & NativeCommonProps
 
-local function getBackgroundStylePropsStates(scope: Scope, backgroundStyle: Computed<any>)
+local function getBackgroundStylePropsStates(scope: Scope, backgroundStyle: UsedAs<{Color3: Color3, Transparency: number}>)
 	local color3 = scope:Computed(function(use: Use) 
 		local styleData = unwrap(backgroundStyle, use)
+		if not styleData then return DEFAULT_COLOR end
 		return styleData.Color3
 	end)
 	local transparency = scope:Computed(function(use: Use) 
 		local styleData = unwrap(backgroundStyle, use)
+		if not styleData then return DEFAULT_TRANSPARENCY end
 		return styleData.Transparency
 	end)
 	return {Color3 = color3, Transparency = transparency}
@@ -64,7 +69,7 @@ local function withGuiObjectProps<T>(props: GuiObjectProps & CommonProps, basePr
 		baseProps.AutomaticSize = props.AutomaticSize
 		
 		if props.backgroundStyle then 
-			local styleProps = if unwrap(props.backgroundStyle) ~= props.backgroundStyle then 
+			local styleProps = if isState(props.backgroundStyle) then 
 				getBackgroundStylePropsStates(props.scope, props.backgroundStyle) else props.backgroundStyle
 			
 			baseProps.BackgroundColor3 = styleProps.Color3
@@ -104,17 +109,12 @@ local function withGuiObjectProps<T>(props: GuiObjectProps & CommonProps, basePr
 		baseProps.Size = props.Size
 	end
 	
-	if props.tag then
-		if typeof(props.tag) == "table" then
-			for stringVal, _ in props.tag do
-				for str in string.gmatch(stringVal or "", "%S+") do
-					baseProps[Tag(str)] = true
-				end
-			end
-		elseif typeof(props.tag) == "string" then
-			for str in string.gmatch(props.tag or "", "%S+") do
-				baseProps[Tag(str)] = true
-			end
+	local tagProp = props.tag
+	if tagProp then
+		if typeof(tagProp) == "table" and not isState(tagProp) then
+			baseProps[Tags] = getFormattedTags(tagProp)
+		else
+			baseProps[Tags] = tagProp
 		end
 	end
 	

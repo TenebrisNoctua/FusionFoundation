@@ -85,8 +85,8 @@ return function(textProps: TextProps): UsedAs<TextLabel>
 	end
 	
 	local tagsWithDefaults = useDefaultTags(scope, props.tag, defaultTags)
-	local tag = useStyleTags(scope, tagsWithDefaults, theme.AddTags)
-	props.tag = unwrap(tag)
+	local tagComputed = useStyleTags(scope, tagsWithDefaults, theme.AddTags)
+	props.tag = tagComputed
 	
 	local fontFace = scope:Computed(function(use: Use) 
 		local fontFaceProp = if props.fontStyle ~= nil then unwrap(props.fontStyle, use).Font else nil
@@ -145,6 +145,7 @@ return function(textProps: TextProps): UsedAs<TextLabel>
 	return scope:Computed(function(use: Use, innerScope: Scope) 
 		local fontStyle = unwrap(props.fontStyle, use)
 		local engineComponent = if isInteractable then "TextButton" else "TextLabel"
+
 		local engineComponentProps = withGuiObjectProps(props, {
 			AutoButtonColor = if engineComponent == "TextButton" then props.AutoButtonColor else nil,
 			FontFace = unwrap(fontFace, use),

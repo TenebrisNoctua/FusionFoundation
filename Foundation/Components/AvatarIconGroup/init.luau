@@ -1,14 +1,11 @@
 local Foundation = script.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
 local AvatarIcon = require(Components.AvatarIcon)
-local InternalAvatarGroup = require(Components.InternalAvatarGroup)
+local BaseAvatarGroup = require(Components.BaseAvatarGroup)
 local useAvatarIconVariants = require(Components.AvatarIcon.useAvatarIconVariants)
 
 local unwrap = require(Utility.unwrap)
@@ -73,8 +70,8 @@ return function(avatarIconGroupProps: AvatarIconGroupProps)
 		
 		local function renderAvatarIcon(
 			scope: Scope,
-			avatarData: InternalAvatarGroup.AvatarData,
-			layoutProps: InternalAvatarGroup.AvatarLayoutProps
+			avatarData: BaseAvatarGroup.AvatarData,
+			layoutProps: BaseAvatarGroup.AvatarLayoutProps
 		)
 			return AvatarIcon {
 				scope = scope,
@@ -88,7 +85,7 @@ return function(avatarIconGroupProps: AvatarIconGroupProps)
 			}
 		end
 
-		return innerScope:Hydrate(InternalAvatarGroup(withCommonProps(props, {
+		return innerScope:Hydrate(BaseAvatarGroup(withCommonProps(props, {
 			scope = innerScope,
 			type = type,
 			max = props.max,

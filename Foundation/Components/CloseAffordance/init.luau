@@ -71,6 +71,7 @@ return function(closeAffordanceProps: CloseAffordanceProps)
 		local colorNamespace = if props.colorNamespace then unwrap(props.colorNamespace, use) else unwrap(theme.Presentation.colorNamespace, use)
 		local hasPadding = unwrap(props.hasPadding, use)
 		local isCircular = unwrap(props.isCircular, use)
+		local isDisabled = unwrap(props.isDisabled, use)
 		local variant = unwrap(props.variant, use)
 		local tokens = unwrap(theme.Tokens, use)
 		local size = unwrap(props.size, use)
@@ -90,19 +91,19 @@ return function(closeAffordanceProps: CloseAffordanceProps)
 			Size = variantProps.container.size,
 			onActivated = props.onActivated,
 			selection = {
-				Selectable = if props.isDisabled then false else props.Selectable,
+				Selectable = if isDisabled then false else props.Selectable,
 				NextSelectionUp = props.NextSelectionUp,
 				NextSelectionDown = props.NextSelectionDown,
 				NextSelectionLeft = props.NextSelectionLeft,
 				NextSelectionRight = props.NextSelectionRight,
 			},
-			isDisabled = unwrap(props.isDisabled, use),
+			isDisabled = isDisabled,
 			padding = variantProps.container.padding,
 			cornerRadius = componentRadius,
 			stateLayer = variantProps.container.stateLayer,
 			cursor = cursor,
 			tag = variantProps.container.tag,
-			GroupTransparency = if props.isDisabled then Constants.DISABLED_TRANSPARENCY else nil,
+			GroupTransparency = if isDisabled then Constants.DISABLED_TRANSPARENCY else nil,
 			children = {
 				Icon {
 					scope = innerScope,

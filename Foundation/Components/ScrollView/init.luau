@@ -12,6 +12,7 @@ local View = require(Components.View)
 
 local unwrap = require(Utility.unwrap)
 local isState = require(Utility.isState)
+local stripProps = require(Utility.stripProps)
 local withDefaults = require(Utility.withDefaults)
 local useDefaultTags = require(Utility.useDefaultTags)
 local withGuiObjectProps = require(Utility.withGuiObjectProps)
@@ -25,11 +26,19 @@ local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
 
 local Children = Fusion.Children
 local OnChange = Fusion.OnChange
-local Tag = Fusion.Tag
+local Tags = Fusion.Tags
 
 local HIDE_SCROLLBAR_DELAY = 2
 local ANIMATION_CONFIG = {
 	speed = 10
+}
+
+local COMPONENT_ONLY_PROPERTIES = {
+	"onCanvasPositionChanged",
+	"onAbsoluteCanvasSizeChanged",
+	"onAbsoluteWindowSizeChanged",
+	"scroll",
+	"layout"
 }
 
 local defaultProps = {
@@ -213,14 +222,7 @@ return function(scrollViewProps: ScrollViewProps)
 		end
 
 		local selectionProps = withGuiObjectProps({selection = props.selection}, {})
-		local fulltag = unwrap(tag)
-		local scrollingFrameTags = {}
-		
-		for str in string.gmatch(fulltag or "", "%S+") do
-			scrollingFrameTags[Tag(str)] = true
-		end
-
-		local scrollingFrame = innerScope:New "ScrollingFrame" (Dash.union({
+		local scrollingFrame = innerScope:New "ScrollingFrame" ({
 			AutomaticCanvasSize = props.scroll.AutomaticCanvasSize,
 			CanvasSize = props.scroll.CanvasSize,
 			ClipsDescendants = true,
@@ -265,7 +267,8 @@ return function(scrollViewProps: ScrollViewProps)
 			[OnChange "AbsoluteWindowSize"] = props.onAbsoluteWindowSizeChanged,
 
 			[Children] = scrollingFrameChildren,
-		}, scrollingFrameTags))
+			[Tags] = tag
+		})
 
 		-- View props
 		local function onStateChanged(state: ControlState)
@@ -287,9 +290,6 @@ return function(scrollViewProps: ScrollViewProps)
 		}
 
 		local viewProps = Dash.union(props, viewComponentProps)
-		viewProps.scroll = nil
-		viewProps.layout = nil
-
-		return View(Dash.join(viewProps, {children = {scrollingFrame}}))
+		return View(Dash.join(stripProps(viewProps, COMPONENT_ONLY_PROPERTIES, true), {children = {scrollingFrame}}))
 	end)
 end

@@ -44,18 +44,6 @@ local defaultProps = {
 
 local OnEvent = Fusion.OnEvent
 
---[[
-	The behavior for isDisabled can depend if whether or not it's a state object.
-	If it's a plain boolean, then isDisabled is used as one would expect, boolean true disables the component.
-	However, if it's a state object, then we must assume the opposite: boolean false disables the component.
-	This is due to us assigning the state object given through isDisabled to Active and Interactable properties.
-]]
-local function getIsDisabled(isDisabled: UsedAs<boolean>, isDisabledAState: boolean)
-	local isDisabledValue = unwrap(isDisabled)
-	if not isDisabledAState then return isDisabledValue end
-	return not isDisabledValue
-end
-
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
 type Use = Types.Use
@@ -86,7 +74,12 @@ return function(interactableProps: InteractableProps)
 	local realBackgroundStyle = scope:Value(nil :: ColorStyle)
 	local controlState = scope:Value(ControlState.Initialize)
 	
-	local isDisabledAState = isState(props.isDisabled)
+	local onActivatedProp = props.onActivated
+	local onStateChangedProp = props.onStateChanged
+	local onSecondaryActivatedProp = props.onSecondaryActivated
+	
+	local isDisabled = props.isDisabled
+	local isDisabledAState = isState(isDisabled)
 	
 	local function onStateChanged(newState: ControlState)
 		if unwrap(controlState) == ControlState.Default and unwrap(guiObjectRef) ~= nil then
@@ -103,8 +96,8 @@ return function(interactableProps: InteractableProps)
 
 		controlState:set(newState)
 
-		if props.onStateChanged ~= nil then
-			props.onStateChanged(newState)
+		if onStateChangedProp ~= nil then
+			onStateChangedProp(newState)
 		end
 	end
 	
@@ -142,6 +135,10 @@ return function(interactableProps: InteractableProps)
 	
 	local originalBackgroundStyle = scope:Computed(function(use: Use) 
 		return getOriginalBackgroundStyle(unwrap(props.BackgroundColor3, use), unwrap(props.BackgroundTransparency, use))
+	end)
+	
+	local isDisabledProp = scope:Computed(function(use: Use) 
+		return not unwrap(isDisabled, use)
 	end)
 	
 	useGuiControlState(scope, guiObjectRef, onStateChanged)
@@ -199,20 +196,20 @@ return function(interactableProps: InteractableProps)
 		end)
 	end
 
-	interactableComponentProps.Active = if isDisabledAState then props.isDisabled else not props.isDisabled
-	interactableComponentProps.Interactable = if isDisabledAState then props.isDisabled else not props.isDisabled
+	interactableComponentProps.Active = if isDisabledAState then isDisabledProp else not isDisabled
+	interactableComponentProps.Interactable = if isDisabledAState then isDisabledProp else not isDisabled
 	interactableComponentProps.SelectionImageObject = props.SelectionImageObject
 
 	interactableComponentProps[OnEvent "Activated"] = if props.component == "ImageButton" then function(...)
-		if getIsDisabled(props.isDisabled, isDisabledAState) then return end
-		if not props.onActivated then return end
-		props.onActivated(...)
+		if unwrap(isDisabled) then return end
+		if not onActivatedProp then return end
+		onActivatedProp(...)
 	end else nil
 
 	interactableComponentProps[OnEvent "SecondaryActivated"] = if props.component == "ImageButton" then function(...)
-		if getIsDisabled(props.isDisabled, isDisabledAState) then return end
-		if not props.onSecondaryActivated then return end
-		props.onSecondaryActivated(...)
+		if unwrap(isDisabled) then return end
+		if not onSecondaryActivatedProp then return end
+		onSecondaryActivatedProp(...)
 	end else nil
 	
 	local mergedProps = stripProps(Dash.union(props, interactableComponentProps), COMPONENT_ONLY_PROPERTIES)

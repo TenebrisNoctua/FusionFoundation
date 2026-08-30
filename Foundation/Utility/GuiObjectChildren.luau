@@ -10,12 +10,15 @@ local isState = require(script.Parent.isState)
 local unwrap = require(script.Parent.unwrap)
 local Types = require(script.Parent.Types)
 
+type Use = Types.Use
+type Child = Types.Child
+
 type GuiObjectProps = Types.GuiObjectProps
 type CommonProps = Types.CommonProps
 
-local function GuiObjectChildren(props: GuiObjectProps & CommonProps): {Instance}
+local function GuiObjectChildren(props: GuiObjectProps & CommonProps): Child
 	local Scope = props.scope
-	return if isState(props.children) then props.children else Dash.join({
+	local utilityChildren = {
 		if props.aspectRatio ~= nil then
 			AspectRatio { 
 				value = props.aspectRatio, 
@@ -62,11 +65,40 @@ local function GuiObjectChildren(props: GuiObjectProps & CommonProps): {Instance
 				Scale = props.scale,
 			}
 		else nil,
-		if props.stroke ~= nil then 
+		if props.stroke ~= nil and not isState(props.stroke) then 
 			Scope:New("UIStroke")(props.stroke) 
-		else nil
-		
-	}, if props.children ~= nil then unwrap(props.children) else {})
+		elseif props.stroke ~= nil then 
+			Scope:Computed(function(use: Use) 
+				local strokeProps = unwrap(props.stroke, use)
+				if not strokeProps then return end
+				return Scope:New "UIStroke" {
+					Color = strokeProps.Color,
+					Transparency = strokeProps.Transparency,
+					Thickness = strokeProps.Thickness,
+					BorderStrokePosition = strokeProps.BorderStrokePosition
+				}
+			end)
+		else nil,
+	}
+
+	if not props.children then
+		return utilityChildren
+	end
+
+	if isState(props.children) then
+		return Scope:Computed(function(use: Use)
+			local dynamicChildren = unwrap(props.children, use)
+			if not dynamicChildren then
+				return utilityChildren
+			end
+			if typeof(dynamicChildren) == "Instance" then
+				return Dash.join(utilityChildren, { dynamicChildren })
+			end
+			return Dash.join(utilityChildren, dynamicChildren)
+		end)
+	end
+
+	return Dash.join(utilityChildren, unwrap(props.children) or {})
 end
 
 return GuiObjectChildren
