@@ -120,7 +120,11 @@ return function(dropdownProps: DropdownProps)
 		if dropdownProps.onAbsoluteSizeChanged then
 			dropdownProps.onAbsoluteSizeChanged(frame)
 		end
-		absoluteWidth:set(UDim.new(0, absoluteSize.X))
+		local newWidth = UDim.new(0, absoluteSize.X)
+		task.defer(function() -- Defer setting the absoluteWidth to avoid an infinite loop while the menu is open.
+			if unwrap(absoluteWidth) == newWidth then return end
+			absoluteWidth:set(newWidth)
+		end)
 	end
 
 	return Popover.Root {

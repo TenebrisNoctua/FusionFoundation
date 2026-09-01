@@ -197,7 +197,18 @@ local function calculatePositions(
 		end
 	end
 	arrow[crossAxis] = arrowPlacement - pos[crossAxis]
-
+	
+	
+	-- Unlike the React version, instead of 0, we use the mainAxisScreenStart here to ensure max >= min always holds true.
+	local mainAxisClampMax = math.max(mainAxisScreenEnd - mainAxisContentSize - mainAxisOffset, mainAxisScreenStart)
+	
+	-- Guard against NaN/negative bounds (e.g. a transient zero-sized anchor or overlay while the anchor instance is being swapped out).
+	-- Without this, math.clamp below can receive a max < min and error, which repeats every
+	-- recalculation and causes an infinite loop.
+	if math.isnan(mainAxisClampMax) or mainAxisClampMax < mainAxisScreenStart then
+		mainAxisClampMax = mainAxisScreenStart
+	end
+	
 	-- Main-axis clamping
 	-- Most of the time the popover is positioned in a place where there is enough space after side flipping.
 	-- However, even after flip there may be not enough space.
@@ -206,7 +217,7 @@ local function calculatePositions(
 	pos[mainAxis] = math.clamp(
 		pos[mainAxis],
 		mainAxisScreenStart,
-		math.max(mainAxisScreenEnd - mainAxisContentSize - mainAxisOffset, 0)
+		mainAxisClampMax
 	)
 	-- Adjust for screen's top-left offset
 	pos.X -= screen.Min.X

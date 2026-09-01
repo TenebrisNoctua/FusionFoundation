@@ -6,6 +6,8 @@ local Enums = Foundation.Enums
 local Icon = require(Foundation.Components.Icon)
 local Text = require(Foundation.Components.Text)
 local View = require(Foundation.Components.View)
+local Avatar = require(Foundation.Components.Avatar)
+local Badge = require(Foundation.Components.Badge)
 
 local Types = require(Utility.Types)
 
@@ -40,7 +42,6 @@ export type AccessoryProps = {
 	iconVariant: IconVariantTag,
 	size: InputSize,
 	tokens: any,
-	testId: string?,
 }
 
 local function Accessory(props: AccessoryProps): Child
@@ -53,9 +54,20 @@ local function Accessory(props: AccessoryProps): Child
 	local slotTag = `{SLOT_ALIGN} {props.iconVariant.tag}`
 
 	if accessory.type == AccessoryType.Avatar then
-		-- TODO: Implement when Avatar component is available in FusionFoundation
-		warn("[FusionFoundation]: Avatar accessory is not yet supported in FusionFoundation.")
-		return nil
+		return View {
+			scope = scope,
+			LayoutOrder = props.LayoutOrder,
+			tag = slotTag,
+			children = {
+				Avatar = Avatar {
+					scope = scope,
+					userId = accessory.userId,
+					backplateStyle = props.tokens.Color.Shift.Shift_200,
+					size = props.size,
+					isIconSize = true
+				}
+			}
+		}
 	end
 
 	if accessory.type == "Hint" then
@@ -69,14 +81,18 @@ local function Accessory(props: AccessoryProps): Child
 					Text = accessory.text,
 					tag = HINT_TEXT_TAG,
 				},
-			},
+			}
 		}
 	end
 
 	if accessory.type == "Badge" then
-		-- TODO: Implement when Badge component is available in FusionFoundation
-		warn("[FusionFoundation]: Badge accessory is not yet supported in FusionFoundation.")
-		return nil
+		return Badge {
+			scope = scope,
+			LayoutOrder = props.LayoutOrder,
+			text = accessory.text,
+			icon = accessory.icon,
+			variant = accessory.variant,
+		}
 	end
 
 	-- Default: Icon accessory
@@ -90,8 +106,8 @@ local function Accessory(props: AccessoryProps): Child
 				name = accessory.iconName,
 				style = props.iconVariant.style,
 				size = props.iconVariant.size,
-			},
-		},
+			}
+		}
 	}
 end
 

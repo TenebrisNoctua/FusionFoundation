@@ -137,6 +137,7 @@ return {
 					scope = innerScope,
 					title = "Playground",
 					description = "Interactive button with all controls.",
+					layoutOrder = 1,
 					children = { playgroundRow }
 				})
 
@@ -154,14 +155,14 @@ return {
 							end),
 							text = controls.text,
 							variant = variant,
-							isLoading = controls.isLoading,
-							isDisabled = controls.isDisabled,
+							isLoading = false,
+							isDisabled = false,
 							size = size,
 							fillBehavior = innerScope:Computed(function(use)
 								local fill = unwrap(controls.fillBehavior, use)
 								return if fill == "None" then nil else fill
 							end),
-							inputDelay = controls.inputDelay,
+							inputDelay = 0,
 							colorNamespace = controls.colorNamespace,
 							onActivated = function()
 								print(`{colorNamespace} {variant} Button ({size}) activated`)
@@ -195,6 +196,7 @@ return {
 					table.insert(renderedStories, StorySection {
 						scope = innerScope,
 						title = variant,
+						layoutOrder = 2,
 						children = { variantRow }
 					})
 				end
@@ -276,11 +278,11 @@ return {
 					scope = innerScope,
 					title = "Width",
 					description = "Width, fillBehavior, and precedence. Default uses AutomaticSize.X. Width (scale or offset) overrides. fillBehavior.Fill takes precedence over width.",
+					layoutOrder = 3,
 					children = widthChildren
 				})
 
 				-- FillBehavior section: None, Fit, Fill side by side
-				-- Wrap buttons in a View with row tag (matches React version)
 				local fillRow = View {
 					scope = innerScope,
 					AutomaticSize = Enum.AutomaticSize.Y,
@@ -321,6 +323,7 @@ return {
 					scope = innerScope,
 					title = "FillBehavior",
 					description = "The same button rendered with each fillBehavior.",
+					layoutOrder = 4,
 					children = { fillRow }
 				})
 

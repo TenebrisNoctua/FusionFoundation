@@ -1,7 +1,4 @@
 local Foundation = script.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
@@ -33,7 +30,8 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"backgroundStyle",
 	"backplateStyle",
 	"size",
-	"userPresence"
+	"userPresence",
+	"isIconSize"
 }
 
 local defaultProps = {
@@ -53,7 +51,8 @@ export type AvatarProps = {
 	backgroundStyle: UsedAs<Types.ColorStyle>?,
 	backplateStyle: UsedAs<Types.ColorStyle>?,
 	size: UsedAs<AvatarSize>?,
-	userPresence: UsedAs<UserPresence>?
+	userPresence: UsedAs<UserPresence>?,
+	isIconSize: UsedAs<boolean>?
 } & Types.CommonProps
 
 return function(avatarProps: AvatarProps)
@@ -69,7 +68,9 @@ return function(avatarProps: AvatarProps)
 		local backplateStyle = unwrap(props.backplateStyle, use)
 		
 		local presentation = theme.Presentation
-		local isIconSize = presentation.isIconSize
+		local isIconSize = if props.isIconSize ~= nil
+			then unwrap(props.isIconSize, use)
+			else presentation.isIconSize
 		
 		local variantProps = useAvatarVariants(
 			unwrap(theme.Theme),

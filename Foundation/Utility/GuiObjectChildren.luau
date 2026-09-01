@@ -91,7 +91,7 @@ local function GuiObjectChildren(props: GuiObjectProps & CommonProps): Child
 			if not dynamicChildren then
 				return utilityChildren
 			end
-			if typeof(dynamicChildren) == "Instance" then
+			if typeof(dynamicChildren) == "Instance" or isState(dynamicChildren) then
 				return Dash.join(utilityChildren, { dynamicChildren })
 			end
 			return Dash.join(utilityChildren, dynamicChildren)

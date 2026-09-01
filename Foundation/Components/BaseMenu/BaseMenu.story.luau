@@ -23,6 +23,7 @@ local ThumbnailType = require(Enums.ThumbnailType)
 local View = require(Components.View)
 local BaseMenu = require(Components.BaseMenu)
 local Fragment = require(Components.Fragment)
+local TextInput = require(Components.TextInput)
 local ScrollView = require(Components.ScrollView)
 
 type Scope = Types.Scope
@@ -383,13 +384,14 @@ local function StoryDynamicallySizing(props)
 		LayoutOrder = props.layoutOrder,
 		tag = "col gap-large auto-xy",
 		children = {
-			Search = scope:New "TextBox" {
-				PlaceholderText = "Search",
-				Size = UDim2.fromOffset(200, 32),
-				LayoutOrder = 1,
-				[Fusion.OnChange("Text")] = function(text)
+			Search = TextInput {
+				scope = scope,
+				onChanged = function(text: string)
 					searchContent:set(text)
 				end,
+				label = "Search",
+				text = searchContent,
+				LayoutOrder = 1
 			},
 			Menu = BaseMenu.Root {
 				scope = scope,
@@ -398,7 +400,7 @@ local function StoryDynamicallySizing(props)
 				maxHeight = 600,
 				onActivated = Dash.noop(),
 				LayoutOrder = 2,
-			},
+			}
 		}
 	}
 end
@@ -467,7 +469,7 @@ return {
 				scroll = {
 					AutomaticCanvasSize = Enum.AutomaticSize.XY	
 				},
-				tag = "auto-x padding-x-large padding-top-large col",
+				tag = "size-full auto-x padding-x-large padding-top-large col",
 				children = {
 					StorySection {
 						scope = innerScope,

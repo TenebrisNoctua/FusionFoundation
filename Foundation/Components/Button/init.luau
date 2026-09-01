@@ -18,6 +18,7 @@ local View = require(Components.View)
 local Text = require(Components.Text)
 
 local unwrap = require(Utility.unwrap)
+local isState = require(Utility.isState)
 local stripProps = require(Utility.stripProps)
 local withDefaults = require(Utility.withDefaults)
 local Types = require(Utility.Types)
@@ -117,50 +118,85 @@ return function(buttonProps: ButtonProps)
 	local props = withDefaults(buttonProps, defaultProps)
 	local controlState = scope:Value(ControlState.Initialize :: ControlState)
 
-	local buttonState = scope:Computed(function(use: Use)
-		if unwrap(props.isDisabled, use) then return "Disabled"
-		elseif unwrap(props.isLoading, use) then return "Loading"
-		else return "Default" end
-	end)
-
 	local function setControlState(newState: ControlState)
 		if newState == ControlState.Disabled then return end
 		controlState:set(newState)
 	end
 
+	local hasTextState = scope:Computed(function(use: Use)
+		local text = unwrap(props.text, use)
+		return text ~= nil and text ~= ""
+	end)
+
+	local hasIconState = scope:Computed(function(use: Use)
+		local icon = unwrap(props.icon, use)
+		return icon ~= nil and icon ~= ""
+	end)
+
+	local initialColorNamespace = if props.colorNamespace
+		then unwrap(props.colorNamespace)
+		else unwrap(theme.Presentation.colorNamespace)
+	local initialVariantProps = useButtonVariants(
+		unwrap(theme.Theme),
+		unwrap(theme.Tokens),
+		unwrap(props.size),
+		unwrap(props.variant),
+		initialColorNamespace
+	)
+	
+	local defaultTransparency = initialVariantProps.content.style.Transparency or 0
+	local motion = useButtonMotionStates(scope, props.isLoading, props.isDisabled, defaultTransparency, Constants.DISABLED_TRANSPARENCY)
+	
+	local inputDelay: number = unwrap(props.inputDelay)
+	local isInputDelayAState = isState(props.inputDelay)
+	local isDelaying = scope:Value(inputDelay > 0)
+	local progressGoal = scope:Value(0)
+	
+	local progressTween = scope:Tween(progressGoal, scope:Computed(function(use: Use)
+		local inputDelay = unwrap(props.inputDelay, use)
+		return TweenInfo.new(inputDelay, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	end))
+	
+	local disconnect
+	disconnect = scope:Observer(progressTween):onChange(function()
+		if unwrap(progressTween) < 1 then return end
+		isDelaying:set(false)
+		task.defer(progressGoal.set, progressGoal, 0)
+		
+		if isInputDelayAState then return end
+		disconnect() -- If the input delay is not a state, this observer should not continue to listen.
+	end)
+	
+	if inputDelay > 0 then
+		progressGoal:set(1)
+	end
+	
+	if isInputDelayAState then
+		scope:Observer(props.inputDelay):onChange(function() 
+			local inputDelay = unwrap(props.inputDelay)
+			if inputDelay <= 0 then return end
+			isDelaying:set(true)
+			progressGoal:set(1)
+		end)
+	end
+	
 	return scope:Computed(function(use: Use, innerScope: Scope)
 		local tokens = unwrap(theme.Tokens, use)
 		local buttonSize = unwrap(props.size, use)
-		local inputDelay = unwrap(props.inputDelay, use)
 		local buttonVariant = unwrap(props.variant, use)
-		
-		local isDelaying = innerScope:Value(inputDelay > 0)
-		local progressGoal = innerScope:Value(0)
-		local progressTween = innerScope:Tween(progressGoal, TweenInfo.new(inputDelay or 0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out))
-		
+
 		local presentation = theme.Presentation
 		local buttonColor = if props.colorNamespace
 			then unwrap(props.colorNamespace, use)
 			else unwrap(presentation.colorNamespace, use)
-		
-		local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, buttonSize, buttonVariant, buttonColor)
-		local defaultTransparency = variantProps.content.style.Transparency or 0
-		
-		local motion = useButtonMotionStates(innerScope, buttonState, defaultTransparency, Constants.DISABLED_TRANSPARENCY)
-		
-		if inputDelay > 0 then
-			isDelaying:set(true)
-			progressGoal:set(1)
-		end
 
-		local isIcon = unwrap(props.icon, use)
-		local isEndAligned = isIcon and endAlignedIcons[isIcon]
-		local hasText = unwrap(props.text, use) and unwrap(props.text, use) ~= ""
+		local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, buttonSize, buttonVariant, buttonColor)
+
+		local isIcon = unwrap(hasIconState, use)
+		local hasText = unwrap(hasTextState, use)
 
 		local currentWidth = unwrap(props.width, use)
 		local currentFillBehavior = unwrap(props.fillBehavior, use)
-		local currentDelaying = unwrap(isDelaying)
-		local currentLoading = unwrap(props.isLoading, use)
 
 		local function formatText(use: Use)
 			local currentText = unwrap(props.text, use)
@@ -175,28 +211,31 @@ return function(buttonProps: ButtonProps)
 
 		local buttonChildren = {}
 
-		if currentLoading then
-			buttonChildren.Loading = innerScope:New "Folder" {
-				[Children] = {
-					Spinner = Spinner {
-						scope = innerScope,
-						Size = variantProps.icon.size,
-						style = innerScope:Computed(function(use: Use)
-							return {
-								Color3 = variantProps.content.style.Color3,
-								Transparency = unwrap(motion.iconTransparency, use),
-							}
-						end)
-					}
+		buttonChildren.Loading = innerScope:New "Folder" {
+			[Children] = {
+				Spinner = Spinner {
+					scope = innerScope,
+					Size = variantProps.icon.size,
+					isVisible = props.isLoading,
+					style = innerScope:Computed(function(use: Use)
+						return {
+							Color3 = variantProps.content.style.Color3,
+							Transparency = unwrap(motion.transparency, use)
+						}
+					end)
 				}
 			}
-		end
+		}
 
 		if isIcon then
 			buttonChildren.IconWrapper = View {
 				scope = innerScope,
 				Size = variantProps.icon.size,
-				LayoutOrder = if isEndAligned then 3 else 1,
+				LayoutOrder = innerScope:Computed(function(use: Use)
+					local icon = unwrap(props.icon, use)
+					local endAligned = icon and endAlignedIcons[icon]
+					return if endAligned then 3 else 1
+				end),
 				children = {
 					Icon = ButtonIcon {
 						scope = innerScope,
@@ -206,9 +245,9 @@ return function(buttonProps: ButtonProps)
 						size = buttonSize,
 						disabledTransparencyBinding = motion.transparency,
 						textTransparencyBinding = motion.textTransparency,
-						textSizeOffset = props.textSizeOffset,
+						textSizeOffset = props.textSizeOffset
 					}
-				},
+				}
 			}
 		end
 
@@ -226,18 +265,24 @@ return function(buttonProps: ButtonProps)
 						Transparency = textTransp + disabledTransp,
 					}
 				end),
-				LayoutOrder = 2,
+				LayoutOrder = 2
 			}
 		end
-
-		if currentDelaying then
+		
+		if isInputDelayAState or inputDelay > 0 then
 			buttonChildren.Gradient = innerScope:New "UIGradient" {
-				Transparency = innerScope:Computed(function(use: Use)
-					local progress = unwrap(progressTween, use)
-					if progress == 1 then isDelaying:set(false) end
-					return onProgressChange(progress)
+				Enabled = innerScope:Computed(function(use: Use) 
+					return unwrap(props.inputDelay, use) > 0
 				end),
-			}
+				Transparency = innerScope:Computed(function(use: Use)
+					local delaying = unwrap(isDelaying, use)
+					if not delaying then
+						return NumberSequence.new(0)
+					end
+					local progress = unwrap(progressTween, use)
+					return onProgressChange(progress)
+				end)
+			}	
 		end
 
 		local viewProps = {
@@ -284,7 +329,9 @@ return function(buttonProps: ButtonProps)
 			),
 
 			selection = {
-				Selectable = if unwrap(props.isDisabled, use) then false else props.Selectable,
+				Selectable = innerScope:Computed(function(use: Use)
+					return if unwrap(props.isDisabled, use) then false else props.Selectable
+				end),
 				NextSelectionUp = props.NextSelectionUp,
 				NextSelectionDown = props.NextSelectionDown,
 				NextSelectionLeft = props.NextSelectionLeft,
@@ -301,14 +348,14 @@ return function(buttonProps: ButtonProps)
 			onStateChanged = setControlState,
 
 			isDisabled = innerScope:Computed(function(use: Use)
-				return (unwrap(props.isDisabled, use) or currentLoading or unwrap(isDelaying, use))
+				return (unwrap(props.isDisabled, use) or unwrap(props.isLoading, use) or unwrap(isDelaying, use))
 			end),
 
 			stateLayer = variantProps.container.stateLayer,
 			tag = variantProps.container.tag,
 			children = buttonChildren
 		}
-		
+
 		return innerScope:Hydrate(View(viewProps))(props, stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

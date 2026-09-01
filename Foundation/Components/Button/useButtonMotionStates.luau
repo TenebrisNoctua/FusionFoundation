@@ -1,86 +1,57 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local unwrap = require(Foundation.Utility.unwrap)
 local Types = require(Foundation.Utility.Types)
 
+type UsedAs<T> = Types.UsedAs<T>
+type Tween<T> = Types.Tween<T>
 type Scope = Types.Scope
 type Use = Types.Use
-type Tween<T> = Types.Tween<T>
-type UsedAs<T> = Types.UsedAs<T>
-
-export type ButtonState = "Default" | "Loading" | "Disabled"
 
 export type ButtonMotion = {
+	-- Driven solely by isDisabled.
 	transparency: Tween<number>,
+	-- Driven solely by isLoading.
 	textTransparency: Tween<number>,
-	iconTransparency: Tween<number>,
-	iconScale: Tween<number>,
 }
 
 local function useButtonMotionStates(
-	scope: Scope, 
-	currentState: UsedAs<ButtonState>, 
-	defaultTransparency: number?, 
+	scope: Scope,
+	isLoading: UsedAs<boolean>,
+	isDisabled: UsedAs<boolean>,
+	defaultTransparency: number?,
 	disabledTransparency: number
 ): ButtonMotion
 	local defTransp = unwrap(defaultTransparency) or 0
-
-	local targetTransparency = scope:Value(defTransp)
-	local targetTextTransparency = scope:Value(defTransp)
-	local targetIconTransparency = scope:Value(1)
-	local targetIconScale = scope:Value(1)
-
-	local function updateMotionTargets(state: ButtonState)
-		if state == "Disabled" then
-			targetTransparency:set(disabledTransparency)
-			targetTextTransparency:set(0)
-			targetIconTransparency:set(1)
-			targetIconScale:set(1)
-		elseif state == "Loading" then
-			targetTransparency:set(0)
-			targetTextTransparency:set(1)
-			targetIconTransparency:set(0)
-			targetIconScale:set(0)
-		else
-			targetTransparency:set(defTransp)
-			targetTextTransparency:set(defTransp)
-			targetIconTransparency:set(1)
-			targetIconScale:set(1)
-		end
-	end
-
-	local initialStatus = unwrap(currentState)
-	if initialStatus then
-		updateMotionTargets(initialStatus)
-	end
-
-	scope:Observer(currentState):onChange(function()
-		local newState = unwrap(currentState)
-		if newState then
-			updateMotionTargets(newState)
-		end
+	
+	-- isLoading and isDisabled can also be simple booleans, rather than state objects.
+	-- Putting them in Computeds workaround this issue. 
+	-- We could have used isState with Observers here, but that would increase complexity for no real benefit.
+	local isLoadingState = scope:Computed(function(use: Use)
+		return unwrap(isLoading, use)
+	end)
+	local isDisabledState = scope:Computed(function(use: Use)
+		return unwrap(isDisabled, use)
 	end)
 
-	local generalTweenInfo = scope:Computed(function(use: Use)
-		local state = unwrap(currentState, use)
-		local duration = if state == "Disabled" then 0.1 else 0.2
-		return TweenInfo.new(duration, Enum.EasingStyle.Linear)
+	local targetTextTransparency = scope:Value(if unwrap(isLoadingState) then 1 else defTransp)
+	scope:Observer(isLoadingState):onChange(function()
+		targetTextTransparency:set(if unwrap(isLoadingState) then 1 else defTransp)
 	end)
 
-	local iconTweenInfo = scope:Computed(function(use: Use)
-		local state = unwrap(currentState, use)
-		local duration = if state == "Default" then 0.5 else 1
+	local targetTransparency = scope:Value(if unwrap(isDisabledState) then disabledTransparency else defTransp)
+	scope:Observer(isDisabledState):onChange(function()
+		targetTransparency:set(if unwrap(isDisabledState) then disabledTransparency else defTransp)
+	end)
+
+	local transparencyTweenInfo = scope:Computed(function(use: Use)
+		local duration = if unwrap(isDisabledState, use) then 0.1 else 0.2
 		return TweenInfo.new(duration, Enum.EasingStyle.Linear)
 	end)
 
 	return {
-		transparency = scope:Tween(targetTransparency, generalTweenInfo),
-		textTransparency = scope:Tween(targetTextTransparency, generalTweenInfo),
-		iconTransparency = scope:Tween(targetIconTransparency, iconTweenInfo),
-		iconScale = scope:Tween(targetIconScale, generalTweenInfo)
+		transparency = scope:Tween(targetTransparency, transparencyTweenInfo),
+		textTransparency = scope:Tween(targetTextTransparency, TweenInfo.new(0.2, Enum.EasingStyle.Linear))
 	}
 end
 

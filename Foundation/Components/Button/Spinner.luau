@@ -1,7 +1,4 @@
 local Foundation = script.Parent.Parent.Parent
-local PackageManager = require(Foundation.PackageManager)
-
-local Fusion = PackageManager.getPackage("Fusion")
 
 local Components = Foundation.Components
 local Utility = Foundation.Utility
@@ -29,13 +26,15 @@ type InternalSpinnerProps = {
 type SpinnerProps = {
 	scope: Scope,
 	style: UsedAs<any>?,
-	Size: UsedAs<UDim2>
+	Size: UsedAs<UDim2>,
+	isVisible: UsedAs<boolean>?
 }
 
 local FoundationUsePath2DSpinner = false
 
 local defaultProps = {
-	style = {}
+	style = {},
+	isVisible = false
 }
 
 -- Right, Top, Left, Bottom
@@ -104,8 +103,9 @@ local function Spinner(spinnerProps: SpinnerProps)
 
 	local props = withDefaults(spinnerProps, defaultProps)
 
-	local animScale = scope:Value(0)
-	local animTransparency = scope:Value(1)
+	local initialVisible = unwrap(props.isVisible) or false
+	local animScale = scope:Value(initialVisible and 1 or 0)
+	local animTransparency = scope:Value(initialVisible and 0 or 1)
 
 	local scaleTween = scope:Tween(animScale, TweenInfo.new(0.2, Enum.EasingStyle.Quad))
 	local transparencyTween = scope:Tween(animTransparency, TweenInfo.new(0.2, Enum.EasingStyle.Quad))
@@ -119,15 +119,27 @@ local function Spinner(spinnerProps: SpinnerProps)
 
 		local baseColor = baseStyle.Color3 or Color3.new(1, 1, 1)
 		local baseTransparency = baseStyle.Transparency or 0
-		
+
 		return {
 			Color3 = baseColor,
-			Transparency = unwrap(baseTransparency) + (currentAnimTransparency / 2),
+			Transparency = math.clamp(currentAnimTransparency + baseTransparency, 0, 1)
 		}
 	end)
 
-	animScale:set(1)
-	animTransparency:set(0)
+	local visibleState = scope:Computed(function(use: Use)
+		return unwrap(props.isVisible, use)
+	end)
+
+	scope:Observer(visibleState):onChange(function()
+		local isVisible = unwrap(visibleState)
+		if isVisible then
+			animScale:set(1)
+			animTransparency:set(0)
+		else
+			animScale:set(0)
+			animTransparency:set(1)
+		end
+	end)
 
 	return View {
 		scope = scope,

@@ -47,74 +47,59 @@ return function(props: ButtonIconProps)
 	local scope = props.scope
 	local theme = ThemeProvider()
 
-	local currentIcon = unwrap(props.icon)
-	if not currentIcon or currentIcon == "" then
-		return nil
-	end
-
 	local currentSize = unwrap(props.size)
-	local intrinsicIconSize, scale = getIconScale(currentIcon, currentSize)
 	local textOffset = unwrap(props.textSizeOffset) or 0
 	
+	local tokens = unwrap(theme.Tokens)
+	local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant), nil)
+
 	local mixedIconStyle = scope:Computed(function(use: Use)
-		local tokens = unwrap(theme.Tokens, use)
 		local disabledValue = unwrap(props.disabledTransparencyBinding, use) or 0
 		local progressValue = unwrap(props.textTransparencyBinding, use) or 0
-		local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant), nil)
 		
 		return {
 			Color3 = variantProps.content.style.Color3,
 			Transparency = progressValue + disabledValue
 		}
 	end)
-
-	if isBuilderOrMigratedIcon(currentIcon) then
-		return Text {
-			scope = scope,
-			Text = if isMigrated(currentIcon) then migrationLookup[currentIcon].name else currentIcon,
-			fontStyle = scope:Computed(function(use: Use)
-				local tokens = unwrap(theme.Tokens, use)
-				local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant, use), nil)
-				return {
+	
+	return scope:Computed(function(use: Use, innerScope: Scope) 
+		local currentIcon = unwrap(props.icon, use)
+		if not currentIcon or currentIcon == "" then return end
+		local intrinsicIconSize, scale = getIconScale(currentIcon, currentSize)
+		
+		if isBuilderOrMigratedIcon(currentIcon) then
+			return Text {
+				scope = scope,
+				Text = if isMigrated(currentIcon) then migrationLookup[currentIcon].name else currentIcon,
+				fontStyle = {
 					Font = BuilderIcons.Font[if isMigrated(currentIcon)
 						then migrationLookup[currentIcon].variant
 						else BuilderIcons.IconVariant.Regular],
 					FontSize = variantProps.icon.size.Y.Offset,
-				}
-			end),
-			tag = "position-center-center anchor-center-center",
-			Size = scope:Computed(function(use: Use)
-				local tokens = unwrap(theme.Tokens, use)
-				local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant, use), nil)
-				return variantProps.icon.size
-			end),
-			textStyle = mixedIconStyle,
-			children = if textOffset > 0
-				then {
-					scope:New "UITextSizeConstraint" {
-						MaxTextSize = scope:Computed(function(use: Use)
-							local tokens = unwrap(theme.Tokens, use)
-							local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant, use), nil)
-							return variantProps.icon.size.Y.Offset
-						end)
+				},
+				tag = "position-center-center anchor-center-center",
+				Size = variantProps.icon.size,
+				textStyle = mixedIconStyle,
+				children = if textOffset > 0
+					then {
+						scope:New "UITextSizeConstraint" {
+							MaxTextSize = variantProps.icon.size.Y.Offset
+						}
 					}
-				}
-				else nil
-		}
-	else
-		return Image {
-			scope = scope,
-			tag = "position-center-center anchor-center-center",
-			Image = currentIcon,
-			Size = if intrinsicIconSize
-				then UDim2.fromOffset(intrinsicIconSize.X, intrinsicIconSize.Y)
-				else scope:Computed(function(use: Use)
-					local tokens = unwrap(theme.Tokens, use)
-					local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant, use), nil)
-					return variantProps.icon.size
-				end),
-			imageStyle = mixedIconStyle,
-			scale = scale
-		}
-	end
+					else nil
+			}
+		else
+			return Image {
+				scope = scope,
+				tag = "position-center-center anchor-center-center",
+				Image = currentIcon,
+				Size = if intrinsicIconSize
+					then UDim2.fromOffset(intrinsicIconSize.X, intrinsicIconSize.Y)
+					else variantProps.icon.size,
+				imageStyle = mixedIconStyle,
+				scale = scale
+			}
+		end
+	end)
 end

@@ -18,6 +18,7 @@ local CommonControls = require(Utility.Stories.CommonControls)
 
 local InputSize = require(Enums.InputSize)
 local InputVariant = require(Enums.InputVariant)
+local BadgeVariant = require(Enums.BadgeVariant)
 
 local View = require(Components.View)
 local Text = require(Components.Text)
@@ -43,25 +44,54 @@ local LEADING_ICON_PALETTE = {
 
 local HINT_PALETTE = { "\u{2318}B", "\u{2318}I", "\u{2318}C", "\u{2318}V", "\u{2318}S", "\u{2318}Z" }
 
+local BADGE_PALETTE = {
+	{ text = "New", variant = BadgeVariant.Success },
+	{ text = "Beta", variant = BadgeVariant.Warning },
+	{ text = "Pro", variant = BadgeVariant.Contrast },
+	{ text = "Soon", variant = BadgeVariant.Neutral },
+}
+
 local SHOWCASE_WIDTH = UDim.new(0, 220)
 
 local NONE = "None"
 
-local LEADING_CHOICES = { NONE, "Icon" }
-local TRAILING_CHOICES = { NONE, "Hint" }
+local LEADING_CHOICES = { "Icon", "Avatar", "Mixed", NONE }
+local TRAILING_CHOICES = { "Hint", "Badge", "Mixed", NONE }
 
-local function leadingFor(mode: string?, index: number): Types.IconAccessoryConfig?
+local function leadingFor(mode: string?, index: number): any
 	if mode == nil or mode == NONE then
 		return nil
+	end
+	if mode == "Avatar" then
+		return { type = "Avatar", userId = 24813339 } :: any
+	end
+	if mode == "Mixed" then
+		local r = (index - 1) % 3
+		if r == 1 then
+			return { type = "Avatar", userId = 24813339 } :: any
+		elseif r == 2 then
+			return nil
+		end
 	end
 	return { iconName = LEADING_ICON_PALETTE[((index - 1) % #LEADING_ICON_PALETTE) + 1] } :: any
 end
 
-local function trailingFor(mode: string?, index: number): Types.HintAccessoryConfig?
+local function trailingFor(mode: string?, index: number): any
 	if mode == nil or mode == NONE then
 		return nil
 	end
-	return { type = "Hint", text = HINT_PALETTE[((index - 1) % #HINT_PALETTE) + 1] } :: any
+	if mode == "Hint" then
+		return { type = "Hint", text = HINT_PALETTE[((index - 1) % #HINT_PALETTE) + 1] } :: any
+	end
+	if mode == "Badge" then
+		local b = BADGE_PALETTE[((index - 1) % #BADGE_PALETTE) + 1]
+		return { type = "Badge", text = b.text, variant = b.variant } :: any
+	end
+	if index % 2 == 1 then
+		return { type = "Hint", text = HINT_PALETTE[((index - 1) % #HINT_PALETTE) + 1] } :: any
+	end
+	local b = BADGE_PALETTE[((index - 1) % #BADGE_PALETTE) + 1]
+	return { type = "Badge", text = b.text, variant = b.variant } :: any
 end
 
 local function getItems(hasIcon: boolean?): DropdownItems
@@ -433,8 +463,14 @@ local function LeadingAccessoriesStory(props: { scope: Scope, layoutOrder: numbe
 		{ id = "copy", text = "Duplicate", leading = { iconName = BuilderIcons.Icon.TwoStackedSquares } :: any },
 		{ id = "delete", text = "Delete", leading = { iconName = BuilderIcons.Icon.TrashCan } :: any },
 	}
+	local avatarItems: DropdownItems = {
+		{ id = "u1", text = "Builderman", leading = { type = "Avatar", userId = 156 } :: any },
+		{ id = "u2", text = "User", leading = { type = "Avatar", userId = 24813339 } :: any },
+		{ id = "u3", text = "Roblox", leading = { type = "Avatar", userId = 1 } :: any },
+	}
 	local mixedItems: DropdownItems = {
 		{ id = "i1", text = "Settings", leading = { iconName = BuilderIcons.Icon.Pencil } :: any },
+		{ id = "i2", text = "Profile", leading = { type = "Avatar", userId = 24813339 } :: any },
 		{ id = "i3", text = "No leading" },
 		{ id = "i4", text = "Trash", leading = { iconName = BuilderIcons.Icon.TrashCan } :: any },
 	}
@@ -453,7 +489,16 @@ local function LeadingAccessoriesStory(props: { scope: Scope, layoutOrder: numbe
 					items = iconItems,
 				},
 			}),
-			Mixed = Section(scope, "Mixed leading (some items have none)", 2, "auto-xy", {
+			Avatars = Section(scope, "Avatar leading", 2, "auto-xy", {
+				Dropdown = DemoDropdown {
+					scope = scope,
+					label = "Member",
+					placeholder = "Pick a member",
+					width = SHOWCASE_WIDTH,
+					items = avatarItems,
+				},
+			}),
+			Mixed = Section(scope, "Mixed leading (some items have none)", 3, "auto-xy", {
 				Dropdown = DemoDropdown {
 					scope = scope,
 					label = "Sample",
@@ -473,8 +518,14 @@ local function TrailingAccessoriesStory(props: { scope: Scope, layoutOrder: numb
 		{ id = "i", text = "Italic", trailing = { type = "Hint", text = "\u{2318}I" } :: any },
 		{ id = "u", text = "Underline", trailing = { type = "Hint", text = "\u{2318}U" } :: any },
 	}
+	local badgeItems: DropdownItems = {
+		{ id = "new", text = "New feature", trailing = { type = "Badge", text = "New", variant = BadgeVariant.Success } :: any },
+		{ id = "beta", text = "Beta channel", trailing = { type = "Badge", text = "Beta", variant = BadgeVariant.Warning } :: any },
+		{ id = "pro", text = "Pro mode", trailing = { type = "Badge", text = "Pro", variant = BadgeVariant.Contrast } :: any },
+	}
 	local mixedItems: DropdownItems = {
 		{ id = "save", text = "Save", trailing = { type = "Hint", text = "\u{2318}S" } :: any },
+		{ id = "publish", text = "Publish", trailing = { type = "Badge", text = "New", variant = BadgeVariant.Success } :: any },
 		{ id = "plain", text = "Plain item" },
 	}
 
@@ -492,7 +543,16 @@ local function TrailingAccessoriesStory(props: { scope: Scope, layoutOrder: numb
 					items = hintItems,
 				},
 			}),
-			Mixed = Section(scope, "Mixed trailing (some items have none)", 2, "auto-xy", {
+			Badges = Section(scope, "Badge trailing", 2, "auto-xy", {
+				Dropdown = DemoDropdown {
+					scope = scope,
+					label = "Channel",
+					placeholder = "Pick a channel",
+					width = SHOWCASE_WIDTH,
+					items = badgeItems,
+				},
+			}),
+			Mixed = Section(scope, "Mixed trailing", 3, "auto-xy", {
 				Dropdown = DemoDropdown {
 					scope = scope,
 					label = "Action",
@@ -659,7 +719,6 @@ return {
 					StorySection {
 						scope = innerScope,
 						title = "Leading accessories",
-						description = "Avatar leading accessories are omitted - not yet implemented in FusionFoundation (see BaseMenuItemAccessory.lua).",
 						layoutOrder = 8,
 						children = { LeadingAccessoriesStory { scope = innerScope, layoutOrder = 2 } },
 					},
@@ -667,7 +726,6 @@ return {
 					StorySection {
 						scope = innerScope,
 						title = "Trailing accessories",
-						description = "Badge trailing accessories are omitted - not yet implemented in FusionFoundation (see BaseMenuItemAccessory.lua).",
 						layoutOrder = 9,
 						children = { TrailingAccessoriesStory { scope = innerScope, layoutOrder = 2 } },
 					},

@@ -83,9 +83,11 @@ return function(dropdownControlProps: DropdownControlProps)
 	end
 
 	local function setInputRef(instance: GuiObject?)
-		if isState(props.inputRef) then
+		if not isState(props.inputRef) then return end
+		task.defer(function() -- Defer setting the reference to avoid an infinite loop while the menu is open.
+			if unwrap(props.inputRef) == instance then return end
 			props.inputRef:set(instance)
-		end
+		end)
 	end
 	
 	local selectable = scope:Computed(function(use: Use)
