@@ -2,7 +2,7 @@
 
 This is a repository which contains a port of the Foundation UI library made with React-Luau to Fusion 0.3.
 
-The source folder contains some components and their stories, which can be used to view and test the components. Some components may not have been converted yet, but most should be available.
+The source folder (Foundation) contains the components and their stories, which can be used to view and test them. Some components may not have been converted yet, but most should be available.
 
 UI Labs can be used to view and test the stories.
 
