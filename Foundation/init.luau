@@ -151,7 +151,7 @@ export type Visibility = Visibility.Visibility
 -- enums end
 
 -- Components and their types
---[[
+
 local Accordion = require(script.Components.Accordion)
 export type AccordionProps = Accordion.AccordionProps
 export type AccordionItemProps = Accordion.AccordionItemProps
@@ -164,7 +164,6 @@ export type AvatarGroupProps = AvatarGroup.AvatarGroupProps
 
 local Badge = require(script.Components.Badge)
 export type BadgeProps = Badge.BadgeProps
-]]
 
 local BaseMenu = require(script.Components.BaseMenu)
 export type BaseMenuProps<Item = BaseMenuItem> = BaseMenu.BaseMenuProps<Item>
@@ -175,14 +174,14 @@ export type BaseMenuItemGroup<Item = BaseMenuItem> = BaseMenu.BaseMenuItemGroup<
 local Button = require(script.Components.Button)
 export type ButtonProps = Button.ButtonProps
 
---local Checkbox = require(script.Components.Checkbox)
---export type CheckboxProps = Checkbox.CheckboxProps
+local Checkbox = require(script.Components.Checkbox)
+export type CheckboxProps = Checkbox.CheckboxProps
 
 local EducationalTooltip = require(script.Components.EducationalTooltip)
 export type EducationalTooltipProps = EducationalTooltip.EducationalTooltipProps
 
---local Chip = require(script.Components.Chip)
---export type ChipProps = Chip.ChipProps
+local Chip = require(script.Components.Chip)
+export type ChipProps = Chip.ChipProps
 
 --local ColorPicker = require(script.Components.ColorPicker)
 --export type ColorPickerProps = ColorPicker.ColorPickerProps
@@ -200,15 +199,13 @@ export type DialogTitleProps = Dialog.DialogTitleProps
 --local DateTimePicker = require(script.Components.DateTimePicker)
 --export type DateTimePickerProps = DateTimePicker.DateTimePickerProps
 
---local Divider = require(script.Components.Divider)
---export type DividerProps = Divider.DividerProps
+local Divider = require(script.Components.Divider)
+export type DividerProps = Divider.DividerProps
 
---[[
 local Dropdown = require(script.Components.Dropdown)
 export type DropdownProps = Dropdown.DropdownProps
 export type DropdownItem = Dropdown.DropdownItem
 export type DropdownItems = Dropdown.DropdownItems
-]]
 
 --[[
 local Grid = require(script.Components.Grid)
@@ -217,8 +214,8 @@ export type GridCellProps = Grid.GridCellProps
 export type GridDebugProps = Grid.GridDebugProps
 ]]
 
---local Empty = require(script.Components.Empty)
---export type EmptyProps = Empty.EmptyProps
+local Empty = require(script.Components.Empty)
+export type EmptyProps = Empty.EmptyProps
 
 --local FeedbackAlert = require(script.Components.FeedbackAlert)
 --export type FeedbackAlertProps = FeedbackAlert.FeedbackAlertProps
@@ -238,8 +235,8 @@ export type InputLabelProps = InputLabel.InputLabelProps
 --local KeyLabel = require(script.Components.KeyLabel)
 --export type KeyLabelProps = KeyLabel.KeyLabelProps
 
---local Knob = require(script.Components.Knob)
---export type KnobProps = Knob.KnobProps
+local Knob = require(script.Components.Knob)
+export type KnobProps = Knob.KnobProps
 
 --[[
 local List = require(script.Components.List)
@@ -251,12 +248,10 @@ export type ListAccessoryProps = List.ListAccessoryProps
 --local Loading = require(script.Components.Loading)
 --export type LoadingProps = Loading.LoadingProps
 
---[[
 local Menu = require(script.Components.Menu)
 export type MenuProps = Menu.MenuProps
 export type MenuItem = Menu.MenuItem
 export type MenuItems = Menu.MenuItems
-]]
 
 --local NumberInput = require(script.Components.NumberInput)
 --export type NumberInputProps = NumberInput.NumberInputProps
@@ -275,12 +270,12 @@ export type PopoverContentProps = Popover.PopoverContentProps
 --local Progress = require(script.Components.Progress)
 --export type ProgressProps = Progress.ProgressProps
 
---local RadioGroup = require(script.Components.RadioGroup)
---export type RadioGroupProps = RadioGroup.RadioGroupProps
---export type RadioGroupItemProps = RadioGroup.RadioGroupItemProps
+local RadioGroup = require(script.Components.RadioGroup)
+export type RadioGroupProps = RadioGroup.RadioGroupProps
+export type RadioGroupItemProps = RadioGroup.RadioGroupItemProps
 
---local SearchInput = require(script.Components.SearchInput)
---export type SearchInputProps = SearchInput.SearchInputProps
+local SearchInput = require(script.Components.SearchInput)
+export type SearchInputProps = SearchInput.SearchInputProps
 
 local ScrollView = require(script.Components.ScrollView)
 export type ScrollViewProps = ScrollView.ScrollViewProps
@@ -298,18 +293,18 @@ export type SheetHeaderProps = Sheet.SheetHeaderProps
 export type SheetRef = Sheet.SheetRef
 ]]
 
---local Skeleton = require(script.Components.Skeleton)
---export type SkeletonProps = Skeleton.SkeletonProps
+local Skeleton = require(script.Components.Skeleton)
+export type SkeletonProps = Skeleton.SkeletonProps
 
---local Slider = require(script.Components.Slider)
---export type SliderProps = Slider.SliderProps
+local Slider = require(script.Components.Slider)
+export type SliderProps = Slider.SliderProps
 
---local Snackbar = require(script.Components.Snackbar)
---export type SnackbarProps = Snackbar.SnackbarProps
---export type SnackbarAction = Snackbar.SnackbarAction
+local Snackbar = require(script.Components.Snackbar)
+export type SnackbarProps = Snackbar.SnackbarProps
+export type SnackbarAction = Snackbar.SnackbarAction
 
---local StatusIndicator = require(script.Components.StatusIndicator)
---export type StatusIndicatorProps = StatusIndicator.StatusIndicatorProps
+local StatusIndicator = require(script.Components.StatusIndicator)
+export type StatusIndicatorProps = StatusIndicator.StatusIndicatorProps
 
 --local SystemBanner = require(script.Components.SystemBanner)
 --export type SystemBannerProps = SystemBanner.SystemBannerProps
@@ -321,18 +316,18 @@ export type SheetRef = Sheet.SheetRef
 local Text = require(script.Components.Text)
 export type TextProps = Text.TextProps
 
---local TextArea = require(script.Components.TextArea)
---export type TextAreaProps = TextArea.TextAreaProps
-
---local TextInput = require(script.Components.TextInput)
---export type TextInputProps = TextInput.TextInputProps
---export type TextInputRef = Types.TextInputRef
+local TextArea = require(script.Components.TextArea)
+export type TextAreaProps = TextArea.TextAreaProps
+	
+local TextInput = require(script.Components.TextInput)
+export type TextInputProps = TextInput.TextInputProps
+export type TextInputRef = Types.TextInputRef
 
 --local Toggle = require(script.Components.Toggle)
 --export type ToggleProps = Toggle.ToggleProps
 
---local Tooltip = require(script.Components.Tooltip)
---export type TooltipProps = Tooltip.TooltipProps
+local Tooltip = require(script.Components.Tooltip)
+export type TooltipProps = Tooltip.TooltipProps
 
 --local Toast = require(script.Components.Toast)
 --export type ToastProps = Toast.ToastProps
@@ -343,52 +338,52 @@ export type ViewProps = View.ViewProps
 
 local Foundation = strict({
 	-- Components
-	--Accordion = Accordion,
-	--Avatar = Avatar,
-	--AvatarGroup = AvatarGroup,
-	--Badge = Badge,
+	Accordion = Accordion,
+	Avatar = Avatar,
+	AvatarGroup = AvatarGroup,
+	Badge = Badge,
 	Button = Button,
-	--Checkbox = Checkbox,
-	--Chip = Chip,
+	Checkbox = Checkbox,
+	Chip = Chip,
 	EducationalTooltip = EducationalTooltip,
 	--ColorPicker = ColorPicker,
 	--DateTimePicker = DateTimePicker,
 	--Dialog = Dialog,
-	--Divider = Divider,
-	--Dropdown = Dropdown,
+	Divider = Divider,
+	Dropdown = Dropdown,
 	--Grid = Grid,
-	--Empty = Empty,
+	Empty = Empty,
 	--FeedbackAlert = FeedbackAlert,
 	Icon = Icon,
 	IconButton = IconButton,
 	Image = Image,
 	InputLabel = InputLabel,
 	--KeyLabel = KeyLabel,
-	--Knob = Knob,
+	Knob = Knob,
 	--List = List,
 	--Loading = Loading,
-	--Menu = Menu,
+	Menu = Menu,
 	--NumberInput = NumberInput,
 	--OptionSelectorGroup = OptionSelectorGroup,
-	--Pill = Chip,
+	Pill = Chip,
 	Popover = Popover,
 	--Progress = Progress,
-	--RadioGroup = RadioGroup,
-	--SearchInput = SearchInput,
+	RadioGroup = RadioGroup,
+	SearchInput = SearchInput,
 	ScrollView = ScrollView,
 	--SegmentedControl = SegmentedControl,
 	--Sheet = Sheet,
-	--Skeleton = Skeleton,
-	--Slider = Slider,
-	--Snackbar = Snackbar,
-	--StatusIndicator = StatusIndicator,
+	Skeleton = Skeleton,
+	Slider = Slider,
+	Snackbar = Snackbar,
+	StatusIndicator = StatusIndicator,
 	--SystemBanner = SystemBanner,
 	--Tabs = Tabs,
 	Text = Text,
-	--TextArea = TextArea,
-	--TextInput = TextInput,
+	TextArea = TextArea,
+	TextInput = TextInput,
 	--Toggle = Toggle,
-	--Tooltip = Tooltip,
+	Tooltip = Tooltip,
 	--Toast = Toast,
 	View = View,
 
@@ -408,14 +403,14 @@ local Foundation = strict({
 	Hooks = {
 		useBreakpoint = require(script.Providers.ResponsiveProvider.Hooks.useBreakpoint),
 		useResponsiveValue = require(script.Providers.ResponsiveProvider.Hooks.useResponsiveValue),
-		--useCumulativeBackground = require(script.Utility.useCumulativeBackground),
+		useCumulativeBackground = require(script.Utility.useCumulativeBackground),
 		useDefaultTags = require(script.Utility.useDefaultTags),
 		--useDialogNavigation = require(script.Components.Dialog.useDialogNavigation),
 		--useSheetNavigation = require(script.Components.Sheet.useSheetNavigation),
 		useIconSize = require(script.Utility.useIconSize),
 		useMeasurableRef = require(script.Components.Popover.useMeasurableRef),
 		usePointerPosition = require(script.Utility.usePointerPosition),
-		--usePulseBinding = require(script.Utility.usePulseBinding),
+		usePulseBinding = require(script.Utility.usePulseBinding),
 		useRotation = require(script.Utility.useRotation),
 		useScaledValue = require(script.Utility.useScaledValue),
 		useStyleTags = require(script.Providers.ThemeProvider.useStyleTags),
