@@ -84,11 +84,11 @@ return function(inputLabelProps: InputLabelProps)
 		local isDisabled = unwrap(props.isDisabled, use)
 		local size = unwrap(props.size, use)
 
-		local function onStateChanged(newState: ControlState)
-			local hoverCallback = unwrap(props.onHover, use)
-			if not hoverCallback then return end
-			return props.onHover(newState == ControlState.Hover)
-		end
+		local onStateChanged = if props.onHover
+			then function(newState: ControlState)
+				props.onHover(newState == ControlState.Hover)
+			end
+			else nil
 		
 		local componentProperties = withCommonProps(props, {
 			scope = innerScope,
@@ -108,7 +108,7 @@ return function(inputLabelProps: InputLabelProps)
 			stateLayer = { affordance = StateLayerAffordance.None },
 			textStyle = props.textStyle,
 			tag = {
-				["size-0 auto-xy text-align-x-left text-align-y-top"] = true,
+				["size-0 auto-xy text-wrap text-align-x-left text-align-y-top"] = true,
 				["content-muted"] = isDisabled,
 				["content-default"] = not isDisabled,
 				["text-title-small"] = size == InputLabelSize.Small,

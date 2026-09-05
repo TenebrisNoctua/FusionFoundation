@@ -11,13 +11,16 @@ local Components = Foundation.Components
 local Utility = Foundation.Utility
 local Enums = Foundation.Enums
 
-local Image = require(Components.Image)
 local View = require(Components.View)
 local Text = require(Components.Text)
+local Image = require(Components.Image)
+local ScrollView = require(Components.ScrollView)
 
-local getRbxThumb = require(Utility.getRbxThumb)
 local unwrap = require(Utility.unwrap)
+local getRbxThumb = require(Utility.getRbxThumb)
+
 local StorySection = require(Utility.Stories.StorySection)
+local StoryMiddleware = require(Utility.Stories.StoryMiddleware)
 
 local ControlState = require(Enums.ControlState)
 local ThumbnailType = require(Enums.ThumbnailType)
@@ -169,21 +172,17 @@ end
 
 return {
 	fusion = Fusion,
-	story = function(props)
+	story = StoryMiddleware(function(props)
 		local scope = props.scope
 		local cloudAsset = props.controls.cloudAsset
-		local theme, cleanup = ThemeProvider()
-		table.insert(scope, cleanup)
 		
-		return View {
+		return ScrollView {
 			scope = scope,
-			tag = "auto-xy",
+			tag = "col size-full",
+			scroll = {
+				AutomaticCanvasSize = Enum.AutomaticSize.XY	
+			},
 			children = {
-				scope:New "UIListLayout" {
-					Padding = UDim.new(0, 16),
-					SortOrder = Enum.SortOrder.LayoutOrder
-				},
-				
 				StorySection {
 					scope = scope,
 					title = "Basic Image",
@@ -237,12 +236,10 @@ return {
 							LayoutOrder = 2
 						}
 					}
-				},
-				
-				theme.StyleLink
+				}
 			}
 		}
-	end,
+	end),
 	controls = {
 		cloudAsset = {
 			EntryType = "Control",

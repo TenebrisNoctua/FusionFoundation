@@ -28,6 +28,7 @@ local ButtonVariant = require(Enums.ButtonVariant)
 local ColorNamespace = require(Enums.ColorNamespace)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local usePresentationContext = require(Foundation.Providers.ThemeProvider.PresentationContext).usePresentationContext
 local Constants = require(Foundation.Constants)
 
 local migrationLookup = BuilderIcons.Migration["uiblox"]
@@ -84,6 +85,7 @@ export type IconButtonProps = {
 return function(iconButtonProps: IconButtonProps)
 	local scope = iconButtonProps.scope
 	local theme = ThemeProvider()
+	local presentationContext = usePresentationContext()
 	assert(scope, "A scope has not been provided for the IconButton component.")
 
 	local props = withDefaults(iconButtonProps, defaultProps)
@@ -93,7 +95,6 @@ return function(iconButtonProps: IconButtonProps)
 		local currentIcon = unwrap(props.icon, use)
 		local currentSize = unwrap(props.size, use)
 		
-		local presentation = theme.Presentation
 		local iconName = if typeof(currentIcon) == "table" then currentIcon.name else currentIcon
 		local iconVariant: IconVariant? = if typeof(currentIcon) == "table" then currentIcon.variant else nil
 
@@ -105,7 +106,7 @@ return function(iconButtonProps: IconButtonProps)
 		end
 
 		local currentVariant = unwrap(props.variant, use)
-		local colorNamespace = if props.colorNamespace then unwrap(props.colorNamespace, use) else unwrap(presentation.colorNamespace, use)
+		local colorNamespace = if props.colorNamespace then unwrap(props.colorNamespace, use) else unwrap(presentationContext.colorNamespace, use)
 		local variantProps = useIconButtonVariants(unwrap(theme.Theme), tokens, currentSize, currentVariant, colorNamespace)
 
 		local containerSize = variantProps.container.size

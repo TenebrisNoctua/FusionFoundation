@@ -252,14 +252,14 @@ return function(scrollViewProps: ScrollViewProps)
 			SelectionImageObject = selectionProps.SelectionImageObject,
 			SelectionOrder = selectionProps.SelectionOrder,
 
-			[OnChange "CanvasPosition"] = function(instance: ScrollingFrame)
+			[OnChange "CanvasPosition"] = function(newPosition: Vector2, instance: ScrollingFrame)
 				local scrollBarVisibility = unwrap(props.scroll.scrollBarVisibility)
 				if scrollBarVisibility == "Auto" then
 					local colorStyle = unwrap(scrollBarColorStyle)
 					setIsScrollBarVisible(true, HIDE_SCROLLBAR_DELAY, delayRef, scrollBarTransparency, colorStyle.Transparency)
 				end
 				if props.onCanvasPositionChanged then
-					props.onCanvasPositionChanged(instance)
+					props.onCanvasPositionChanged(newPosition, instance)
 				end
 			end,
 

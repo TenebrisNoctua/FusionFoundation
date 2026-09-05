@@ -45,14 +45,7 @@ export type SubmenuHoverState = {
 	-- The full path of currently open submenu IDs, wrapped in a Fusion Value state
 	openPath: UsedAs<{ ItemId }>,
 	-- Returns a memoized, depth-scoped Computed<ItemId?> for the given depth.
-	-- PERF: Items should prefer this over reading `openPath` directly. `openPath`
-	-- is a single Value holding the whole array, so ANY change at ANY depth
-	-- invalidates every consumer of it, regardless of which depth they care about.
-	-- The Computed returned here only propagates to ITS dependents when the id at
-	-- that specific depth actually changes; Fusion only notifies a Computed's
-	-- dependents when its output value differs from before, so items at
-	-- unaffected depths never re-run just because a sibling/other-depth hover
-	-- changed.
+	-- Items should prefer this over reading openPath directly.
 	openIdAtDepth: (depth: number) -> UsedAs<ItemId?>,
 	-- Open a submenu at the given depth. Truncates deeper items.
 	-- When immediate is true, opens synchronously (used for click/tap).
@@ -60,7 +53,7 @@ export type SubmenuHoverState = {
 	-- Close all submenus at and below the given depth.
 	closeAtDepth: (depth: number) -> (),
 	-- Immediately reset all open submenus (e.g. on outside click or item activation).
-	reset: () -> (),
+	reset: () -> ()
 }
 
 local function useSubmenuHover(scope: Scope): SubmenuHoverState

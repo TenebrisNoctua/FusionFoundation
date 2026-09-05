@@ -20,6 +20,7 @@ local View = require(Components.View)
 local Text = require(Components.Text)
 local Button = require(Components.Button)
 local Fragment = require(Components.Fragment)
+local TextInput = require(Components.TextInput)
 local ScrollView = require(Components.ScrollView)
 
 local unwrap = require(Utility.unwrap)
@@ -270,12 +271,13 @@ local function StoryAnchorRef(props)
 	}
 end
 
---[[ The TextInput component has not been converted yet, so this story is unavailable.
+
 local function StoryKeyboardAware(props)
 	local scope = props.scope
 	local controls = props.controls
 
 	local open = scope:Value(false)
+	local inputText = scope:Value("")
 
 	return View {
 		scope = scope,
@@ -287,67 +289,97 @@ local function StoryKeyboardAware(props)
 				Text = "Focus the input field to test keyboard-aware positioning",
 				tag = "auto-xy text-body-medium content-emphasis",
 				padding = {
-					bottom = UDim.new(0, 500),
+					bottom = UDim.new(0, 200)	
 				},
+				LayoutOrder = 2
 			},
 			PopoverRoot {
 				scope = scope,
 				isOpen = open,
-				children = function(innerScope) return {
-					PopoverAnchor {
-						scope = innerScope,
-						children = {
-							View {
-								scope = scope,
-								tag = "col gap-medium auto-xy",
-								children = {
-									Button {
-										scope = scope,
-										text = scope:Computed(function(use: Use)
-											return if unwrap(open, use) then "Close Popover" else "Open Popover"
-										end),
-										size = InputSize.Medium,
-										onActivated = function()
-											open:set(not unwrap(open))
-										end,
-									},
+				LayoutOrder = 1,
+				children = function(innerScope) 
+					return {
+						PopoverAnchor {
+							scope = innerScope,
+							children = {
+								View {
+									scope = scope,
+									tag = "col gap-medium auto-xy",
+									children = {
+										TextInput {
+											scope = scope,
+											size = InputSize.Medium,
+											label = "Test Input",
+											placeholder = "Type something here...",
+											text = inputText,
+											onChanged = function(newText)
+												inputText:set(newText)
+											end,
+											onFocus = function()
+												open:set(true)
+											end,
+											onFocusLost = function()
+												-- Small delay to allow popover interaction before closing
+												task.spawn(function()
+													task.wait(0.1)
+													open:set(false)
+												end)
+											end
+										},
+										Button {
+											scope = scope,
+											text = scope:Computed(function(use: Use)
+												return if unwrap(open, use) then "Close Popover" else "Open Popover"
+											end),
+											size = InputSize.Medium,
+											onActivated = function()
+												open:set(not unwrap(open))
+											end
+										}
+									}
+								}
+							}
+						},
+						PopoverContent {
+							scope = innerScope,
+							side = PopoverSide.Bottom,
+							align = PopoverAlign.Start,
+							onPressedOutside = function()
+								open:set(false)
+							end,
+							children = {
+								View {
+									scope = scope,
+									tag = "col gap-small auto-xy padding-medium",
+									Size = UDim2.fromOffset(300, 0),
+									children = {
+										Text {
+											scope = scope,
+											Text = "Keyboard-Aware Popover",
+											tag = "auto-xy text-title-medium content-emphasis",
+										},
+										Text {
+											scope = scope,
+											Text = "This popover should avoid the on-screen keyboard on touch devices.",
+											tag = "auto-xy text-body-small"
+										},
+										Text {
+											scope = scope,
+											Text = scope:Computed(function(use: Use)
+												return `Current input: "{unwrap(inputText, use)}"`
+											end),
+											tag = "auto-xy text-body-small"
+										}
+									}
 								}
 							}
 						}
-					},
-					PopoverContent {
-						scope = innerScope,
-						side = PopoverSide.Bottom,
-						align = PopoverAlign.Start,
-						onPressedOutside = function()
-							open:set(false)
-						end,
-						children = {
-							View {
-								scope = scope,
-								tag = "col gap-small auto-xy padding-medium",
-								Size = UDim2.fromOffset(300, 0),
-								children = {
-									Text {
-										scope = scope,
-										Text = "Keyboard-Aware Popover",
-										tag = "auto-xy text-title-medium content-emphasis",
-									},
-									Text {
-										scope = scope,
-										Text = "This popover should avoid the on-screen keyboard on touch devices.",
-										tag = "auto-xy text-body-small",
-									},
-								}
-							}
-						}
-					},
-				} end
-			},
+					}
+				end
+			}
 		}
 	}
 end
-]]
 
 local function StoryMousePositionTooltip(props)
 	local scope = props.scope
@@ -390,13 +422,13 @@ local function StoryMousePositionTooltip(props)
 										scope = scope,
 										Text = "Can't close unless you are in the area",
 										tag = "auto-xy text-title-medium content-emphasis",
-									},
+									}
 								}
 							}
 						}
-					},
+					}
 				} end
-			},
+			}
 		}
 	})
 	
@@ -475,9 +507,9 @@ local function StoryContextMenu(props)
 								}
 							}
 						}
-					},
+					}
 				} end
-			},
+			}
 		}
 	})
 	
@@ -584,8 +616,21 @@ return {
 				
 				StorySection {
 					scope = scope,
-					title = "MousePositionTooltip",
+					title = "Keyboard Aware Input",
 					layoutOrder = 4,
+					children = {
+						StoryKeyboardAware {
+							scope = scope,
+							controls = controls,
+							layoutOrder = 2
+						}
+					}
+				},
+				
+				StorySection {
+					scope = scope,
+					title = "MousePositionTooltip",
+					layoutOrder = 5,
 					children = {
 						StoryMousePositionTooltip {
 							scope = scope,
@@ -598,7 +643,7 @@ return {
 				StorySection {
 					scope = scope,
 					title = "Context menu",
-					layoutOrder = 5,
+					layoutOrder = 6,
 					children = {
 						StoryContextMenu {
 							scope = scope,

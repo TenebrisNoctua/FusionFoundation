@@ -8,7 +8,7 @@ local isState = require(script.Parent.isState)
 local function deepJoin(a: any, b: any)
 	local result = table.clone(a)
 	for key, value in b do
-		if not isState(value) and not isState(result[key]) and typeof(result[key]) == "table" then
+		if not isState(value) and not isState(result[key]) and typeof(result[key]) == "table" and typeof(value) == "table" then
 			result[key] = deepJoin(result[key], value)
 		else
 			result[key] = value

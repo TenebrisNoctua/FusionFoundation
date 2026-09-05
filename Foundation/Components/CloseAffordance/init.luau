@@ -24,6 +24,7 @@ local ColorNamespace = require(Enums.ColorNamespace)
 local CloseAffordanceVariant = require(Enums.CloseAffordanceVariant)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local usePresentationContext = require(Foundation.Providers.ThemeProvider.PresentationContext).usePresentationContext
 local Constants = require(Foundation.Constants)
 
 local IconVariant = BuilderIcons.IconVariant
@@ -63,12 +64,13 @@ type CloseAffordanceProps = {
 return function(closeAffordanceProps: CloseAffordanceProps)
 	local scope = closeAffordanceProps.scope
 	local theme = ThemeProvider()
+	local presentationContext = usePresentationContext()
 	assert(scope, "A scope has not been provided for the CloseAffordance component.")
 	
 	local props = withDefaults(closeAffordanceProps, defaultProps)
 	
 	return scope:Computed(function(use: Use, innerScope: Scope)
-		local colorNamespace = if props.colorNamespace then unwrap(props.colorNamespace, use) else unwrap(theme.Presentation.colorNamespace, use)
+		local colorNamespace = if props.colorNamespace then unwrap(props.colorNamespace, use) else unwrap(presentationContext.colorNamespace, use)
 		local hasPadding = unwrap(props.hasPadding, use)
 		local isCircular = unwrap(props.isCircular, use)
 		local isDisabled = unwrap(props.isDisabled, use)

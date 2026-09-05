@@ -36,10 +36,6 @@ local themeProvider = {
 	RegistryStyleSheet = nil :: UsedAs<StyleSheet>,
 	StyleLink = nil :: StyleLink,
 	Scope = nil :: Scope,
-	Presentation = {
-		isIconSize = false,
-		colorNamespace = ColorNamespace.Color
-	},
 	AddTags = function(tags: {string})
 		error("ThemeProvider has not been initialized!")
 	end
@@ -65,10 +61,6 @@ export type ThemeProviderProps = {
 	tags: UsedAs<{[string]: boolean}>,
 	derives: UsedAs<{StyleSheet}?>?,
 	setStyleSheetRef: { current: ((StyleSheet?) -> ()) | nil }?,
-	presentation: {
-		isIconSize: boolean,
-		colorNamespace: ColorNamespace
-	}?
 }
 
 export type themeProvider = typeof(themeProvider)
@@ -102,10 +94,6 @@ return function(themeProviderProps: ThemeProviderProps?): (themeProvider, () -> 
 	themeProvider.Theme = props.theme
 	themeProvider.Scope = themeScope
 	themeProvider.Tokens = tokens
-	
-	if props.presentation then
-		themeProvider.Presentation = props.presentation
-	end
 
 	return themeProvider, function()
 		Fusion.doCleanup(themeScope)
@@ -129,10 +117,5 @@ return function(themeProviderProps: ThemeProviderProps?): (themeProvider, () -> 
 		themeProvider.AddTags = function()
 			error("ThemeProvider has not been initialized!")
 		end
-		
-		themeProvider.Presentation = {
-			isIconSize = false,
-			colorNamespace = ColorNamespace.Color
-		}
 	end
 end

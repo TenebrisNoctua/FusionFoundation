@@ -276,14 +276,10 @@ local function StoryComposites(props)
 		print(`Clicked {id}`)
 	end
 	
-	
 	return BaseMenu.Root {
 		scope = scope,
-
 		size = props.controls.size,
-
 		LayoutOrder = props.layoutOrder,
-
 		children = Fragment {
 			{BaseMenu.Group, {
 				LayoutOrder = 1, 
@@ -294,20 +290,20 @@ local function StoryComposites(props)
 						id = "a1", 
 						text = "Text 1",
 						icon = "icons/common/robux",
-												onActivated = onActivated,
-											}},
+						onActivated = onActivated
+					}},
 					{BaseMenu.Item, {
 						LayoutOrder = 2, 
 						id = "a2", 
 						text = "Text 2",
-												onActivated = onActivated,
-											}},
+						onActivated = onActivated
+					}},
 					{BaseMenu.Item, {
 						LayoutOrder = 3, 
 						id = "a3", 
 						text = "Text 3",
-												onActivated = onActivated,
-											}}
+						onActivated = onActivated
+					}}
 				}
 			}},
 			{BaseMenu.Group, {
@@ -317,20 +313,20 @@ local function StoryComposites(props)
 						LayoutOrder = 1, 
 						id = "b1", 
 						text = "Text 11",
-												onActivated = onActivated,
-											}},
+						onActivated = onActivated
+					}},
 					{BaseMenu.Item, {
 						LayoutOrder = 2, 
 						id = "b2", 
 						text = "Text 22",
-												onActivated = onActivated,
-											}},
+						onActivated = onActivated
+					}},
 					{BaseMenu.Item, {
 						LayoutOrder = 3, 
 						id = "b3", 
 						text = "Text 33",
-												onActivated = onActivated,
-											}}
+						onActivated = onActivated
+					}}
 				}
 			}}
 		}
@@ -366,17 +362,34 @@ local function StoryDynamicallySizing(props)
 	local controls = props.controls
 
 	local searchContent = scope:Value("")
+	local previousFilteredItems = nil
 
 	local filteredItems = scope:Computed(function(use)
 		local searchText = unwrap(searchContent, use)
-		return Dash.map(
-			Dash.filter(BuilderIcons.Icon, function(icon)
-				return string.find(icon, searchText, nil, true) ~= nil
-			end),
-			function(item)
-				return { id = item, icon = item, text = item }
+		local matchingIcons = Dash.filter(BuilderIcons.Icon, function(icon)
+			return string.find(icon, searchText, nil, true) ~= nil
+		end)
+		table.freeze(matchingIcons)
+		
+		local sameAsBefore = previousFilteredItems ~= nil and #matchingIcons == #previousFilteredItems
+		if sameAsBefore then
+			for i, icon in matchingIcons do
+				if previousFilteredItems[i].id ~= icon then
+					sameAsBefore = false
+					break
+				end
 			end
-		)
+		end
+
+		if sameAsBefore then
+			return previousFilteredItems
+		end
+
+		local result = Dash.map(matchingIcons, function(item)
+			return { id = item, icon = item, text = item }
+		end)
+		previousFilteredItems = table.freeze(result)
+		return result
 	end)
 
 	return View {
@@ -399,7 +412,7 @@ local function StoryDynamicallySizing(props)
 				items = filteredItems,
 				maxHeight = 600,
 				onActivated = Dash.noop(),
-				LayoutOrder = 2,
+				LayoutOrder = 2
 			}
 		}
 	}

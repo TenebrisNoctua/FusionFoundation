@@ -30,6 +30,7 @@ local ButtonVariant = require(Enums.ButtonVariant)
 local ColorNamespace = require(Enums.ColorNamespace)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local usePresentationContext = require(Foundation.Providers.ThemeProvider.PresentationContext).usePresentationContext
 local Constants = require(Foundation.Constants)
 
 local Children = Fusion.Children
@@ -113,6 +114,7 @@ export type ButtonProps = {
 return function(buttonProps: ButtonProps)
 	local scope = buttonProps.scope
 	local theme = ThemeProvider()
+	local presentationContext = usePresentationContext()
 	assert(scope, "A scope has not been provided for the Button component.")
 
 	local props = withDefaults(buttonProps, defaultProps)
@@ -135,7 +137,7 @@ return function(buttonProps: ButtonProps)
 
 	local initialColorNamespace = if props.colorNamespace
 		then unwrap(props.colorNamespace)
-		else unwrap(theme.Presentation.colorNamespace)
+		else unwrap(presentationContext.colorNamespace)
 	local initialVariantProps = useButtonVariants(
 		unwrap(theme.Theme),
 		unwrap(theme.Tokens),
@@ -185,10 +187,9 @@ return function(buttonProps: ButtonProps)
 		local buttonSize = unwrap(props.size, use)
 		local buttonVariant = unwrap(props.variant, use)
 
-		local presentation = theme.Presentation
 		local buttonColor = if props.colorNamespace
 			then unwrap(props.colorNamespace, use)
-			else unwrap(presentation.colorNamespace, use)
+			else unwrap(presentationContext.colorNamespace, use)
 
 		local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, buttonSize, buttonVariant, buttonColor)
 

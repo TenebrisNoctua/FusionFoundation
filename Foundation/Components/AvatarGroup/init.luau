@@ -20,13 +20,15 @@ local ColorNamespace = require(Enums.ColorNamespace)
 local AvatarGroupType = require(Enums.AvatarGroupType)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local usePresentationContext = require(Foundation.Providers.ThemeProvider.PresentationContext).usePresentationContext
 
 local COMPONENT_ONLY_PROPERTIES = {
 	"type",
 	"max",
 	"size",
 	"backplateStyle",
-	"avatars"
+	"avatars",
+	"isIconSize"
 }
 
 local defaultProps = {
@@ -53,12 +55,14 @@ export type AvatarGroupProps = {
 	max: UsedAs<number>?,
 	size: UsedAs<InputSize>?,
 	backplateStyle: UsedAs<Types.ColorStyle>?,
-	avatars: { AvatarGroupItem | number }
+	avatars: { AvatarGroupItem | number },
+	isIconSize: UsedAs<boolean>?
 } & Types.CommonProps
 
 return function(avatarGroupProps: AvatarGroupProps)
 	local scope = avatarGroupProps.scope
 	local theme = ThemeProvider()
+	local presentationContext = usePresentationContext()
 	assert(scope, "A scope has not been provided for the AvatarGroup component.")
 
 	local props = withDefaults(avatarGroupProps, defaultProps)
@@ -67,12 +71,14 @@ return function(avatarGroupProps: AvatarGroupProps)
 		local size = unwrap(props.size, use)
 		local type = unwrap(props.type, use)
 		
-		local presentation = theme.Presentation
+		local isIconSize = if props.isIconSize ~= nil
+			then unwrap(props.isIconSize, use)
+			else unwrap(presentationContext.isIconSize, use)
 		local gap
 		if type == AvatarGroupType.Spread then
 			gap = tokens.Size.Size_200
 		else
-			if presentation.isIconSize then
+			if isIconSize then
 				gap = if size == InputSize.Large or size == InputSize.Medium
 					then -tokens.Size.Size_50
 					else -tokens.Size.Size_0
@@ -81,7 +87,7 @@ return function(avatarGroupProps: AvatarGroupProps)
 			end
 		end
 
-		local resolvedSize = getAvatarSize(tokens, size, presentation.isIconSize)
+		local resolvedSize = getAvatarSize(tokens, size, isIconSize)
 		local backplateStyle = unwrap(props.backplateStyle, use) or tokens.Color.Surface.Surface_0
 
 		local function renderAvatarGroupItem(
@@ -105,6 +111,7 @@ return function(avatarGroupProps: AvatarGroupProps)
 				backplateStyle = layoutProps.backplateStyle,
 				size = size,
 				userPresence = userPresence,
+				isIconSize = isIconSize,
 				LayoutOrder = layoutProps.LayoutOrder,
 				Position = layoutProps.Position,
 				ZIndex = layoutProps.ZIndex
@@ -117,7 +124,7 @@ return function(avatarGroupProps: AvatarGroupProps)
 			max = props.max,
 			resolvedSize = resolvedSize,
 			isEllipsedOverflow = size == InputSize.XSmall
-				or (presentation.isIconSize and size == InputSize.Small),
+				or (isIconSize and size == InputSize.Small),
 			gap = gap,
 			backplateStyle = backplateStyle,
 			avatars = props.avatars,

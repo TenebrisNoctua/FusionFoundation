@@ -30,9 +30,9 @@ local SIZE_TO_PADDING: { [string]: string } = {
 export type BaseMenuGroupProps = {
 	scope: Scope,
 	title: UsedAs<string?>?,
-	children: { Child }?,
-	LayoutOrder: UsedAs<number>,
-}
+	children: (UsedAs<{Child} | ((scope: Scope) -> {Child})>)?,
+	LayoutOrder: UsedAs<number>?
+} & { [number]: Child }
 
 local function BaseMenuGroup(props: BaseMenuGroupProps)
 	local scope = props.scope
@@ -40,48 +40,64 @@ local function BaseMenuGroup(props: BaseMenuGroupProps)
 
 	local context = BaseMenuContext:now()
 
-	return scope:Computed(function(use: Use, innerScope: Scope) 
-		local groupIndex = unwrap(props.LayoutOrder, use) or 1
+	local positionalChildren
+	if #props > 0 then
+		positionalChildren = {}
+		for i, child in ipairs(props) do
+			positionalChildren[i] = child
+		end
+	end
+	
+	local children = props.children or positionalChildren
+	local groupIndex = unwrap(props.LayoutOrder) or 1
+
+	local tagValue = scope:Computed(function(use: Use)
 		local currentSize = unwrap(context.size, use) or InputSize.Medium
-		local currentTitle = unwrap(props.title, use)
 		local paddingTag = SIZE_TO_PADDING[currentSize] or "padding-small"
-		
-		local children = props.children
-		local childrenResult = {}
-
-		if groupIndex ~= 1 then
-			childrenResult.Divider = BaseMenuDivider {
-				scope = innerScope,
-				LayoutOrder = groupIndex * 2 - 1,
-			}
-		end
-		
-		-- If children is a function, call it within the context so child components can read it
-		if type(children) == "function" then
-			children = BaseMenuContext:is(context):during(function()
-				return children(innerScope)
-			end)
-		end
-
-		childrenResult.Group = View {
-			scope = innerScope,
-			LayoutOrder = groupIndex * 2,
-			tag = `col gap-xxsmall size-full-0 auto-y {paddingTag}`,
-			children = {
-				Title = if currentTitle
-					then BaseMenuContext:is(context):during(function()
-						return BaseMenuTitleItem {
-							scope = innerScope,
-							text = currentTitle,
-						}
-						end)
-					else nil,
-				Items = children
-			}
-		}
-
-		return childrenResult
+		return `col gap-xxsmall size-full-0 auto-y {paddingTag}`
 	end)
+
+	local titleChild = scope:Computed(function(use: Use, titleInnerScope: Scope)
+		local currentTitle = unwrap(props.title, use)
+		if currentTitle == nil then return nil end
+		return BaseMenuContext:is(context):during(function()
+			return BaseMenuTitleItem {
+				scope = titleInnerScope,
+				text = currentTitle
+			}
+		end)
+	end)
+
+	local resolvedChildren = children
+	if type(children) == "function" then
+		resolvedChildren = scope:Computed(function(use: Use, childrenInnerScope: Scope)
+			return BaseMenuContext:is(context):during(function()
+				return (children :: (Scope) -> { Child })(childrenInnerScope)
+			end)
+		end)
+	end
+
+	local groupView = View {
+		scope = scope,
+		LayoutOrder = groupIndex * 2,
+		tag = tagValue,
+		children = {
+			Title = titleChild,
+			Items = resolvedChildren
+		}
+	}
+
+	if groupIndex == 1 then
+		return { Group = groupView }
+	end
+
+	return {
+		Divider = BaseMenuDivider {
+			scope = scope,
+			LayoutOrder = groupIndex * 2 - 1,
+		},
+		Group = groupView
+	}
 end
 
 return BaseMenuGroup

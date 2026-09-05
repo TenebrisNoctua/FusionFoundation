@@ -21,8 +21,8 @@ export type BaseMenuContextType = {
 	hasLeading: UsedAs<boolean>,
 	-- Centralized submenu state
 	hoverOpenPath: UsedAs<{ ItemId }>,
-	-- PERF: depth-scoped derived state - prefer this over hoverOpenPath when an
-	-- item only cares about whether ITS OWN depth is open (see useSubmenuHover).
+	-- Depth-scoped derived state, prefer this over hoverOpenPath when an
+	-- item only cares about whether its own depth is open.
 	hoverOpenIdAtDepth: ((depth: number) -> UsedAs<ItemId?>)?,
 	hoverOpenAtDepth: ((depth: number, id: ItemId, immediate: boolean?) -> ())?,
 	hoverCloseAtDepth: ((depth: number) -> ())?,
@@ -34,7 +34,7 @@ export type BaseMenuContextType = {
 	-- Whether any item in the current content has a check mark
 	menuHasCheck: UsedAs<boolean>,
 	-- Whether the current group has a leading accessory (icon or leading)
-	menuHasLeading: UsedAs<boolean>,
+	menuHasLeading: UsedAs<boolean>
 }
 
 return Fusion.Contextual(nil :: BaseMenuContextType?)

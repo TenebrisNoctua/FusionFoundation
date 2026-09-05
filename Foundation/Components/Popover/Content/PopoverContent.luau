@@ -165,22 +165,22 @@ return function(contentProps: PopoverContentProps)
 		end),
 		SelectionBehaviorUp = scope:Computed(function(use: Use)
 			local sg = unwrap(props.selectionGroup, use)
-			if sg == nil or type(sg) == "boolean" then return nil end
+			if sg == nil or type(sg) == "boolean" then return Enum.SelectionBehavior.Escape end
 			return unwrap(sg.SelectionBehaviorUp, use)
 		end),
 		SelectionBehaviorDown = scope:Computed(function(use: Use)
 			local sg = unwrap(props.selectionGroup, use)
-			if sg == nil or type(sg) == "boolean" then return nil end
+			if sg == nil or type(sg) == "boolean" then return Enum.SelectionBehavior.Escape end
 			return unwrap(sg.SelectionBehaviorDown, use)
 		end),
 		SelectionBehaviorLeft = scope:Computed(function(use: Use)
 			local sg = unwrap(props.selectionGroup, use)
-			if sg == nil or type(sg) == "boolean" then return nil end
+			if sg == nil or type(sg) == "boolean" then return Enum.SelectionBehavior.Escape end
 			return unwrap(sg.SelectionBehaviorLeft, use)
 		end),
 		SelectionBehaviorRight = scope:Computed(function(use: Use)
 			local sg = unwrap(props.selectionGroup, use)
-			if sg == nil or type(sg) == "boolean" then return nil end
+			if sg == nil or type(sg) == "boolean" then return Enum.SelectionBehavior.Escape end
 			return unwrap(sg.SelectionBehaviorRight, use)
 		end),
 		sizeConstraint = {

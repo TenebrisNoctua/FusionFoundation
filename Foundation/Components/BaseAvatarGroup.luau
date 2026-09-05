@@ -24,6 +24,7 @@ local ColorNamespace = require(Enums.ColorNamespace)
 local AvatarGroupType = require(Enums.AvatarGroupType)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local usePresentationContext = require(Foundation.Providers.ThemeProvider.PresentationContext).usePresentationContext
 
 type UsedAs<T> = Types.UsedAs<T>
 type Scope = Types.Scope
@@ -122,6 +123,7 @@ end
 return function(baseAvatarGroupProps: baseAvatarGroupProps)
 	local scope = baseAvatarGroupProps.scope
 	local theme = ThemeProvider()
+	local presentationContext = usePresentationContext()
 	assert(scope, "A scope has not been provided for the BaseAvatarGroup component.")
 
 	local props = withDefaults(baseAvatarGroupProps, defaultProps)
@@ -130,7 +132,7 @@ return function(baseAvatarGroupProps: baseAvatarGroupProps)
 		local avatars = unwrap(props.avatars, use)
 		local max = unwrap(props.max, use)
 		
-		local presentation = theme.Presentation
+		local presentation = { colorNamespace = unwrap(presentationContext.colorNamespace, use) }
 		local backgroundStyle = tokens[presentation.colorNamespace or ColorNamespace.Color].Shift.Shift_300
 		local backplateStyle = unwrap(props.backplateStyle, use) or tokens.Color.Surface.Surface_0
 

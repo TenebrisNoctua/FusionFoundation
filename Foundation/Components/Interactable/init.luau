@@ -196,17 +196,25 @@ return function(interactableProps: InteractableProps)
 		end)
 	end
 
-	interactableComponentProps.Active = if isDisabledAState then isDisabledProp else not isDisabled
-	interactableComponentProps.Interactable = if isDisabledAState then isDisabledProp else not isDisabled
+	local isButtonComponent = props.component == "ImageButton" or props.component == "TextButton"
+
+	interactableComponentProps.Active = if not isButtonComponent
+		then nil
+		elseif isDisabledAState then isDisabledProp
+		else not isDisabled
+	interactableComponentProps.Interactable = if not isButtonComponent
+		then nil
+		elseif isDisabledAState then isDisabledProp
+		else not isDisabled
 	interactableComponentProps.SelectionImageObject = props.SelectionImageObject
 
-	interactableComponentProps[OnEvent "Activated"] = if props.component == "ImageButton" then function(...)
+	interactableComponentProps[OnEvent "Activated"] = if isButtonComponent then function(...)
 		if unwrap(isDisabled) then return end
 		if not onActivatedProp then return end
 		onActivatedProp(...)
 	end else nil
 
-	interactableComponentProps[OnEvent "SecondaryActivated"] = if props.component == "ImageButton" then function(...)
+	interactableComponentProps[OnEvent "SecondaryActivated"] = if isButtonComponent then function(...)
 		if unwrap(isDisabled) then return end
 		if not onSecondaryActivatedProp then return end
 		onSecondaryActivatedProp(...)

@@ -24,6 +24,7 @@ local ThumbnailType = require(Enums.ThumbnailType)
 local UserPresence = require(Enums.UserPresence)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local usePresentationContext = require(Foundation.Providers.ThemeProvider.PresentationContext).usePresentationContext
 
 local COMPONENT_ONLY_PROPERTIES = {
 	"userId",
@@ -58,6 +59,7 @@ export type AvatarProps = {
 return function(avatarProps: AvatarProps)
 	local scope = avatarProps.scope
 	local theme = ThemeProvider()
+	local presentationContext = usePresentationContext()
 	assert(scope, "A scope has not been provided for the Avatar component.")
 
 	local props = withDefaults(avatarProps, defaultProps)
@@ -67,10 +69,9 @@ return function(avatarProps: AvatarProps)
 		local userPresence = unwrap(props.userPresence, use)
 		local backplateStyle = unwrap(props.backplateStyle, use)
 		
-		local presentation = theme.Presentation
 		local isIconSize = if props.isIconSize ~= nil
 			then unwrap(props.isIconSize, use)
-			else presentation.isIconSize
+			else unwrap(presentationContext.isIconSize, use)
 		
 		local variantProps = useAvatarVariants(
 			unwrap(theme.Theme),
