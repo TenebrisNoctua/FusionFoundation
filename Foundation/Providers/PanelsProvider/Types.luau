@@ -1,10 +1,14 @@
-local Foundation = script:FindFirstAncestor("Foundation")
+local Foundation = script.Parent.Parent.Parent
 
-local StudioUri = require(Foundation.Utility.Plugin.StudioUri)
+local Utility = Foundation.Utility
+local Enums = Foundation.Enums
+
+local StudioUri = require(Utility.Plugin.StudioUri)
+
+local PopoverSide = require(Enums.PopoverSide)
+local PopoverAlign = require(Enums.PopoverAlign)
+
 type StudioUri = StudioUri.StudioUri
-
-local PopoverAlign = require(Foundation.Enums.PopoverAlign)
-local PopoverSide = require(Foundation.Enums.PopoverSide)
 type PopoverAlign = PopoverAlign.PopoverAlign
 type PopoverSide = PopoverSide.PopoverSide
 

@@ -58,6 +58,6 @@ return function(arrowProps: PopoverArrowProps)
 			tag = "anchor-center-center"
 		}
 
-		return innerScope:Hydrate(View(viewProps))(Dash.join(withCommonProps(props, {}), stripProps(props, COMPONENT_ONLY_PROPERTIES)))
+		return innerScope:Hydrate(unwrap(View(viewProps))(Dash.join(withCommonProps(props, {}), stripProps(props, COMPONENT_ONLY_PROPERTIES))))
 	end)
 end

@@ -207,7 +207,7 @@ return function(inputProps: InputProps)
 				children = props.children
 			})
 
-			return innerScope:Hydrate(View(viewProps))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+			return innerScope:Hydrate(unwrap(View(viewProps)))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 		end
 
 		-- With label: container View wraps Input View and InputLabel
@@ -263,6 +263,6 @@ return function(inputProps: InputProps)
 			children = containerChildren
 		})
 
-		return innerScope:Hydrate(View(containerViewProps))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+		return innerScope:Hydrate(unwrap(View(containerViewProps)))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

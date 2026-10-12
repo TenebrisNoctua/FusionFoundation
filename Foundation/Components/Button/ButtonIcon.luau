@@ -1,4 +1,4 @@
-local Foundation = script:FindFirstAncestor("Foundation")
+local Foundation = script.Parent.Parent.Parent
 local PackageManager = require(Foundation.PackageManager)
 
 local BuilderIcons = PackageManager.getPackage("BuilderIcons")
@@ -49,25 +49,25 @@ return function(props: ButtonIconProps)
 
 	local currentSize = unwrap(props.size)
 	local textOffset = unwrap(props.textSizeOffset) or 0
-	
+
 	local tokens = unwrap(theme.Tokens)
 	local variantProps = useButtonVariants(unwrap(theme.Theme), tokens, currentSize, unwrap(props.variant), nil)
 
 	local mixedIconStyle = scope:Computed(function(use: Use)
 		local disabledValue = unwrap(props.disabledTransparencyBinding, use) or 0
 		local progressValue = unwrap(props.textTransparencyBinding, use) or 0
-		
+
 		return {
 			Color3 = variantProps.content.style.Color3,
 			Transparency = progressValue + disabledValue
 		}
 	end)
-	
+
 	return scope:Computed(function(use: Use, innerScope: Scope) 
 		local currentIcon = unwrap(props.icon, use)
 		if not currentIcon or currentIcon == "" then return end
 		local intrinsicIconSize, scale = getIconScale(currentIcon, currentSize)
-		
+
 		if isBuilderOrMigratedIcon(currentIcon) then
 			return Text {
 				scope = scope,

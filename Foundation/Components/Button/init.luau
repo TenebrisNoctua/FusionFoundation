@@ -145,34 +145,34 @@ return function(buttonProps: ButtonProps)
 		unwrap(props.variant),
 		initialColorNamespace
 	)
-	
+
 	local defaultTransparency = initialVariantProps.content.style.Transparency or 0
 	local motion = useButtonMotionStates(scope, props.isLoading, props.isDisabled, defaultTransparency, Constants.DISABLED_TRANSPARENCY)
-	
+
 	local inputDelay: number = unwrap(props.inputDelay)
 	local isInputDelayAState = isState(props.inputDelay)
 	local isDelaying = scope:Value(inputDelay > 0)
 	local progressGoal = scope:Value(0)
-	
+
 	local progressTween = scope:Tween(progressGoal, scope:Computed(function(use: Use)
 		local inputDelay = unwrap(props.inputDelay, use)
 		return TweenInfo.new(inputDelay, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 	end))
-	
+
 	local disconnect
 	disconnect = scope:Observer(progressTween):onChange(function()
 		if unwrap(progressTween) < 1 then return end
 		isDelaying:set(false)
 		task.defer(progressGoal.set, progressGoal, 0)
-		
+
 		if isInputDelayAState then return end
 		disconnect() -- If the input delay is not a state, this observer should not continue to listen.
 	end)
-	
+
 	if inputDelay > 0 then
 		progressGoal:set(1)
 	end
-	
+
 	if isInputDelayAState then
 		scope:Observer(props.inputDelay):onChange(function() 
 			local inputDelay = unwrap(props.inputDelay)
@@ -181,7 +181,7 @@ return function(buttonProps: ButtonProps)
 			progressGoal:set(1)
 		end)
 	end
-	
+
 	return scope:Computed(function(use: Use, innerScope: Scope)
 		local tokens = unwrap(theme.Tokens, use)
 		local buttonSize = unwrap(props.size, use)
@@ -269,7 +269,7 @@ return function(buttonProps: ButtonProps)
 				LayoutOrder = 2
 			}
 		end
-		
+
 		if isInputDelayAState or inputDelay > 0 then
 			buttonChildren.Gradient = innerScope:New "UIGradient" {
 				Enabled = innerScope:Computed(function(use: Use) 
@@ -357,6 +357,6 @@ return function(buttonProps: ButtonProps)
 			children = buttonChildren
 		}
 
-		return innerScope:Hydrate(View(viewProps))(props, stripProps(props, COMPONENT_ONLY_PROPERTIES))
+		return innerScope:Hydrate(unwrap(View(viewProps)))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

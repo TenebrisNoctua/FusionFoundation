@@ -126,7 +126,7 @@ return function(statusIndicatorProps: StatusIndicatorProps)
 			}
 		end
 
-		return innerScope:Hydrate(View(withCommonProps(props, {
+		return innerScope:Hydrate(unwrap(View(withCommonProps(props, {
 			scope = innerScope,
 			tag = variantProps.container.tag,
 			backgroundStyle = if variantProps.container.backgroundStyle
@@ -135,6 +135,6 @@ return function(statusIndicatorProps: StatusIndicatorProps)
 			Size = variantProps.container.size,
 			AutomaticSize = if hasValue then nil else Enum.AutomaticSize.XY,
 			children = children
-		})))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+		}))))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

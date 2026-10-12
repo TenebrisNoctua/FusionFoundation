@@ -56,9 +56,9 @@ return function(dividerProps: BaseMenuDividerProps)
 					tag = "grow size-0-full",
 					backgroundStyle = tokens.Color.Stroke.Default,
 				}
-			},
+			}
 		}
 
-		return innerScope:Hydrate(View(viewProps))(Dash.join(withCommonProps(props, {}), stripProps(props, COMPONENT_ONLY_PROPERTIES)))
+		return innerScope:Hydrate(unwrap(View(viewProps)))(Dash.join(withCommonProps(props, {}), stripProps(props, COMPONENT_ONLY_PROPERTIES)))
 	end)
 end

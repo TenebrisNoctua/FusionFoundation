@@ -35,6 +35,7 @@ local InputFocusBehavior = require(Enums.InputFocusBehavior)
 local StateLayerAffordance = require(Enums.StateLayerAffordance)
 
 local ThemeProvider = require(Foundation.Providers.ThemeProvider)
+local PluginProvider = require(Foundation.Providers.PluginProvider)
 local useStyleTags = require(Foundation.Providers.ThemeProvider.useStyleTags)
 local Constants = require(Foundation.Constants)
 
@@ -63,7 +64,10 @@ local COMPONENT_ONLY_PROPERTIES = {
 	"onDrag",
 	"onDragEnded",
 	"textBoxRef",
-	"placeholder"
+	"placeholder",
+	"backgroundGradient",
+	"leadingElement",
+	"trailingElement"
 }
 
 local defaultProps = {
@@ -186,6 +190,7 @@ export type BaseTextInputProps = {
 return function(inputProps: BaseTextInputProps)
 	local scope = inputProps.scope
 	local theme = ThemeProvider()
+	local pluginProvider = PluginProvider()
 	assert(scope, "A scope has not been provided for the BaseTextInput component.")
 
 	local props = withDefaults(inputProps, defaultProps)
@@ -212,17 +217,17 @@ return function(inputProps: BaseTextInputProps)
 
 		local preferredInput = usePreferredInput(innerScope)
 		local isMobileDevice = unwrap(preferredInput, use) == Enum.PreferredInput.Touch
-		
+
 		local focus = innerScope:Value(false)
 		local isTouchFocused = innerScope:Value(false)
-		
+
 		-- The variantProps here are not used in any reactive context.
 		local variantProps = useTextInputVariants(
 			unwrap(theme.Theme), tokens, inputSize, inputVariant, inputRadius,
 			false, false
 		)
 		local containerProps = variantProps.container
-		
+
 		-- The variantProps created under this computed are used in a reactive context for focus.
 		-- When the focus changes, this is re-evaluated.
 		local strokeVariantComputed = innerScope:Computed(function(use: Use)
@@ -236,10 +241,10 @@ return function(inputProps: BaseTextInputProps)
 
 		local textBoxTagComputed = useStyleTags(innerScope, variantProps.textBox.tag, theme.AddTags)
 
-		local textInputTypeValue = innerScope:Computed(function(use: Use)
+		local textInputTypeValue = if isPluginSecurity() and pluginProvider:isPluginElevated() then innerScope:Computed(function(use: Use)
 			local inputType = unwrap(props.textInputType, use)
 			return inputType or Enum.TextInputType.Default
-		end)
+		end) else nil
 
 		local outerBorderThickness = tokens.Stroke.Standard
 		local outerBorderOffset = math.ceil(outerBorderThickness) * 2
@@ -293,7 +298,7 @@ return function(inputProps: BaseTextInputProps)
 				end
 			})
 		end
-		
+
 		-- Clear handler
 		local function clearText()
 			if not textBoxInstance then return end
@@ -321,7 +326,7 @@ return function(inputProps: BaseTextInputProps)
 			if props.onFocus then
 				props.onFocus()
 			end
-			
+
 			local focusBehavior = unwrap(props.focusBehavior)
 			focus:set(true)
 			if focusBehavior == InputFocusBehavior.Clear then
@@ -397,12 +402,12 @@ return function(inputProps: BaseTextInputProps)
 			local truncatedTextHeight = textBoundsCheckerInstance.TextBounds.Y
 
 			local viewportTopEdge = canvasPositionY
-				- textBoxWrapperPadding.top.Offset
+			- textBoxWrapperPadding.top.Offset
 				+ textBoxWrapperPadding.bottom.Offset
 			local viewportBottomEdge = canvasPositionY
 				+ scrollingFrameInstance.AbsoluteSize.Y
-				- textBoxWrapperPadding.top.Offset
-				- textBoxWrapperPadding.bottom.Offset
+			- textBoxWrapperPadding.top.Offset
+			- textBoxWrapperPadding.bottom.Offset
 
 			if truncatedTextHeight - textHeight < viewportTopEdge then
 				scrollingFrameInstance.CanvasPosition += Vector2.new(
@@ -418,7 +423,7 @@ return function(inputProps: BaseTextInputProps)
 				)
 			end
 		end
-		
+
 		local function onMobileTextBoxMount(mobileTextBox: TextBox?)
 			if not mobileTextBox then return end
 			mobileTextBoxInstance = mobileTextBox
@@ -530,7 +535,7 @@ return function(inputProps: BaseTextInputProps)
 				TextYAlignment = if isMultiLine then Enum.TextYAlignment.Top else Enum.TextYAlignment.Center,
 				TextEditable = not isDisabled,
 				PlaceholderText = props.placeholder,
-				TextInputType = if isPluginSecurity() then textInputTypeValue else Enum.TextInputType.Default,
+				TextInputType = textInputTypeValue,
 				Size = if isScrollable then textBoxSizeFullHeight else UDim2.fromScale(1, 1),
 				Text = props.text,
 				Visible = if isMobile then mobileTextBoxVisible else textBoxVisible,
@@ -575,7 +580,7 @@ return function(inputProps: BaseTextInputProps)
 		if hasDrag and not isScrollable then
 			outerChildren.DragDetector = innerScope:New "UIDragDetector" (dragDetectorProps)
 		end
-		
+
 		-- Background gradient
 		if backgroundGradient then
 			outerChildren.Background = backgroundGradient(innerScope)
@@ -591,7 +596,7 @@ return function(inputProps: BaseTextInputProps)
 				children = leadingElement
 			}
 		end
-		
+
 		-- Trailing element
 		if trailingElement then
 			outerChildren.Trailing = View {
@@ -607,7 +612,7 @@ return function(inputProps: BaseTextInputProps)
 		local textBoxWrapperChildren = {
 			TextBox = mainTextBox
 		}
-		
+
 		if mobileTextBox then
 			textBoxWrapperChildren.MobileTextBox = mobileTextBox
 		end
@@ -617,6 +622,13 @@ return function(inputProps: BaseTextInputProps)
 			LayoutOrder = 2,
 			selection = { Selectable = false },
 			tag = "fill size-full clip",
+			-- Inner padding of the text box wrapper, used by NumberInput to make room for the prefix. (Matches InternalTextInput's textBoxWrapperInsetPadding)
+			padding = if props.horizontalPadding and (props.horizontalPadding.innerLeft or props.horizontalPadding.innerRight)
+				then {
+					left = props.horizontalPadding.innerLeft,
+					right = props.horizontalPadding.innerRight
+				}
+				else nil,
 			children = textBoxWrapperChildren
 		}
 
@@ -672,7 +684,7 @@ return function(inputProps: BaseTextInputProps)
 				Transparency = if props.backgroundGradient then 0 else containerProps.bgStyle.Transparency
 			}, isDisabled)
 		end
-		
+
 		local strokeProps = nil
 		if containerProps.strokeStyle and containerProps.strokeThickness then
 			local strokeColor = innerScope:Computed(function(use: Use)
@@ -755,6 +767,6 @@ return function(inputProps: BaseTextInputProps)
 			children = outerChildren
 		})
 
-		return innerScope:Hydrate(View(outerViewProps))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+		return innerScope:Hydrate(unwrap(View(outerViewProps)))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

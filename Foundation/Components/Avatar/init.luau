@@ -115,13 +115,13 @@ return function(avatarProps: AvatarProps)
 			indicatorProps.ZIndex = variantProps.statusIndicatorBackplate.ZIndex
 			children.Indicator = View(indicatorProps)
 		end
-		return innerScope:Hydrate(View(withCommonProps(props, {
+		return innerScope:Hydrate(unwrap(View(withCommonProps(props, {
 			scope = innerScope,
 			tag = variantProps.container.tag,
 			backgroundStyle = variantProps.container.backgroundStyle,
 			stroke = variantProps.container.stroke,
 			Size = UDim2.fromOffset(size, size),
 			children = children
-		})))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+		}))))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

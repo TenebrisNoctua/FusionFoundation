@@ -28,6 +28,8 @@ local ScrollView = require(Components.ScrollView)
 local IconButton = require(Components.IconButton)
 local BaseTextInput = require(Components.BaseTextInput)
 
+local PluginProvider = require(Foundation.Providers.PluginProvider)
+
 type Scope = Types.Scope
 type Use = Types.Use
 
@@ -253,6 +255,11 @@ return {
 	story = StoryMiddleware(function(props)
 		local scope = props.scope
 		local controls = props.controls
+		
+		local pluginProvider = PluginProvider()
+		if not pluginProvider:isPluginElevated() then
+			warn("[Fusion Foundation]: Running BaseTextInput under a non-elevated environment will disable textInputType.")
+		end
 
 		return scope:Computed(function(use: Use, innerScope: Scope)
 			unwrap(controls.theme, use)

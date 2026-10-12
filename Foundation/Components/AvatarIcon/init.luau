@@ -73,13 +73,13 @@ return function(avatarIconProps: AvatarIconProps)
 			}
 		}
 
-		return innerScope:Hydrate(View(withCommonProps(props, {
+		return innerScope:Hydrate(unwrap(View(withCommonProps(props, {
 			scope = innerScope,
 			tag = variantProps.container.tag,
 			stroke = variantProps.container.stroke,
 			backgroundStyle = backplateStyle,
 			Size = UDim2.fromOffset(variantProps.container.size, variantProps.container.size),
 			children = children
-		})))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+		}))))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

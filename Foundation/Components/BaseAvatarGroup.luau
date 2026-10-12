@@ -177,10 +177,10 @@ return function(baseAvatarGroupProps: baseAvatarGroupProps)
 			})
 		end
 
-		return innerScope:Hydrate(View(withCommonProps(props, {
+		return innerScope:Hydrate(unwrap(View(withCommonProps(props, {
 			scope = innerScope,
 			tag = "auto-xy",
 			children = children
-		})))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+		}))))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

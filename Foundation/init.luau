@@ -1,15 +1,15 @@
 -- Written by @TenebrisNoctua
 -- The entry point of the Fusion Foundation library.
 
-local strict = require(script.Utility.strict)
-
-local Tokens = require(script.Providers.ThemeProvider.Tokens)
-local Types = require(script.Utility.Types)
-
-local StyleSheetRegistry = require(script.StyleSheet.StyleSheetRegistry)
-
 local PackageManager = require(script.PackageManager)
 local BuilderIcons = PackageManager.getPackage("BuilderIcons")
+local Fusion = PackageManager.getPackage("Fusion")
+
+local strict = require(script.Utility.strict)
+local Types = require(script.Utility.Types)
+
+local Tokens = require(script.Providers.ThemeProvider.Tokens)
+local StyleSheetRegistry = require(script.StyleSheet.StyleSheetRegistry)
 
 export type ActionProps = Types.ActionProps
 export type AspectRatio = Types.AspectRatio
@@ -245,16 +245,16 @@ export type ListItemProps = List.ListItemProps
 export type ListAccessoryProps = List.ListAccessoryProps
 ]]
 
---local Loading = require(script.Components.Loading)
---export type LoadingProps = Loading.LoadingProps
+local Loading = require(script.Components.Loading)
+export type LoadingProps = Loading.LoadingProps
 
 local Menu = require(script.Components.Menu)
 export type MenuProps = Menu.MenuProps
 export type MenuItem = Menu.MenuItem
 export type MenuItems = Menu.MenuItems
 
---local NumberInput = require(script.Components.NumberInput)
---export type NumberInputProps = NumberInput.NumberInputProps
+local NumberInput = require(script.Components.NumberInput)
+export type NumberInputProps = NumberInput.NumberInputProps
 
 --[[
 local OptionSelectorGroup = require(script.Components.OptionSelectorGroup)
@@ -280,8 +280,8 @@ export type SearchInputProps = SearchInput.SearchInputProps
 local ScrollView = require(script.Components.ScrollView)
 export type ScrollViewProps = ScrollView.ScrollViewProps
 
---local SegmentedControl = require(script.Components.SegmentedControl)
---export type SegmentedControlProps = SegmentedControl.SegmentedControlProps
+local SegmentedControl = require(script.Components.SegmentedControl)
+export type SegmentedControlProps = SegmentedControl.SegmentedControlProps
 
 --[[
 local Sheet = require(script.Components.Sheet)
@@ -318,7 +318,7 @@ export type TextProps = Text.TextProps
 
 local TextArea = require(script.Components.TextArea)
 export type TextAreaProps = TextArea.TextAreaProps
-	
+
 local TextInput = require(script.Components.TextInput)
 export type TextInputProps = TextInput.TextInputProps
 export type TextInputRef = Types.TextInputRef
@@ -361,9 +361,9 @@ local Foundation = strict({
 	--KeyLabel = KeyLabel,
 	Knob = Knob,
 	--List = List,
-	--Loading = Loading,
+	Loading = Loading,
 	Menu = Menu,
-	--NumberInput = NumberInput,
+	NumberInput = NumberInput,
 	--OptionSelectorGroup = OptionSelectorGroup,
 	Pill = Chip,
 	Popover = Popover,
@@ -371,7 +371,7 @@ local Foundation = strict({
 	RadioGroup = RadioGroup,
 	SearchInput = SearchInput,
 	ScrollView = ScrollView,
-	--SegmentedControl = SegmentedControl,
+	SegmentedControl = SegmentedControl,
 	--Sheet = Sheet,
 	Skeleton = Skeleton,
 	Slider = Slider,
@@ -506,14 +506,17 @@ local Foundation = strict({
 		withDefaults = require(script.Utility.withDefaults),
 		isBuilderIcon = require(script.Utility.isBuilderIcon),
 		isPointInGuiObjectBounds = require(script.Utility.isPointInGuiObjectBounds),
-		preloadCloudAssets = require(script.Utility.preloadAssets)
+		preloadCloudAssets = require(script.Utility.preloadAssets),
+		unwrap = require(script.Utility.unwrap),
+		isState = require(script.Utility.isState)
 	},
 
 	-- Unstable APIs, do not use
 	UNSTABLE = {
 		-- Use View/Text/Image instead
 		Interactable = require(script.Components.Interactable),
-		BaseMenu = BaseMenu
+		BaseMenu = BaseMenu,
+		Fusion = Fusion
 	}
 })
 

@@ -74,6 +74,6 @@ return function(titleItemProps: BaseMenuTitleItemProps)
 			}
 		})
 
-		return innerScope:Hydrate(View(viewProps))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
+		return innerScope:Hydrate(unwrap(View(viewProps)))(stripProps(props, COMPONENT_ONLY_PROPERTIES))
 	end)
 end

@@ -51,7 +51,7 @@ local Fusion: Fusion = table.freeze {
 	doCleanup = require(script.Memory.doCleanup),
 	innerScope = require(script.Memory.innerScope),
 	scoped = require(script.Memory.scoped),
-	
+
 	-- Graph
 	Observer = require(script.Graph.Observer),
 
