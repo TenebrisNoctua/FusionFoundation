@@ -323,8 +323,8 @@ local TextInput = require(script.Components.TextInput)
 export type TextInputProps = TextInput.TextInputProps
 export type TextInputRef = Types.TextInputRef
 
---local Toggle = require(script.Components.Toggle)
---export type ToggleProps = Toggle.ToggleProps
+local Toggle = require(script.Components.Toggle)
+export type ToggleProps = Toggle.ToggleProps
 
 local Tooltip = require(script.Components.Tooltip)
 export type TooltipProps = Tooltip.TooltipProps
@@ -382,7 +382,7 @@ local Foundation = strict({
 	Text = Text,
 	TextArea = TextArea,
 	TextInput = TextInput,
-	--Toggle = Toggle,
+	Toggle = Toggle,
 	Tooltip = Tooltip,
 	--Toast = Toast,
 	View = View,
