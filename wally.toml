@@ -1,7 +1,7 @@
 [package]
 name = "tenebrisnoctua/fusionfoundation"
 description = "A Fusion port of Roblox's Foundation Library, to make UI components for Roblox."
-version = "0.6.0"
+version = "0.7.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 license = "MIT"

@@ -622,7 +622,6 @@ return function(inputProps: BaseTextInputProps)
 			LayoutOrder = 2,
 			selection = { Selectable = false },
 			tag = "fill size-full clip",
-			-- Inner padding of the text box wrapper, used by NumberInput to make room for the prefix. (Matches InternalTextInput's textBoxWrapperInsetPadding)
 			padding = if props.horizontalPadding and (props.horizontalPadding.innerLeft or props.horizontalPadding.innerRight)
 				then {
 					left = props.horizontalPadding.innerLeft,
